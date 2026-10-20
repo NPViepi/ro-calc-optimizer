@@ -1,0 +1,25 @@
+{
+  "name": "ro-calc-optimizer-desktop",
+  "productName": "RO Calc Optimizer",
+  "version": "0.1.0",
+  "description": "App desktop do Simulador RO LATAM com otimizador de builds",
+  "author": "NPViepi",
+  "license": "MIT",
+  "private": true,
+  "main": "src/main.js",
+  "scripts": {
+    "web": "node scripts/build-web.mjs",
+    "start": "npm run web && electron .",
+    "start:fast": "electron .",
+    "dist": "npm run web && electron-builder",
+    "dist:win": "npm run web && electron-builder --win",
+    "release": "npm run web && electron-builder --publish always"
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2"
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  }
+}

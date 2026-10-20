@@ -1,0 +1,48 @@
+# Gera os instaladores do app desktop e publica nas GitHub Releases do fork.
+# O app instalado usa essas releases para se atualizar sozinho (electron-updater).
+#
+# Para lançar uma versão:
+#   1. Ajuste "version" em desktop/package.json (ex.: 0.2.0)
+#   2. git tag desktop-v0.2.0 && git push origin desktop-v0.2.0
+name: Desktop release
+
+on:
+  push:
+    tags:
+      - 'desktop-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest] # adicione macos-latest / ubuntu-latest se quiser outras plataformas
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Instalar dependências do app web
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar dependências do desktop
+        working-directory: desktop
+        run: npm install
+
+      - name: Build e publicação
+        working-directory: desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run release

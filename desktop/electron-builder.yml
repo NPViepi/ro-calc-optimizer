@@ -1,0 +1,26 @@
+appId: br.com.npviepi.rocalcoptimizer
+productName: RO Calc Optimizer
+directories:
+  output: release
+files:
+  - src/**/*
+  - package.json
+# Build web gerado por scripts/build-web.mjs a partir do código do upstream.
+extraResources:
+  - from: web
+    to: web
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+mac:
+  target: dmg
+linux:
+  target: AppImage
+# Auto-update: os instaladores e o latest.yml vão para as GitHub Releases do fork.
+publish:
+  provider: github
+  owner: NPViepi
+  repo: ro-calc-optimizer
+  releaseType: release
