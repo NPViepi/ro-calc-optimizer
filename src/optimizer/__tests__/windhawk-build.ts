@@ -14,6 +14,15 @@ export const itemDb = JSON.parse(readFileSync('src/assets/demo/data/item.json', 
 
 export const INSTINTO_ID = 4879;
 
+/**
+ * A base com `presentInLatam` marcado, como o `build-web-data.mjs` faz no build do site
+ * (o item.json do repositório não traz o campo). Usada pelos testes de itens.
+ */
+export const latamItemDb = (() => {
+  const latam = JSON.parse(readFileSync('src/assets/demo/data/latam-items.json', 'utf8'));
+  return Object.fromEntries(Object.entries<any>(itemDb).map(([id, item]) => [id, latam[id] || item.preRelease ? { ...item, presentInLatam: true } : item]));
+})();
+
 const ACTIVE_SKILL_LEVELS: Record<string, number> = {
   'Improve Concentration': 10,
   'Wind Walk': 5,
