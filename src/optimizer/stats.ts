@@ -11,6 +11,10 @@
  * 2. **Trocas entre pares** (tira d de um atributo e devolve os pontos a outro) até não melhorar,
  *    o que corrige escolhas gulosas ruins.
  * O processo roda a partir da distribuição atual do usuário e a partir do zero; fica a melhor.
+ *
+ * Fase 2: com limites de tempo (`constraints`), a comparação é lexicográfica (ver
+ * `objective.ts`): primeiro reduzir o quanto os tempos passam do limite, depois o dano. O
+ * guloso prioriza o movimento que mais reduz a violação por ponto gasto.
  */
 
 import { BaseStateCalculator } from 'src/app/core/base-state-calculator';
@@ -18,7 +22,9 @@ import { MAIN_STAT_KEYS, MainStatKey, TRAIT_KEYS, TraitKey } from 'src/app/const
 import { CharacterBase } from 'src/app/jobs';
 import { MainModel } from 'src/app/models/main.model';
 import { BuildEvaluator, BuildMetrics } from './evaluate';
-import { damageScore, DamageObjective } from './objective';
+import {
+  checkConstraints, ConstraintCheck, DamageObjective, isBetter, isFeasible, Score, scoreOf, TimingConstraints, WORST_SCORE,
+} from './objective';
 
 export type StatKey = MainStatKey | TraitKey;
 export type StatAllocation = Record<StatKey, number>;
@@ -73,6 +79,8 @@ export function allocationOf(model: MainModel): StatAllocation {
 
 export interface StatOptions {
   objective?: DamageObjective;
+  /** Limites de conjuração/pós-conjuração a cumprir antes de maximizar o dano. */
+  constraints?: TimingConstraints;
   /** Atributos que não podem mudar (ex.: manter VIT para sobreviver). */
   locked?: StatKey[];
   /** Valor mínimo por atributo (ex.: `{ vit: 80 }`). */
@@ -80,7 +88,7 @@ export interface StatOptions {
   /** Teto de avaliações do motor (≈ 1,4 ms cada). */
   maxEvaluations?: number;
   /** Chamado a cada melhoria encontrada. */
-  onProgress?: (progress: { score: number; evaluations: number }) => void;
+  onProgress?: (progress: { score: Score; evaluations: number }) => void;
 }
 
 export interface StatChange { key: StatKey; from: number; to: number }
@@ -89,8 +97,16 @@ export interface StatResult {
   model: MainModel;
   metrics: BuildMetrics;
   before: BuildMetrics;
-  score: number;
-  scoreBefore: number;
+  score: Score;
+  scoreBefore: Score;
+  /** Valor do objetivo (dano/DPS) antes e depois. */
+  damage: number;
+  damageBefore: number;
+  /** Todos os limites pedidos foram cumpridos. */
+  feasible: boolean;
+  /** Situação de cada limite pedido, antes e depois. */
+  constraints: ConstraintCheck[];
+  constraintsBefore: ConstraintCheck[];
   changes: StatChange[];
   mainPointsLeft: number;
   traitPointsLeft: number;
@@ -98,6 +114,22 @@ export interface StatResult {
   /** A busca parou pelo teto de avaliações. */
   truncated: boolean;
 }
+
+interface Candidate { alloc: StatAllocation; score: Score }
+
+/**
+ * Ordena movimentos que melhoram a build: quem reduz mais a violação por ponto gasto vem
+ * primeiro; entre empates (ou quando já está tudo cumprido), quem dá mais dano por ponto.
+ */
+function moveRank(current: Score, next: Score, spent: number) {
+  const cost = Math.max(1, spent);
+  const fix = Number.isFinite(current.violation) ? (current.violation - next.violation) / cost : 0;
+  const gain = Number.isFinite(current.damage) ? (next.damage - current.damage) / cost : next.damage;
+  return { fix, gain };
+}
+
+const rankBetter = (a: { fix: number; gain: number }, b: { fix: number; gain: number }) =>
+  a.fix > b.fix + EPSILON || (Math.abs(a.fix - b.fix) <= EPSILON && a.gain > b.gain + EPSILON);
 
 class StatSearch {
   private evaluations = 0;
@@ -109,6 +141,7 @@ class StatSearch {
     private readonly base: MainModel,
     private readonly budget: StatBudget,
     private readonly objective: DamageObjective,
+    private readonly constraints: TimingConstraints | undefined,
     private readonly lower: StatAllocation,
     locked: Set<StatKey>,
     private readonly maxEvaluations: number,
@@ -142,36 +175,38 @@ class StatSearch {
     return value;
   }
 
-  score(alloc: StatAllocation): number {
-    if (this.exhausted) { this.truncated = true; return -Infinity; }
+  score(alloc: StatAllocation): Score {
+    if (this.exhausted) { this.truncated = true; return WORST_SCORE; }
     this.evaluations++;
-    return damageScore(this.evaluator.evaluate(this.toModel(alloc)), this.objective);
+    return scoreOf(this.evaluator.evaluate(this.toModel(alloc)), this.objective, this.constraints);
   }
 
   toModel(alloc: StatAllocation): MainModel {
     return { ...this.base, ...alloc };
   }
 
-  /** Gasta os pontos livres onde rendem mais dano por ponto. */
-  greedy(start: StatAllocation, startScore: number): { alloc: StatAllocation; score: number } {
-    let alloc = { ...start };
-    let score = startScore;
+  private improved(score: Score) {
+    this.onProgress?.({ score, evaluations: this.evaluations });
+  }
+
+  /** Gasta os pontos livres onde mais ajudam: primeiro a cumprir limites, depois a dar dano. */
+  greedy(start: Candidate): Candidate {
+    let { alloc, score } = start;
     for (const step of STEPS) {
       for (;;) {
-        let best: { alloc: StatAllocation; score: number; ratio: number } | null = null;
+        let best: (Candidate & { rank: { fix: number; gain: number } }) | null = null;
         for (const key of this.keys) {
           const value = this.affordable(alloc, key, alloc[key] + step);
           if (value <= alloc[key]) continue;
           const next = { ...alloc, [key]: value };
           const nextScore = this.score(next);
-          const spent = this.cost(key, value) - this.cost(key, alloc[key]);
-          const ratio = (nextScore - score) / Math.max(1, spent);
-          if (nextScore > score + EPSILON && (!best || ratio > best.ratio)) best = { alloc: next, score: nextScore, ratio };
+          if (!isBetter(nextScore, score)) continue;
+          const rank = moveRank(score, nextScore, this.cost(key, value) - this.cost(key, alloc[key]));
+          if (!best || rankBetter(rank, best.rank)) best = { alloc: next, score: nextScore, rank };
         }
         if (!best) break;
-        alloc = best.alloc;
-        score = best.score;
-        this.onProgress?.({ score, evaluations: this.evaluations });
+        ({ alloc, score } = best);
+        this.improved(score);
       }
       if (this.exhausted) break;
     }
@@ -179,9 +214,8 @@ class StatSearch {
   }
 
   /** Move pontos de um atributo para outro do mesmo tipo enquanto houver melhoria. */
-  swaps(start: StatAllocation, startScore: number): { alloc: StatAllocation; score: number } {
-    let alloc = { ...start };
-    let score = startScore;
+  swaps(start: Candidate): Candidate {
+    let { alloc, score } = start;
     let improved = true;
     while (improved && !this.exhausted) {
       improved = false;
@@ -193,16 +227,16 @@ class StatSearch {
             const reduced = { ...alloc, [from]: alloc[from] - step };
             const value = this.affordable(reduced, to, this.cap(to));
             if (value <= alloc[to]) continue;
-            // Devolve só o necessário: tenta o maior valor alcançável e, se não melhorar, o
-            // equivalente ao passo (evita "jogar" pontos demais num atributo de uma vez).
+            // Tenta o maior valor alcançável e o equivalente ao passo (não "joga" pontos
+            // demais num atributo de uma vez).
             for (const target of new Set([value, Math.min(value, alloc[to] + step)])) {
               const next = { ...reduced, [to]: target };
               const nextScore = this.score(next);
-              if (nextScore > score + EPSILON) {
+              if (isBetter(nextScore, score)) {
                 alloc = next;
                 score = nextScore;
                 improved = true;
-                this.onProgress?.({ score, evaluations: this.evaluations });
+                this.improved(score);
                 break;
               }
             }
@@ -210,14 +244,13 @@ class StatSearch {
         }
       }
       // Pontos liberados por trocas podem ter ficado sobrando.
-      if (improved) ({ alloc, score } = this.greedy(alloc, score));
+      if (improved) ({ alloc, score } = this.greedy({ alloc, score }));
     }
     return { alloc, score };
   }
 
-  run(start: StatAllocation) {
-    const first = this.greedy(start, this.score(start));
-    return this.swaps(first.alloc, first.score);
+  run(start: StatAllocation): Candidate {
+    return this.swaps(this.greedy({ alloc: start, score: this.score(start) }));
   }
 }
 
@@ -240,10 +273,13 @@ function clampToBudget(alloc: StatAllocation, lower: StatAllocation, budget: Sta
 
 /**
  * Otimiza os atributos de `model` para a skill selecionada nele, mantendo os itens.
+ * Com `constraints`, primeiro cumpre os limites de tempo e depois maximiza o dano; se não for
+ * possível só com atributos, devolve a distribuição que chega mais perto (`feasible: false`).
  * Nunca devolve algo pior que a distribuição atual (quando ela cabe no orçamento).
  */
 export function optimizeStats(evaluator: BuildEvaluator, model: MainModel, character: CharacterBase, options: StatOptions = {}): StatResult {
   const objective = options.objective ?? 'avg';
+  const constraints = options.constraints;
   const budget = statBudget(character, model.level);
   const locked = new Set<StatKey>(options.locked ?? []);
   const current = allocationOf(model);
@@ -254,21 +290,23 @@ export function optimizeStats(evaluator: BuildEvaluator, model: MainModel, chara
   for (const [key, value] of Object.entries(options.minimum ?? {}) as [StatKey, number][]) lower[key] = Math.max(lower[key], value);
   for (const key of locked) lower[key] = current[key];
 
-  const search = new StatSearch(evaluator, model, budget, objective, lower, locked, options.maxEvaluations ?? 4_000, options.onProgress);
+  const search = new StatSearch(
+    evaluator, model, budget, objective, constraints, lower, locked, options.maxEvaluations ?? 4_000, options.onProgress,
+  );
 
   const before = evaluator.evaluate(model);
-  const scoreBefore = damageScore(before, objective);
-  const fromCurrent = clampToBudget(current, lower, budget, locked);
-  const fromScratch = { ...lower };
+  const scoreBefore = scoreOf(before, objective, constraints);
 
-  const candidates = [search.run(fromCurrent), search.run(fromScratch)];
+  const candidates = [search.run(clampToBudget(current, lower, budget, locked)), search.run({ ...lower })];
   // A distribuição atual entra como candidata só se for válida.
-  const currentIsValid = usedMainPoints(current, budget) <= budget.mainTotal && usedTraitPoints(current) <= budget.traitTotal;
+  const currentIsValid = usedMainPoints(current, budget) <= budget.mainTotal && usedTraitPoints(current) <= budget.traitTotal
+    && (Object.keys(lower) as StatKey[]).every((key) => current[key] >= lower[key]);
   if (currentIsValid) candidates.push({ alloc: current, score: scoreBefore });
-  const best = candidates.reduce((a, b) => (b.score > a.score + EPSILON ? b : a));
+  const best = candidates.reduce((a, b) => (isBetter(b.score, a.score) ? b : a));
 
   const optimized = search.toModel(best.alloc);
   const metrics = evaluator.evaluate(optimized);
+  const score = scoreOf(metrics, objective, constraints);
   const changes = (search.keys as StatKey[])
     .filter((key) => current[key] !== best.alloc[key])
     .map((key) => ({ key, from: current[key], to: best.alloc[key] }));
@@ -277,8 +315,13 @@ export function optimizeStats(evaluator: BuildEvaluator, model: MainModel, chara
     model: optimized,
     metrics,
     before,
-    score: damageScore(metrics, objective),
+    score,
     scoreBefore,
+    damage: score.damage,
+    damageBefore: scoreBefore.damage,
+    feasible: isFeasible(score),
+    constraints: checkConstraints(metrics, constraints),
+    constraintsBefore: checkConstraints(before, constraints),
     changes,
     mainPointsLeft: budget.mainTotal - usedMainPoints(best.alloc, budget),
     traitPointsLeft: budget.traitTotal - usedTraitPoints(best.alloc),

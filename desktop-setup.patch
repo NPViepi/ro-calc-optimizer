@@ -1,0 +1,476 @@
+From 0f3181faa93a5c221eb8103a9aca896d12d3267d Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 20 Oct 2026 12:23:39 -0300
+Subject: [PATCH] =?UTF-8?q?feat:=20app=20desktop=20(Electron)=20e=20sincro?=
+ =?UTF-8?q?niza=C3=A7=C3=A3o=20autom=C3=A1tica=20com=20o=20upstream?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01NtwMs5qbskGnm6yJ3TFiqx
+---
+ .github/workflows/desktop-release.yml |  48 +++++++++++
+ .github/workflows/sync-upstream.yml   |  75 +++++++++++++++++
+ FORK.md                               |  59 ++++++++++++++
+ desktop/.gitignore                    |   3 +
+ desktop/electron-builder.yml          |  26 ++++++
+ desktop/package.json                  |  25 ++++++
+ desktop/scripts/build-web.mjs         |  30 +++++++
+ desktop/src/main.js                   | 112 ++++++++++++++++++++++++++
+ desktop/src/preload.js                |   9 +++
+ 9 files changed, 387 insertions(+)
+ create mode 100644 .github/workflows/desktop-release.yml
+ create mode 100644 .github/workflows/sync-upstream.yml
+ create mode 100644 FORK.md
+ create mode 100644 desktop/.gitignore
+ create mode 100644 desktop/electron-builder.yml
+ create mode 100644 desktop/package.json
+ create mode 100644 desktop/scripts/build-web.mjs
+ create mode 100644 desktop/src/main.js
+ create mode 100644 desktop/src/preload.js
+
+diff --git a/.github/workflows/desktop-release.yml b/.github/workflows/desktop-release.yml
+new file mode 100644
+index 00000000..4d481342
+--- /dev/null
++++ b/.github/workflows/desktop-release.yml
+@@ -0,0 +1,48 @@
++# Gera os instaladores do app desktop e publica nas GitHub Releases do fork.
++# O app instalado usa essas releases para se atualizar sozinho (electron-updater).
++#
++# Para lançar uma versão:
++#   1. Ajuste "version" em desktop/package.json (ex.: 0.2.0)
++#   2. git tag desktop-v0.2.0 && git push origin desktop-v0.2.0
++name: Desktop release
++
++on:
++  push:
++    tags:
++      - 'desktop-v*'
++  workflow_dispatch:
++
++permissions:
++  contents: write
++
++jobs:
++  build:
++    strategy:
++      fail-fast: false
++      matrix:
++        os: [windows-latest] # adicione macos-latest / ubuntu-latest se quiser outras plataformas
++    runs-on: ${{ matrix.os }}
++    steps:
++      - uses: actions/checkout@v4
++
++      - uses: pnpm/action-setup@v4
++        with:
++          version: 12.8.1
++
++      - uses: actions/setup-node@v4
++        with:
++          node-version: 22
++          cache: pnpm
++
++      - name: Instalar dependências do app web
++        run: pnpm install --frozen-lockfile
++
++      - name: Instalar dependências do desktop
++        working-directory: desktop
++        run: npm install
++
++      - name: Build e publicação
++        working-directory: desktop
++        env:
++          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++        run: npm run release
+diff --git a/.github/workflows/sync-upstream.yml b/.github/workflows/sync-upstream.yml
+new file mode 100644
+index 00000000..31689027
+--- /dev/null
++++ b/.github/workflows/sync-upstream.yml
+@@ -0,0 +1,75 @@
++# Traz as atualizações do repositório original (upstream) para o fork.
++#
++# Fluxo:
++#   upstream/main ──(fast-forward)──► origin/main ──(Pull Request)──► desktop
++#
++# - "main" é um espelho do upstream: nunca faça commits nela.
++# - "desktop" é a branch padrão do fork, com os seus commits.
++#
++# Configuração (Settings ▸ Secrets and variables ▸ Actions):
++#   Variable  UPSTREAM_REPO  ex.: adsonpleal/<repositorio-original>
++#   Secret    SYNC_TOKEN     (recomendado) token pessoal com permissões
++#                            "contents", "pull-requests" e "workflows". Sem ele o push
++#                            falha quando o upstream altera arquivos em .github/workflows,
++#                            e o PR aberto não dispara os checks automaticamente.
++name: Sync upstream
++
++on:
++  schedule:
++    - cron: '17 9 * * *' # todo dia, 06:17 em São Paulo
++  workflow_dispatch:
++
++permissions:
++  contents: write
++  pull-requests: write
++
++concurrency:
++  group: sync-upstream
++  cancel-in-progress: false
++
++jobs:
++  sync:
++    runs-on: ubuntu-latest
++    if: vars.UPSTREAM_REPO != ''
++    env:
++      GH_TOKEN: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
++      UPSTREAM_BRANCH: ${{ vars.UPSTREAM_BRANCH || 'main' }}
++    steps:
++      - uses: actions/checkout@v4
++        with:
++          ref: main
++          fetch-depth: 0
++          token: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
++
++      - name: Atualizar main com o upstream
++        id: mirror
++        run: |
++          git remote add upstream "https://github.com/${{ vars.UPSTREAM_REPO }}.git"
++          git fetch upstream "$UPSTREAM_BRANCH"
++          before=$(git rev-parse HEAD)
++          if ! git merge --ff-only "upstream/$UPSTREAM_BRANCH"; then
++            echo "::error::A branch main do fork tem commits que não existem no upstream. Mova-os para a branch desktop e deixe main igual ao upstream."
++            exit 1
++          fi
++          git push origin main
++          echo "changed=$([ "$before" != "$(git rev-parse HEAD)" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
++
++      - name: Abrir PR main -> desktop
++        run: |
++          git fetch origin desktop
++          if [ -z "$(git rev-list origin/desktop..origin/main)" ]; then
++            echo "desktop já contém tudo do upstream."
++            exit 0
++          fi
++          existing=$(gh pr list --base desktop --head main --state open --json number --jq '.[0].number')
++          if [ -n "$existing" ]; then
++            echo "PR #$existing já está aberto e foi atualizado com os novos commits."
++            exit 0
++          fi
++          gh pr create --base desktop --head main \
++            --title "Sync upstream ($(TZ=America/Sao_Paulo date +%F))" \
++            --body "Atualizações automáticas de \`${{ vars.UPSTREAM_REPO }}\`.
++
++          Revise e faça **merge** (não use squash nem rebase, para o git continuar reconhecendo o histórico do upstream).
++
++          $(git log --oneline origin/desktop..origin/main | head -50 | sed 's/^/- /')"
+diff --git a/FORK.md b/FORK.md
+new file mode 100644
+index 00000000..fda68c74
+--- /dev/null
++++ b/FORK.md
+@@ -0,0 +1,59 @@
++# Fork desktop: como funciona
++
++Este repositório é um fork do Simulador RO LATAM. Ele adiciona um app desktop (Electron) e
++continua recebendo as atualizações do projeto original (upstream).
++
++## Branches
++
++| Branch    | Papel                                                         |
++|-----------|---------------------------------------------------------------|
++| `main`    | Espelho do upstream. **Nunca faça commit nela.**              |
++| `desktop` | Branch padrão do fork. Seus commits vão aqui.                 |
++
++Atualizações: `upstream/main` → `main` (automático) → PR para `desktop` (você revisa e faz merge).
++
++## Regras para evitar conflitos
++
++1. Código seu fica em pastas suas: `desktop/` (wrapper) e, futuramente, `optimizer/`.
++2. Evite editar arquivos do upstream (`src/`, `tools/`, `worker/`, `package.json`, `README.md`...).
++   Se precisar, faça mudanças pequenas e isoladas.
++3. Integre as atualizações com **merge**, nunca rebase ou squash.
++4. Não adicione fragmentos em `release-notes/`: eles alimentam as "Novidades" do upstream.
++
++## Configuração inicial (uma vez)
++
++1. **Settings ▸ General ▸ Default branch** → `desktop`.
++2. **Settings ▸ Secrets and variables ▸ Actions**
++   - Variable `UPSTREAM_REPO` = `dono/repositorio` do projeto original.
++   - Secret `SYNC_TOKEN` (recomendado): fine-grained token só deste repositório, com
++     *Contents*, *Pull requests* e *Workflows* em read/write.
++3. **Actions** → desative os workflows do upstream *Deploy to Cloudflare* (roda a cada
++   push na `main`) e *Deploy to Firebase Hosting on PR* (roda em todo PR). Use
++   "Disable workflow" na interface, sem apagar os arquivos, para não gerar conflitos.
++4. **Actions ▸ Sync upstream ▸ Run workflow** para testar.
++
++## Rodar o app desktop
++
++```bash
++pnpm install          # dependências do app web (na raiz)
++cd desktop
++npm install
++npm start             # gera o build web e abre o app
++```
++
++## Lançar uma versão (com auto-update)
++
++```bash
++# ajuste "version" em desktop/package.json, faça commit, depois:
++git tag desktop-v0.2.0
++git push origin desktop-v0.2.0
++```
++
++O workflow *Desktop release* gera o instalador do Windows e publica na aba Releases.
++Os apps já instalados baixam a versão nova sozinhos e instalam ao fechar.
++
++## Como o app carrega o site
++
++O Electron serve o build local em `https://simulador.latam-tools.com.br`, interceptando só
++esse domínio. Assim, links de compartilhamento, CORS e chamadas às APIs funcionam como no site,
++sem modificar o código do upstream. Rotas de servidor (`/mcp`, `/api/`) são buscadas na internet.
+diff --git a/desktop/.gitignore b/desktop/.gitignore
+new file mode 100644
+index 00000000..81f8bc73
+--- /dev/null
++++ b/desktop/.gitignore
+@@ -0,0 +1,3 @@
++node_modules/
++web/
++release/
+diff --git a/desktop/electron-builder.yml b/desktop/electron-builder.yml
+new file mode 100644
+index 00000000..2dbf091c
+--- /dev/null
++++ b/desktop/electron-builder.yml
+@@ -0,0 +1,26 @@
++appId: br.com.npviepi.rocalcoptimizer
++productName: RO Calc Optimizer
++directories:
++  output: release
++files:
++  - src/**/*
++  - package.json
++# Build web gerado por scripts/build-web.mjs a partir do código do upstream.
++extraResources:
++  - from: web
++    to: web
++win:
++  target: nsis
++nsis:
++  oneClick: false
++  allowToChangeInstallationDirectory: true
++mac:
++  target: dmg
++linux:
++  target: AppImage
++# Auto-update: os instaladores e o latest.yml vão para as GitHub Releases do fork.
++publish:
++  provider: github
++  owner: NPViepi
++  repo: ro-calc-optimizer
++  releaseType: release
+diff --git a/desktop/package.json b/desktop/package.json
+new file mode 100644
+index 00000000..c8e3cdef
+--- /dev/null
++++ b/desktop/package.json
+@@ -0,0 +1,25 @@
++{
++  "name": "ro-calc-optimizer-desktop",
++  "productName": "RO Calc Optimizer",
++  "version": "0.1.0",
++  "description": "App desktop do Simulador RO LATAM com otimizador de builds",
++  "author": "NPViepi",
++  "license": "MIT",
++  "private": true,
++  "main": "src/main.js",
++  "scripts": {
++    "web": "node scripts/build-web.mjs",
++    "start": "npm run web && electron .",
++    "start:fast": "electron .",
++    "dist": "npm run web && electron-builder",
++    "dist:win": "npm run web && electron-builder --win",
++    "release": "npm run web && electron-builder --publish always"
++  },
++  "dependencies": {
++    "electron-updater": "^6.6.2"
++  },
++  "devDependencies": {
++    "electron": "^37.2.0",
++    "electron-builder": "^26.0.12"
++  }
++}
+diff --git a/desktop/scripts/build-web.mjs b/desktop/scripts/build-web.mjs
+new file mode 100644
+index 00000000..fd77e75d
+--- /dev/null
++++ b/desktop/scripts/build-web.mjs
+@@ -0,0 +1,30 @@
++// Gera o build web do upstream (sem modificá-lo) e copia para desktop/web.
++import { cpSync, existsSync, rmSync } from 'node:fs';
++import { resolve } from 'node:path';
++import { spawnSync } from 'node:child_process';
++
++const desktop = resolve(import.meta.dirname, '..');
++const root = resolve(desktop, '..');
++const source = resolve(root, 'dist/sakai-ng');
++const target = resolve(desktop, 'web');
++
++const run = (cmd, args) => {
++  const result = spawnSync(cmd, args, { cwd: root, stdio: 'inherit', shell: process.platform === 'win32' });
++  if (result.status !== 0) process.exit(result.status ?? 1);
++};
++
++if (!process.argv.includes('--skip-build')) {
++  if (!existsSync(resolve(root, 'node_modules'))) run('pnpm', ['install', '--frozen-lockfile']);
++  // Mesmos passos do "pnpm build", exceto o worker do Cloudflare, que não é usado no desktop.
++  run('node', ['tools/build-web-data.mjs', '--hash']);
++  run('node', ['tools/build-web.mjs']);
++  run('node', ['tools/inject-data-manifest.mjs']);
++}
++
++if (!existsSync(resolve(source, 'index.html'))) {
++  console.error(`Build web não encontrado em ${source}`);
++  process.exit(1);
++}
++rmSync(target, { recursive: true, force: true });
++cpSync(source, target, { recursive: true });
++console.log(`Build web copiado para ${target}`);
+diff --git a/desktop/src/main.js b/desktop/src/main.js
+new file mode 100644
+index 00000000..b8390519
+--- /dev/null
++++ b/desktop/src/main.js
+@@ -0,0 +1,112 @@
++// Processo principal do app desktop.
++//
++// O build web do upstream é servido localmente "fingindo" ser o site oficial
++// (https://simulador.latam-tools.com.br). Assim, sem alterar nada no código do
++// upstream:
++//   - links de compartilhamento (que usam location.origin) apontam para o site real;
++//   - chamadas a APIs externas (encurtador, assets, issues) têm a mesma origem do
++//     site, então CORS e restrições de domínio continuam funcionando.
++// Rotas que só existem no servidor (/mcp, /api) são repassadas para a internet.
++const { app, BrowserWindow, protocol, net, shell, Menu } = require('electron');
++const path = require('node:path');
++const fs = require('node:fs');
++const { pathToFileURL } = require('node:url');
++
++const SITE_HOST = 'simulador.latam-tools.com.br';
++const SITE_URL = `https://${SITE_HOST}/`;
++const REMOTE_PREFIXES = ['/mcp', '/api/'];
++
++const webRoot = app.isPackaged
++  ? path.join(process.resourcesPath, 'web')
++  : path.join(__dirname, '..', 'web');
++
++function localFileFor(pathname) {
++  let decoded;
++  try { decoded = decodeURIComponent(pathname); } catch { return null; }
++  const file = path.resolve(webRoot, '.' + decoded);
++  if (file !== webRoot && !file.startsWith(webRoot + path.sep)) return null;
++  if (fs.existsSync(file) && fs.statSync(file).isFile()) return file;
++  // Rotas da SPA (sem extensão) caem no index.html, como no servidor de dev.
++  if (!path.extname(decoded)) return path.join(webRoot, 'index.html');
++  return null;
++}
++
++function serveSite() {
++  protocol.handle('https', request => {
++    const url = new URL(request.url);
++    const isSite = url.hostname === SITE_HOST;
++    const isRemoteRoute = REMOTE_PREFIXES.some(prefix => url.pathname.startsWith(prefix));
++    if (isSite && !isRemoteRoute && request.method === 'GET') {
++      const file = localFileFor(url.pathname);
++      if (file) return net.fetch(pathToFileURL(file).toString());
++      return new Response('Not found', { status: 404 });
++    }
++    return net.fetch(request, { bypassCustomProtocolHandlers: true });
++  });
++}
++
++function createWindow() {
++  const win = new BrowserWindow({
++    width: 1440,
++    height: 900,
++    minWidth: 1024,
++    minHeight: 640,
++    title: 'RO Calc Optimizer',
++    autoHideMenuBar: true,
++    webPreferences: {
++      contextIsolation: true,
++      sandbox: true,
++      nodeIntegration: false,
++      preload: path.join(__dirname, 'preload.js'),
++    },
++  });
++
++  // Links para outros sites abrem no navegador padrão.
++  const isInternal = target => {
++    try { return new URL(target).hostname === SITE_HOST; } catch { return false; }
++  };
++  win.webContents.setWindowOpenHandler(({ url }) => {
++    if (!isInternal(url)) { shell.openExternal(url); return { action: 'deny' }; }
++    return { action: 'allow' };
++  });
++  win.webContents.on('will-navigate', (event, url) => {
++    if (!isInternal(url)) { event.preventDefault(); shell.openExternal(url); }
++  });
++
++  win.loadURL(SITE_URL);
++  return win;
++}
++
++function setupAutoUpdate() {
++  if (!app.isPackaged) return;
++  try {
++    const { autoUpdater } = require('electron-updater');
++    autoUpdater.autoDownload = true;
++    autoUpdater.autoInstallOnAppQuit = true;
++    autoUpdater.on('error', error => console.error('[auto-update]', error));
++    autoUpdater.checkForUpdatesAndNotify();
++    // Verifica de novo a cada 6 horas para quem deixa o app aberto.
++    setInterval(() => autoUpdater.checkForUpdatesAndNotify(), 6 * 60 * 60 * 1000).unref();
++  } catch (error) {
++    console.error('[auto-update] indisponível', error);
++  }
++}
++
++if (!app.requestSingleInstanceLock()) {
++  app.quit();
++} else {
++  app.on('second-instance', () => {
++    const [win] = BrowserWindow.getAllWindows();
++    if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
++  });
++
++  app.whenReady().then(() => {
++    if (app.isPackaged) Menu.setApplicationMenu(null);
++    serveSite();
++    createWindow();
++    setupAutoUpdate();
++    app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
++  });
++
++  app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
++}
+diff --git a/desktop/src/preload.js b/desktop/src/preload.js
+new file mode 100644
+index 00000000..afc3d375
+--- /dev/null
++++ b/desktop/src/preload.js
+@@ -0,0 +1,9 @@
++// Ponte segura entre o app web e o Electron.
++// Use este arquivo para expor recursos exclusivos do desktop (ex.: o otimizador
++// de builds rodando localmente) sem precisar alterar o código do upstream.
++const { contextBridge } = require('electron');
++
++contextBridge.exposeInMainWorld('roDesktop', {
++  isDesktop: true,
++  platform: process.platform,
++});
+-- 
+2.43.0
+

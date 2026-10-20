@@ -46,7 +46,7 @@ describe('optimizeStats', () => {
     const result = optimizeStats(evaluator, model, context.character, { objective: 'dps' });
     const left = upstreamPointsLeft(result.model);
 
-    expect(result.score).toBeGreaterThanOrEqual(result.scoreBefore);
+    expect(result.damage).toBeGreaterThanOrEqual(result.damageBefore);
     expect(left.availablePoint).toBeGreaterThanOrEqual(0);
     expect(left.availableTraitPoint).toBeGreaterThanOrEqual(0);
     expect(left.availablePoint).toBe(result.mainPointsLeft);
@@ -61,7 +61,7 @@ describe('optimizeStats', () => {
     const bad = { ...windhawkModel(1), str: 1, agi: 1, vit: 130, int: 1, dex: 1, luk: 1 };
     const result = optimizeStats(evaluator, bad, context.character, { objective: 'avg' });
 
-    expect(result.score).toBeGreaterThan(result.scoreBefore * 1.2);
+    expect(result.damage).toBeGreaterThan(result.damageBefore * 1.2);
     expect(result.changes.find((change) => change.key === 'dex')?.to).toBeGreaterThan(1);
   });
 
@@ -99,7 +99,7 @@ describe('optimizeStats', () => {
         if (alloc[key] < budget.maxTrait) alloc[key]++;
       }
       const score = damageScore(evaluator.evaluate({ ...model, ...alloc }), 'dps');
-      expect(score).toBeLessThanOrEqual(result.score);
+      expect(score).toBeLessThanOrEqual(result.damage);
     }
   });
 
@@ -108,6 +108,6 @@ describe('optimizeStats', () => {
 
     expect(result.truncated).toBe(true);
     expect(result.evaluations).toBeLessThanOrEqual(20);
-    expect(result.score).toBeGreaterThanOrEqual(result.scoreBefore);
+    expect(result.damage).toBeGreaterThanOrEqual(result.damageBefore);
   });
 });
