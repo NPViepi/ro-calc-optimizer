@@ -6,6 +6,9 @@
   "author": "NPViepi",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "main": "src/main.js",
   "scripts": {
     "web": "node scripts/build-web.mjs",
@@ -13,7 +16,8 @@
     "start:fast": "electron .",
     "dist": "npm run web && electron-builder",
     "dist:win": "npm run web && electron-builder --win",
-    "release": "npm run web && electron-builder --publish always"
+    "release": "npm run web && electron-builder --publish always",
+    "test": "node --test test/site-files.test.js"
   },
   "dependencies": {
     "electron-updater": "^6.6.2"

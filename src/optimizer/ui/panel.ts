@@ -11,7 +11,8 @@
  */
 
 import type { ConstraintCheck } from '../objective';
-import type { NamedChange, OptimizeRequest, OptimizeResponse, PreparedSession, SkillOption } from '../runtime';
+import type { ExactSummary, NamedChange, OptimizeRequest, OptimizeResponse, PreparedSession, SkillOption } from '../runtime';
+import type { ExactCheckpoint, ExactProgress } from '../exact/optimize';
 
 type Described = { className: string; monsterName: string; skills: SkillOption[]; skillValue: string; defaults: PreparedSession['defaults'] };
 
@@ -31,6 +32,30 @@ const MAIN_STATS: [string, string][] = [['str', 'FOR'], ['agi', 'AGI'], ['vit', 
 const PHASES: Record<string, string> = {
   stats: 'Distribuindo atributos', screening: 'Testando itens por slot', sets: 'Testando conjuntos', search: 'Combinando itens, cartas e encantamentos',
 };
+const EXACT_PHASES: Record<string, string> = {
+  seed: 'Build inicial (heurística)', screening: 'Ordenando candidatos', search: 'Busca exata',
+};
+const PRUNE_LABELS: Record<string, string> = {
+  conflict: 'conflito de slot', enchantLimit: 'limite de encantamento', noCandidate: 'sem candidato', upperBound: 'limite superior',
+};
+const CHECKPOINT_KEY = 'rco-exact-checkpoint';
+
+/** Fração do espaço já explorada, legível mesmo quando é minúscula. */
+const explored = (fraction: number) => {
+  const value = fraction * 100;
+  if (value >= 0.01 || value === 0) return `${value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`;
+  return `${value.toExponential(1).replace('.', ',')}%`;
+};
+
+function loadCheckpoint(): { checkpoint: ExactCheckpoint; savedAt: number } | null {
+  try { return JSON.parse(localStorage.getItem(CHECKPOINT_KEY) ?? 'null'); } catch { return null; }
+}
+function saveCheckpoint(checkpoint: ExactCheckpoint | undefined) {
+  try {
+    if (checkpoint) localStorage.setItem(CHECKPOINT_KEY, JSON.stringify({ checkpoint, savedAt: Date.now() }));
+    else localStorage.removeItem(CHECKPOINT_KEY);
+  } catch { /* armazenamento indisponível: só não dá para retomar */ }
+}
 
 const CSS = `
 .rco-fab{position:fixed;right:20px;bottom:20px;z-index:2147483000;border:0;border-radius:999px;padding:10px 18px;
@@ -40,7 +65,7 @@ const CSS = `
 .rco-panel{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);z-index:2147483001;display:flex;flex-direction:column;
   background:var(--surface-card,#fff);color:var(--text-color,#1f2328);border-left:1px solid var(--surface-border,#d0d7de);
   box-shadow:-8px 0 24px rgba(0,0,0,.18);font:14px/1.45 system-ui,sans-serif}
-.rco-panel[hidden]{display:none}
+.rco-panel[hidden],.rco-panel [hidden]{display:none!important}
 .rco-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--surface-border,#d0d7de)}
 .rco-head h2{margin:0;font-size:16px}
 .rco-x{background:none;border:0;font-size:20px;cursor:pointer;color:inherit;line-height:1}
@@ -119,6 +144,7 @@ class OptimizerPanel {
   private nextId = 1;
   private runId = 0;
   private timeLimitMs = 60_000;
+  private exactRun = false;
   private readonly panel: HTMLElement;
   private readonly body: HTMLElement;
 
@@ -140,14 +166,19 @@ class OptimizerPanel {
     return this.worker;
   }
 
-  private request<T>(message: Record<string, unknown>, onProgress?: (data: any) => void): Promise<T> {
+  /** Id da mensagem `run` em andamento (para pedir "parar" no modo exato). */
+  private activeRunMessage?: number;
+
+  private request<T>(message: Record<string, unknown>, onProgress?: (data: any) => void, onCheckpoint?: (checkpoint: ExactCheckpoint) => void): Promise<T> {
     const worker = this.ensureWorker();
     const id = this.nextId++;
+    if (message['type'] === 'run') this.activeRunMessage = id;
     return new Promise<T>((resolve, reject) => {
       const listener = (event: MessageEvent) => {
         const data = event.data;
         if (data?.id !== id) return;
         if (data.type === 'progress') { onProgress?.(data.progress); return; }
+        if (data.type === 'checkpoint') { onCheckpoint?.(data.checkpoint); return; }
         worker.removeEventListener('message', listener);
         if (data.type === 'error') reject(new Error(data.message));
         else resolve(data as T);
@@ -233,9 +264,38 @@ class OptimizerPanel {
     const keepWeapon = check('Manter o tipo de arma (só em skills que não dizem qual arma usam)');
     const noRepeat = check('Não repetir encantamentos sem limite conhecido', false);
     const time = h('input', { type: 'number', min: 10, max: 600, step: 10, value: 60 });
+    const mode = h('select', {},
+      h('option', { value: 'heuristic', selected: true }, 'Heurístico — rápido, sem garantia de ótimo'),
+      h('option', { value: 'exact' }, 'Exato — prova o ótimo (pode não terminar)'));
+    const allTies = check('Mostrar todas as builds empatadas no ótimo', false);
+    const refineAll = h('select', {},
+      h('option', { value: 'limit', selected: true }, 'Só o refino/grau máximo dos Limites'),
+      h('option', { value: 'all' }, 'Todos os níveis até o máximo'));
+    const seedTime = h('input', { type: 'number', min: 0, max: 600, step: 5, value: 15 });
+    const exactTime = h('input', { type: 'number', min: 10, step: 10, placeholder: 'sem limite' });
+    const postStats = check('Depois, ajustar atributos (heurístico, sem garantia)', false);
+    const exactBox = h('div', { class: 'rco-field', hidden: true },
+      h('span', { class: 'rco-legend' }, 'Modo exato'),
+      h('p', { class: 'rco-hint' }, 'Explora todas as builds possíveis (itens, cartas, encantamentos e o refino/grau escolhido) com os atributos atuais fixos, avaliando cada uma no simulador. Só diz "ótimo comprovado" se terminar. Com muitos slots livres o espaço é astronômico: reduza o escopo (travar slots, inventário) para concluir. Dá para parar e retomar depois.'),
+      h('label', { class: 'rco-field' }, h('span', {}, 'Refino e grau dos itens'), refineAll),
+      h('div', { class: 'rco-grid' },
+        h('label', { class: 'rco-field' }, h('span', {}, 'Build inicial (s)'), seedTime),
+        h('label', { class: 'rco-field' }, h('span', {}, 'Tempo máximo (s)'), exactTime)),
+      h('div', { class: 'rco-checks' }, allTies.label, postStats.label));
+    mode.addEventListener('change', () => { exactBox.hidden = mode.value !== 'exact'; });
     const run = h('button', { class: 'rco-btn rco-primary' }, 'Otimizar');
     const stop = h('button', { class: 'rco-btn rco-secondary', disabled: true }, 'Cancelar');
+    const resume = h('button', { class: 'rco-btn rco-secondary', hidden: !loadCheckpoint() }, 'Retomar busca exata');
     const output = h('div');
+    let resumeWith: ExactCheckpoint | undefined;
+    resume.addEventListener('click', () => {
+      const saved = loadCheckpoint();
+      if (!saved) { resume.hidden = true; return; }
+      mode.value = 'exact';
+      exactBox.hidden = false;
+      resumeWith = saved.checkpoint;
+      run.click();
+    });
 
     const numberOf = (input: HTMLInputElement) => (input.value === '' ? undefined : Number(input.value));
     run.addEventListener('click', async () => {
@@ -272,28 +332,65 @@ class OptimizerPanel {
         applyLimitsToCurrent: raiseCurrent.input.checked,
         unknownEnchantRepeats: noRepeat.input.checked ? 'forbid' : 'allow',
         timeLimitMs: this.timeLimitMs,
+        mode: mode.value as OptimizeRequest['mode'],
+        exact: mode.value === 'exact' ? {
+          allTies: allTies.input.checked,
+          refineDomain: refineAll.value as 'limit' | 'all',
+          seedTimeMs: Math.max(0, Number(seedTime.value) || 0) * 1000,
+          timeLimitMs: numberOf(exactTime) !== undefined ? numberOf(exactTime)! * 1000 : undefined,
+          postOptimizeStats: postStats.input.checked,
+          resume: resumeWith,
+        } : undefined,
       };
+      resumeWith = undefined;
+      const exactMode = request.mode === 'exact';
+      this.exactRun = exactMode;
       run.disabled = true;
+      resume.disabled = true;
       stop.disabled = false;
+      stop.textContent = exactMode ? 'Parar' : 'Cancelar';
       const myRun = ++this.runId;
       const bar = h('i');
       const status = h('div', { class: 'rco-hint' }, 'Iniciando…');
       output.replaceChildren(h('div', { class: 'rco-progress' }, h('div', { class: 'rco-bar' }, bar), status));
+      const exactLimit = request.exact?.timeLimitMs;
       try {
         const done = await this.request<{ response: OptimizeResponse }>({ type: 'run', request }, (progress) => {
           if (myRun !== this.runId) return;
+          if (exactMode) {
+            const p = progress as ExactProgress;
+            const stats = p.stats;
+            bar.style.width = `${Math.min(100, exactLimit ? (p.elapsedMs / exactLimit) * 100 : (stats?.progress ?? 0) * 100)}%`;
+            const best = !p.bestScore ? '' : p.bestScore.violation > 0 ? ' · buscando cumprir os limites' : ` · melhor até agora: ${fmt(p.bestScore.damage)}`;
+            status.textContent = stats
+              ? `${EXACT_PHASES[p.phase]} · ${explored(stats.progress)} do espaço${p.spaceLog10 ? ` (~10^${fmt(p.spaceLog10)})` : ''} · ${fmt(stats.leaves)} builds avaliadas · ${fmt(stats.nodes)} estados · prof. ${stats.depth}${best} · ${fmt(p.elapsedMs / 1000)} s`
+              : `${EXACT_PHASES[p.phase] ?? p.phase} · ${fmt(p.elapsedMs / 1000)} s`;
+            return;
+          }
           bar.style.width = `${Math.min(100, (progress.elapsedMs / this.timeLimitMs) * 100)}%`;
           const best = progress.score.violation > 0 ? 'buscando cumprir os limites' : `melhor até agora: ${fmt(progress.score.damage)}`;
           status.textContent = `${PHASES[progress.phase] ?? progress.phase} · ${best} · ${fmt(progress.evaluations)} builds testadas`;
-        });
-        if (myRun === this.runId) output.replaceChildren(this.renderResult(done.response, objective.value));
+        }, (checkpoint) => saveCheckpoint(checkpoint));
+        if (myRun === this.runId) {
+          if (done.response.exact) {
+            saveCheckpoint(done.response.exact.checkpoint);
+            resume.hidden = !done.response.exact.checkpoint;
+          }
+          output.replaceChildren(this.renderResult(done.response, objective.value));
+        }
       } catch (error) {
         if (myRun === this.runId) output.replaceChildren(h('p', { class: 'rco-banner rco-bad' }, `Erro: ${(error as Error).message}`));
       } finally {
-        if (myRun === this.runId) { run.disabled = false; stop.disabled = true; }
+        if (myRun === this.runId) { run.disabled = false; stop.disabled = true; resume.disabled = false; }
       }
     });
     stop.addEventListener('click', () => {
+      if (this.exactRun && this.worker && this.activeRunMessage) {
+        // Modo exato: parada limpa; o worker devolve a melhor até agora e o checkpoint.
+        this.worker.postMessage({ type: 'stop', id: this.activeRunMessage });
+        stop.disabled = true;
+        return;
+      }
       this.cancel();
       run.disabled = false;
       stop.disabled = true;
@@ -303,6 +400,8 @@ class OptimizerPanel {
     this.body.replaceChildren(
       h('p', { class: 'rco-ctx' }, `${described.className} · alvo: ${described.monsterName}`),
       h('label', { class: 'rco-field' }, h('span', {}, 'Skill'), skill),
+      h('label', { class: 'rco-field' }, h('span', {}, 'Modo'), mode),
+      exactBox,
       h('label', { class: 'rco-field' }, h('span', {}, 'Objetivo'), objective),
       h('div', { class: 'rco-field' }, h('span', { class: 'rco-legend' }, 'Metas de redução'),
         h('div', { class: 'rco-grid3' },
@@ -330,7 +429,7 @@ class OptimizerPanel {
       h('details', {}, h('summary', {}, 'Opções'),
         h('div', { class: 'rco-checks' }, keepWeapon.label, noRepeat.label),
         h('label', { class: 'rco-field' }, h('span', {}, 'Tempo máximo (s)'), time)),
-      h('div', { class: 'rco-actions' }, run, stop),
+      h('div', { class: 'rco-actions' }, run, stop, resume),
       output,
     );
   }
@@ -354,6 +453,7 @@ class OptimizerPanel {
     const go = (path: string) => () => { window.location.assign(path); };
 
     return h('div', {},
+      response.exact ? this.renderExactStatus(response.exact) : null,
       response.constraints.length
         ? h('div', { class: `rco-banner ${response.feasible ? 'rco-ok' : 'rco-bad'}` },
           response.feasible ? 'Todos os limites de tempo foram cumpridos.' : 'Não foi possível cumprir todos os limites: esta é a build mais próxima.')
@@ -379,8 +479,38 @@ class OptimizerPanel {
       ...response.sets.map((set) => h('p', { class: 'rco-hint' }, set)),
       response.warnings.length ? h('h3', {}, 'Conferir') : null,
       ...response.warnings.map((warning) => h('p', { class: 'rco-warn' }, warning)),
-      h('p', { class: 'rco-hint' }, `${fmt(response.evaluations)} builds testadas em ${fmt(response.elapsedMs / 1000, 1)} s${response.truncated ? ' (parou pelo tempo máximo)' : ''}.`),
+      response.exact?.statsAdjusted ? this.renderStatsAdjusted(response.exact.statsAdjusted, response.damageAfter, go) : null,
+      h('p', { class: 'rco-hint' }, `${fmt(response.evaluations)} builds testadas em ${fmt(response.elapsedMs / 1000, 1)} s${response.truncated && !response.exact ? ' (parou pelo tempo máximo)' : ''}.`),
     );
+  }
+
+  private renderExactStatus(exact: ExactSummary): HTMLElement {
+    const messages: Record<string, [string, boolean]> = {
+      OPTIMAL: ['Ótimo comprovado: nenhuma build do espaço explorado tem resultado melhor (com os atributos atuais).', true],
+      INTERRUPTED: [`Melhor build encontrada até agora — a otimalidade NÃO foi comprovada (${explored(exact.stats.progress)} do espaço explorado). Use "Retomar busca exata" para continuar de onde parou.`, false],
+      NO_SOLUTION: ['Nenhuma build válida no escopo escolhido.', false],
+      ERROR: [`Erro na busca: ${exact.error ?? 'desconhecido'}. Não confie neste resultado.`, false],
+    };
+    const [text, ok] = messages[exact.status] ?? [exact.status, false];
+    const pruned = Object.entries(exact.stats.pruned).map(([reason, count]) => `${PRUNE_LABELS[reason] ?? reason}: ${fmt(count)}`).join(', ');
+    return h('div', {},
+      h('div', { class: `rco-banner ${ok ? 'rco-ok' : 'rco-bad'}` }, text),
+      h('p', { class: 'rco-hint' },
+        `Espaço: ~10^${fmt(exact.spaceLog10)} builds · ${fmt(exact.stats.leaves)} avaliadas · ${fmt(exact.stats.nodes)} estados · profundidade máx. ${exact.stats.maxDepth}`
+        + `${pruned ? ` · podas (${pruned})` : ' · nenhuma poda'} · build inicial (heurística): ${fmt(exact.seedDamage)}`
+        + `${exact.ties > 1 ? ` · ${fmt(exact.ties)} builds empatadas no ótimo` : ''}.`));
+  }
+
+  private renderStatsAdjusted(adjusted: NonNullable<ExactSummary['statsAdjusted']>, exactDamage: number, go: (path: string) => () => void): HTMLElement {
+    return h('div', {},
+      h('h3', {}, 'Com ajuste de atributos (sem garantia de ótimo)'),
+      h('p', {}, `Resultado: ${fmt(exactDamage)} → `, h('strong', {}, fmt(adjusted.damage))),
+      adjusted.changes.length
+        ? h('table', { class: 'rco-table' }, ...adjusted.changes.map((change) => h('tr', {}, h('td', {}, change.label), h('td', {}, change.from), h('td', {}, '→ ', change.to))))
+        : h('p', { class: 'rco-hint' }, 'Os atributos atuais já eram os melhores que o ajuste encontrou.'),
+      h('div', { class: 'rco-actions' },
+        h('button', { class: 'rco-btn rco-secondary', onclick: go(adjusted.comparePath) }, 'Comparar'),
+        h('button', { class: 'rco-btn rco-primary', onclick: go(adjusted.applyPath) }, 'Aplicar com atributos')));
   }
 }
 

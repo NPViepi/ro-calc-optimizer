@@ -32,6 +32,8 @@ import { BuildEvaluator, BuildMetrics, EvaluationContext } from './evaluate';
 import { BuildOptions, BuildProgress, BuildResult, optimizeBuild } from './items';
 import { checkConstraints, ConstraintCheck, DamageObjective, scoreOf, TimingConstraints } from './objective';
 import { StatKey } from './stats';
+import { SearchStats, SearchStatus } from './exact/engine';
+import { ExactCheckpoint, ExactProgress, optimizeExact } from './exact/optimize';
 
 export interface OptimizerData {
   items: Record<number, ItemModel>;
@@ -93,6 +95,38 @@ export interface OptimizeRequest {
   allowedItemIds?: number[];
   excludedItemIds?: number[];
   timeLimitMs?: number;
+  /** `heuristic` (padrão): rápido, sem garantia. `exact`: busca exata (DFS) com prova de otimalidade. */
+  mode?: 'heuristic' | 'exact';
+  exact?: ExactRequestOptions;
+}
+
+/** Opções do modo exato (ver `exact/optimize.ts`). Os atributos ficam fixos. */
+export interface ExactRequestOptions {
+  /** Devolver todas as builds empatadas no ótimo. */
+  allTies?: boolean;
+  /** `limit` (padrão): refino/grau máximos dos Limites. `all`: todos os níveis até eles. */
+  refineDomain?: 'limit' | 'all';
+  /** Tempo da busca heurística que gera a build inicial (ms). Padrão: 15 s. */
+  seedTimeMs?: number;
+  /** Tempo máximo do DFS (ms). Ausente = sem limite (até concluir ou parar). */
+  timeLimitMs?: number;
+  /** Ajustar atributos na build final (heurístico, sem garantia, mostrado à parte). */
+  postOptimizeStats?: boolean;
+  /** Checkpoint de uma execução interrompida. */
+  resume?: ExactCheckpoint;
+}
+
+export interface ExactSummary {
+  status: SearchStatus;
+  stats: SearchStats;
+  spaceLog10: number;
+  /** Quantas builds empatadas no ótimo (modo "todas as empatadas"). */
+  ties: number;
+  seedDamage: number;
+  signature: string;
+  checkpoint?: ExactCheckpoint;
+  error?: string;
+  statsAdjusted?: { damage: number; changes: NamedChange[]; applyPath: string; comparePath: string };
 }
 
 export interface SkillOption { value: string; label: string }
@@ -221,6 +255,8 @@ export interface OptimizeResponse {
   comparePath: string;
   /** Slots alterados que a comparação do simulador não mostra (ex.: sombrios). */
   notCompared: string[];
+  /** Só no modo exato. */
+  exact?: ExactSummary;
 }
 
 const SLOT_LABELS: Record<string, string> = {
@@ -257,8 +293,8 @@ export function buildLinks(original: MainModel, optimized: MainModel, result: Pi
   };
 }
 
-/** Roda a otimização completa e devolve tudo pronto para o painel. */
-export function runOptimization(data: OptimizerData, request: OptimizeRequest, onProgress?: (progress: BuildProgress) => void): OptimizeResponse {
+/** Opções, avaliador e build de partida a partir do pedido do painel (comum aos dois modos). */
+function prepareRun(data: OptimizerData, request: OptimizeRequest, onProgress?: (progress: BuildProgress) => void) {
   const session = prepareSession(data, request);
   const { context, model } = session;
   const items = context.items;
@@ -287,11 +323,28 @@ export function runOptimization(data: OptimizerData, request: OptimizeRequest, o
     onProgress,
   };
   const evaluator = new BuildEvaluator(context);
-  const placement = { defaultRefine: request.defaultRefine, defaultGrade: request.defaultGrade };
-  const ALL = ALL_OPTIMIZABLE_SLOTS;
+  const placement = options.placement!;
   const locked = new Set(request.lockedSlots ?? []);
-  const start = request.applyLimitsToCurrent ? raiseToLimits(model, items, ALL.filter((slot) => !locked.has(slot)), placement) : model;
-  const result = optimizeBuild(evaluator, context, start, options);
+  const start = request.applyLimitsToCurrent ? raiseToLimits(model, items, ALL_OPTIMIZABLE_SLOTS.filter((slot) => !locked.has(slot)), placement) : model;
+  return { session, options, evaluator, start, mvpCards };
+}
+
+type PreparedRun = ReturnType<typeof prepareRun>;
+
+/** O que `respond` precisa de um resultado (heurístico ou exato). */
+type ResultLike = Pick<BuildResult, 'model' | 'metrics' | 'damage' | 'feasible' | 'constraints' | 'itemChanges' | 'attachmentChanges'
+  | 'statChanges' | 'warnings' | 'setsApplied' | 'evaluations' | 'elapsedMs' | 'truncated'>;
+
+/** Roda a otimização heurística e devolve tudo pronto para o painel. */
+export function runOptimization(data: OptimizerData, request: OptimizeRequest, onProgress?: (progress: BuildProgress) => void): OptimizeResponse {
+  const prepared = prepareRun(data, request, onProgress);
+  return respond(prepared, optimizeBuild(prepared.evaluator, prepared.session.context, prepared.start, prepared.options));
+}
+
+function respond({ session, options, evaluator, mvpCards }: PreparedRun, result: ResultLike): OptimizeResponse {
+  const { context, model } = session;
+  const items = context.items;
+  const ALL = ALL_OPTIMIZABLE_SLOTS;
   // "Antes" é sempre a build real do usuário, mesmo quando a busca partiu dela com refino/grau elevados.
   const before = evaluator.evaluate(model);
   const scoreBefore = scoreOf(before, options.objective ?? 'dps', options.constraints);
@@ -364,5 +417,72 @@ export function runOptimization(data: OptimizerData, request: OptimizeRequest, o
       itemChanges: [...result.itemChanges, ...levelChanged.map((slot) => ({ slot, from: undefined, to: undefined }))],
       attachmentChanges: result.attachmentChanges,
     }),
+  };
+}
+
+export interface ExactHooks {
+  onProgress?: (progress: ExactProgress) => void;
+  onCheckpoint?: (checkpoint: ExactCheckpoint) => void;
+  shouldStop?: () => boolean;
+}
+
+/** Modo exato: DFS completo com a build heurística como ponto de partida (só ordem). */
+export async function runExactOptimization(data: OptimizerData, request: OptimizeRequest, hooks: ExactHooks = {}): Promise<OptimizeResponse> {
+  const prepared = prepareRun(data, request);
+  const { session, options, evaluator, start } = prepared;
+  const exact = request.exact ?? {};
+  const result = await optimizeExact(evaluator, session.context, start, {
+    objective: options.objective,
+    constraints: options.constraints,
+    slots: options.slots,
+    includeCostumes: options.includeCostumes,
+    lockedSlots: options.lockedSlots,
+    catalog: options.catalog,
+    placement: options.placement,
+    optimizeCards: options.optimizeCards,
+    optimizeEnchants: options.optimizeEnchants,
+    keepWeaponType: options.keepWeaponType,
+    unknownEnchantRepeats: options.unknownEnchantRepeats,
+    refineDomain: exact.refineDomain,
+    mode: exact.allTies ? 'allTies' : 'best',
+    seedTimeMs: exact.seedTimeMs,
+    timeLimitMs: exact.timeLimitMs,
+    postOptimizeStats: exact.postOptimizeStats,
+    lockedStats: options.lockedStats,
+    minimumStats: options.minimumStats,
+    resume: exact.resume,
+    shouldStop: hooks.shouldStop,
+    onProgress: hooks.onProgress,
+    onCheckpoint: hooks.onCheckpoint,
+  });
+  const response = respond(prepared, {
+    ...result,
+    setsApplied: result.setsPresent,
+    truncated: result.status === 'INTERRUPTED',
+  });
+  let statsAdjusted: ExactSummary['statsAdjusted'];
+  if (result.statsAdjusted) {
+    const adjusted = result.statsAdjusted;
+    const links = buildLinks(session.model, adjusted.model, result);
+    statsAdjusted = {
+      damage: adjusted.damage,
+      changes: adjusted.statChanges.map((c) => ({ group: 'stat' as const, label: STAT_LABELS[c.key] ?? c.key, from: String(c.from), to: String(c.to) })),
+      applyPath: links.applyPath,
+      comparePath: links.comparePath,
+    };
+  }
+  return {
+    ...response,
+    exact: {
+      status: result.status,
+      stats: result.stats,
+      spaceLog10: result.spaceLog10,
+      ties: result.ties.length,
+      seedDamage: result.seedScore.damage,
+      signature: result.signature,
+      checkpoint: result.checkpoint,
+      error: result.error,
+      statsAdjusted,
+    },
   };
 }

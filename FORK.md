@@ -57,3 +57,21 @@ Os apps já instalados baixam a versão nova sozinhos e instalam ao fechar.
 O Electron serve o build local em `https://simulador.latam-tools.com.br`, interceptando só
 esse domínio. Assim, links de compartilhamento, CORS e chamadas às APIs funcionam como no site,
 sem modificar o código do upstream. Rotas de servidor (`/mcp`, `/api/`) são buscadas na internet.
+
+## Otimizador de build (desktop)
+
+O app desktop mostra o botão **Otimizar build** no canto da tela. O código fica em
+`src/optimizer/` e não altera nenhum arquivo do upstream:
+
+- `desktop/scripts/build-optimizer.mjs` empacota o painel (`optimizer/panel.js`) e o motor
+  num Web Worker (`optimizer/worker.js`), e roda junto com `npm run web`.
+- `desktop/src/main.js` injeta o painel no `index.html` ao servir a página.
+- O painel lê a build atual (o autosave do app) e devolve links `/s/<token>/`, o mesmo formato
+  de compartilhamento do simulador: **Aplicar** abre a build otimizada, **Comparar** abre a atual
+  com a otimizada na coluna de comparação.
+
+- **Modos:** *Heurístico* (rápido, sem garantia) e *Exato* (DFS que prova o ótimo quando
+  termina, com Parar/Retomar por checkpoint). Detalhes, podas e garantias em
+  `src/optimizer/exact/README.md`.
+
+Testes: `pnpm vitest run src/optimizer`.

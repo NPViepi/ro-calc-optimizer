@@ -11,24 +11,25 @@ const { app, BrowserWindow, protocol, net, shell, Menu } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
+const { resolveSiteFile } = require('./site-files');
 
 const SITE_HOST = 'simulador.latam-tools.com.br';
 const SITE_URL = `https://${SITE_HOST}/`;
 const REMOTE_PREFIXES = ['/mcp', '/api/'];
+// Painel do otimizador (src/optimizer), empacotado por scripts/build-optimizer.mjs.
+const OPTIMIZER_PANEL = '/optimizer/panel.js';
 
 const webRoot = app.isPackaged
   ? path.join(process.resourcesPath, 'web')
   : path.join(__dirname, '..', 'web');
 
-function localFileFor(pathname) {
-  let decoded;
-  try { decoded = decodeURIComponent(pathname); } catch { return null; }
-  const file = path.resolve(webRoot, '.' + decoded);
-  if (file !== webRoot && !file.startsWith(webRoot + path.sep)) return null;
-  if (fs.existsSync(file) && fs.statSync(file).isFile()) return file;
-  // Rotas da SPA (sem extensão) caem no index.html, como no servidor de dev.
-  if (!path.extname(decoded)) return path.join(webRoot, 'index.html');
-  return null;
+/** index.html com o painel do otimizador injetado — o HTML do upstream não é alterado no disco. */
+function serveIndex(file) {
+  let html = fs.readFileSync(file, 'utf8');
+  if (fs.existsSync(path.join(webRoot, OPTIMIZER_PANEL))) {
+    html = html.replace('</body>', `<script type="module" src="${OPTIMIZER_PANEL}"></script></body>`);
+  }
+  return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
 }
 
 function serveSite() {
@@ -37,7 +38,9 @@ function serveSite() {
     const isSite = url.hostname === SITE_HOST;
     const isRemoteRoute = REMOTE_PREFIXES.some(prefix => url.pathname.startsWith(prefix));
     if (isSite && !isRemoteRoute && request.method === 'GET') {
-      const file = localFileFor(url.pathname);
+      const acceptsHtml = (request.headers.get('accept') || '').includes('text/html');
+      const file = resolveSiteFile(webRoot, url.pathname, acceptsHtml);
+      if (file && path.basename(file) === 'index.html') return serveIndex(file);
       if (file) return net.fetch(pathToFileURL(file).toString());
       return new Response('Not found', { status: 404 });
     }

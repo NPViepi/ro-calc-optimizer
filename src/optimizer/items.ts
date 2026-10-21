@@ -384,6 +384,20 @@ export function defaultSlots(options: Pick<BuildOptions, 'includeCostumes'> = {}
 }
 const STAT_KEYS: StatKey[] = ['str', 'agi', 'vit', 'int', 'dex', 'luk', 'pow', 'sta', 'wis', 'spl', 'con', 'crt'];
 
+/** Diferenças entre duas builds: itens, cartas/encantamentos e atributos. */
+export function buildChanges(model: MainModel, next: MainModel) {
+  const itemChanges: ItemChange[] = ALL_SLOTS
+    .filter((slot) => field(model, slot) !== field(next, slot))
+    .map((slot) => ({ slot, from: field(model, slot), to: field(next, slot) }));
+  const attachmentChanges: AttachmentChange[] = ALL_SLOTS.flatMap((slot) => (MainItemWithRelations[slot] ?? [])
+    .filter((key) => (field(model, key) ?? undefined) !== (field(next, key) ?? undefined))
+    .map((key) => ({ slot, field: key, from: field(model, key) ?? undefined, to: field(next, key) ?? undefined })));
+  const statChanges: StatChange[] = STAT_KEYS
+    .filter((key) => (Number(model[key]) || 0) !== (Number(next[key]) || 0))
+    .map((key) => ({ key, from: Number(model[key]) || 0, to: Number(next[key]) || 0 }));
+  return { itemChanges, attachmentChanges, statChanges };
+}
+
 /**
  * Otimiza itens, cartas, encantamentos e conjuntos (e, por padrão, atributos) da build para
  * a skill selecionada nela. Nunca devolve algo pior que a build de entrada.
@@ -451,15 +465,7 @@ export function optimizeBuild(
 
   const metrics = evaluator.evaluate(state.model);
   const score = scoreOf(metrics, objective, options.constraints);
-  const itemChanges = ALL_SLOTS
-    .filter((slot) => field(model, slot) !== field(state.model, slot))
-    .map((slot) => ({ slot, from: field(model, slot), to: field(state.model, slot) }));
-  const attachmentChanges = ALL_SLOTS.flatMap((slot) => (MainItemWithRelations[slot] ?? [])
-    .filter((key) => (field(model, key) ?? undefined) !== (field(state.model, key) ?? undefined))
-    .map((key) => ({ slot, field: key, from: field(model, key) ?? undefined, to: field(state.model, key) ?? undefined })));
-  const statChanges = STAT_KEYS
-    .filter((key) => (Number(model[key]) || 0) !== (Number(state.model[key]) || 0))
-    .map((key) => ({ key, from: Number(model[key]) || 0, to: Number(state.model[key]) || 0 }));
+  const { itemChanges, attachmentChanges, statChanges } = buildChanges(model, state.model);
 
   return {
     model: state.model,
