@@ -25,6 +25,7 @@ import { HpSpTable } from 'src/app/models/hp-sp-table.model';
 import { ItemModel } from 'src/app/models/item.model';
 import { MainModel } from 'src/app/models/main.model';
 import { MonsterModel } from 'src/app/models/monster.model';
+import { SKILL_ID_BY_NAME } from 'src/app/skills';
 import { toRawOptionTxtList } from 'src/app/utils/to-raw-option-txt-list';
 
 /** Tudo o que não muda enquanto o otimizador explora builds. */
@@ -62,6 +63,31 @@ export interface BuildMetrics {
   cd: number;
   castPeriod: number;
   hitPeriod: number;
+  /**
+   * Redução de pós-conjuração em % (o "Pós-conjuração -X%" dos equipamentos): o `acd` total e,
+   * em skill mágica, o bônus do elemento (`acd_magic_<elemento>`), que o motor soma ao `acd`.
+   */
+  acdPercent: number;
+  /** Pós-conjuração da skill antes das reduções (a da tabela do cliente), em segundos. */
+  baseAcd: number;
+  /**
+   * Redução de conjuração fixa em segundos ("Conjuração fixa -X s"): o `fct` global mais o da
+   * própria skill (`fct__<id>`), como `calc-skill-aspd.ts` soma antes de aplicar as reduções em %.
+   */
+  fctReduction: number;
+  /**
+   * Redução de conjuração variável em % ("Conjuração variável -X%") vinda de equipamentos/buffs:
+   * `vct` − `vct_inc` + `vct__<id>` + `vctBySkill`. Não inclui DES/INT.
+   */
+  vctPercent: number;
+  /** Conjuração fixa e variável da skill antes das reduções (tabela do cliente), em segundos. */
+  baseFct: number;
+  baseVct: number;
+  /** Fator das reduções de fixa em % (`fctPercent` global e da skill): fixa = (base − s) × fator. */
+  fctFactor: number;
+  /** Fator de DES/INT na variável (`vctByStat`) e redução fixa de variável da skill (`fix_vct__<id>`). */
+  vctByStat: number;
+  vctFlat: number;
   /** `2·DES + INT` — 530 zera a parte da variável que vem de atributos. */
   dex2Int1: number;
   /** O motor não conhece os tempos desta skill; dps/tempos não são confiáveis. */
@@ -140,6 +166,11 @@ export function readMetrics(calc: Calculator, skillValue: string): BuildMetrics 
   const summary = calc.getTotalSummary() as any;
   const dmg = summary.dmg ?? {};
   const timing = summary.calcSkill ?? {};
+  const element = String(dmg.skillPropertyAtk ?? '').toLowerCase();
+  // Mesma chave que `calc-skill-aspd.ts`: id do catálogo, ou o nome quando a skill não tem id.
+  const skillName = skillValue.split('==')[0];
+  const skillId = SKILL_ID_BY_NAME[skillName] ?? skillName;
+  const acdPercent = num(summary.acd) + (dmg.dmgType === 'Magical' && element ? num(summary[`acd_magic_${element}`]) : 0);
   const damageMin = num(dmg.effectedSkillDamageMin ?? dmg.skillMinDamage);
   const damageMax = num(dmg.effectedSkillDamageMax ?? dmg.skillMaxDamage);
 
@@ -157,6 +188,15 @@ export function readMetrics(calc: Calculator, skillValue: string): BuildMetrics 
     cd: num(timing.reducedCd),
     castPeriod: num(timing.castPeriod),
     hitPeriod: num(timing.hitPeriod),
+    acdPercent,
+    baseAcd: num(timing.clientAcd),
+    fctReduction: num(summary.fct) + num(summary[`fct__${skillId}`]),
+    vctPercent: num(summary.vct) - num(summary.vct_inc) + num(summary[`vct__${skillId}`]) + num(summary.vctBySkill),
+    baseFct: num(timing.clientFct),
+    baseVct: num(timing.clientVct),
+    fctFactor: (1 - num(summary.fctPercent) / 100) * (1 - num(summary[`fctPercent__${skillId}`]) / 100),
+    vctByStat: timing.vctByStat == null ? 1 : num(timing.vctByStat),
+    vctFlat: num(summary[`fix_vct__${skillId}`]),
     dex2Int1: num(timing.sumDex2Int1),
     timingUnknown: !!timing.timingUnknown,
   };

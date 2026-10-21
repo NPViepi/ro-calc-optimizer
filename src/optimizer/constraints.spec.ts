@@ -9,7 +9,7 @@ const evaluator = new BuildEvaluator(context);
 
 const metrics = (overrides: Partial<BuildMetrics>): BuildMetrics => ({
   skillValue: 'x', damageMin: 100, damageMax: 200, damageAvg: 150, dps: 300, hitsPerSec: 2, totalHits: 1,
-  vct: 0.5, fct: 0.3, acd: 0.4, cd: 0, castPeriod: 0.8, hitPeriod: 1.2, dex2Int1: 400, timingUnknown: false,
+  vct: 0.5, fct: 0.3, acd: 0.4, cd: 0, castPeriod: 0.8, hitPeriod: 1.2, acdPercent: 10, baseAcd: 0.4, fctReduction: 0, vctPercent: 0, baseFct: 0.3, baseVct: 0.5, fctFactor: 1, vctByStat: 1, vctFlat: 0, dex2Int1: 400, timingUnknown: false,
   ...overrides,
 });
 

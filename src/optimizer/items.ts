@@ -20,7 +20,8 @@ import { CharacterBase } from 'src/app/jobs';
 import { MainModel } from 'src/app/models/main.model';
 import { attachmentsFor, buildCardCatalog, buildEnchantMap, CardCatalog } from './attachments';
 import {
-  buildCatalog, CatalogOptions, compatibleAmmo, COSTUME_SLOT_KEYS, EQUIPMENT_SLOT_KEYS, OptimizableSlot, placeItem,
+  ALL_OPTIMIZABLE_SLOTS, buildCatalog, CatalogOptions, compatibleAmmo, COSTUME_ENCHANT_SLOT_KEYS, EQUIPMENT_SLOT_KEYS,
+  OptimizableSlot, placeItem,
   PlacementOptions, SlotCatalog, WeaponRulesProbe,
 } from './candidates';
 import { BuildEvaluator, BuildMetrics, EvaluationContext } from './evaluate';
@@ -36,7 +37,10 @@ export interface BuildOptions {
   constraints?: TimingConstraints;
   /** Slots que podem mudar. Padrão: todo o equipamento (sem visuais). */
   slots?: OptimizableSlot[];
-  /** Incluir os slots de visual. Padrão: false. */
+  /**
+   * Incluir os encantamentos de visual. Padrão: true. Os visuais em si nunca mudam por padrão:
+   * o bônus próprio deles é desconsiderado na escolha (só os encantamentos contam).
+   */
   includeCostumes?: boolean;
   /** Slots que não podem mudar, nem o item nem cartas/encantamentos (prioridade sobre `slots`). */
   lockedSlots?: OptimizableSlot[];
@@ -55,9 +59,9 @@ export interface BuildOptions {
   /** Escolher encantamentos. Padrão: true. */
   optimizeEnchants?: boolean;
   /**
-   * Manter o tipo de arma da build (arco continua arco). Padrão: true. Nem toda skill declara
-   * a arma que exige (`verifyItemFn`) — Tiro Preciso, por exemplo, não —, e sem isso o motor
-   * calcula dano com qualquer arma; trocar de tipo pode dar uma build que o jogo não aceita.
+   * Para skills que não declaram a arma que exigem (`verifyItemFn` — Tiro Preciso, por exemplo),
+   * manter o tipo de arma da build (arco continua arco). Padrão: true. Skills que declaram
+   * (Artilharia Pesada: revólver ou metralhadora) sempre seguem a própria regra.
    */
   keepWeaponType?: boolean;
   /**
@@ -132,6 +136,8 @@ export interface BuildResult {
 interface State { model: MainModel; score: Score }
 
 const DEFAULT_SHORTLIST = 12;
+/** Fração máxima do tempo para a triagem de itens. */
+const SCREENING_SHARE = 0.45;
 
 const byScore = (a: { score: Score }, b: { score: Score }) => (isBetter(a.score, b.score) ? -1 : isBetter(b.score, a.score) ? 1 : 0);
 
@@ -147,7 +153,9 @@ class BuildSearch {
   private readonly enchantMap;
   private readonly cardShortlists = new Map<OptimizableSlot, number[]>();
   private readonly locked: OptimizableSlot[];
-  private readonly weaponSubType: number | undefined;
+  /** Quais armas a busca pode usar (ver o construtor). */
+  private readonly weaponAllowed: (id: number) => boolean;
+  private weaponList?: number[];
 
   constructor(
     private readonly evaluator: BuildEvaluator,
@@ -161,8 +169,17 @@ class BuildSearch {
     this.cardCatalog = options.optimizeCards === false ? {} : buildCardCatalog(context.items, options.catalog);
     this.enchantMap = buildEnchantMap(context.items);
     this.locked = options.lockedSlots ?? [];
-    const weapon = original.weapon ? context.items[original.weapon] : undefined;
-    this.weaponSubType = options.keepWeaponType === false ? undefined : weapon?.itemSubTypeId;
+    // Armas: se a skill declara as que aceita (`verifyItemFn`, ex.: Artilharia Pesada = revólver
+    // ou metralhadora), vale a regra dela — e o motor calcula a diferença entre elas (o revólver
+    // crita, por exemplo). Se não declara (Tiro Preciso), o motor calcula dano com qualquer arma,
+    // então por segurança fica o mesmo tipo de arma da build (`keepWeaponType`).
+    const skillName = (original.selectedAtkSkill ?? '').split('==')[0];
+    const skill = (character.getAtkSkills(original.skillFormulaVersion) as any[]).find((entry) => entry.name === skillName);
+    const verify = skill?.verifyItemFn as ((input: any) => string) | undefined;
+    const subType = original.weapon ? context.items[original.weapon]?.itemSubTypeId : undefined;
+    if (typeof verify === 'function') this.weaponAllowed = (id) => this.probe.accepts(id, verify, original);
+    else if (options.keepWeaponType !== false && subType != null) this.weaponAllowed = (id) => context.items[id]?.itemSubTypeId === subType;
+    else this.weaponAllowed = () => true;
   }
 
   /** Efeitos colaterais (cabeça de vários slots, arma que tira escudo) não podem mexer em slot travado. */
@@ -172,7 +189,12 @@ class BuildSearch {
 
   get elapsed() { return performance.now() - this.started; }
 
-  get outOfTime() { return this.elapsed > (this.options.timeLimitMs ?? 90_000); }
+  get timeLimit() { return this.options.timeLimitMs ?? 90_000; }
+
+  get outOfTime() { return this.elapsed > this.timeLimit; }
+
+  /** Instante (performance.now) em que uma fração do tempo total terá passado. */
+  budgetAt(fraction: number) { return this.started + this.timeLimit * fraction; }
 
   score(model: MainModel): Score {
     this.evaluations++;
@@ -215,18 +237,16 @@ class BuildSearch {
   candidatesFor(model: MainModel, slot: OptimizableSlot): number[] {
     if (slot === ItemTypeEnum.ammo) return compatibleAmmo(model, this.catalog, this.context.items, this.probe);
     if (slot === ItemTypeEnum.shield && (model.leftWeapon || !this.probe.rules(model.weapon).allowShield)) return [];
-    if (slot === ItemTypeEnum.weapon && this.weaponSubType != null) {
-      return (this.catalog[slot] ?? []).filter((id) => this.context.items[id]?.itemSubTypeId === this.weaponSubType);
-    }
+    if (slot === ItemTypeEnum.weapon) return (this.weaponList ??= (this.catalog[slot] ?? []).filter(this.weaponAllowed));
     return this.catalog[slot] ?? [];
   }
 
   /** Testa cada item do slot isoladamente e guarda os K melhores (mais o atual). */
-  screen(model: MainModel, slot: OptimizableSlot, size: number): number[] {
+  screen(model: MainModel, slot: OptimizableSlot, size: number, deadline = Infinity): number[] {
     const current = field(model, slot);
     const scored: { id: number; score: Score }[] = [];
     for (const id of this.candidatesFor(model, slot)) {
-      if (this.outOfTime) { this.truncated = true; break; }
+      if (this.outOfTime || performance.now() > deadline) { this.truncated = true; break; }
       const next = this.place(model, slot, id);
       if (!this.keepsLocks(model, next)) continue;
       scored.push({ id, score: this.score(next) });
@@ -313,12 +333,12 @@ class BuildSearch {
   }
 
   /** Conjuntos ordenados pelo resultado de equipá-los de uma vez na build atual. */
-  screenSets(model: MainModel, moves: SetMove[], size: number): SetMove[] {
+  screenSets(model: MainModel, moves: SetMove[], size: number, deadline = Infinity): SetMove[] {
     const scored: { move: SetMove; score: Score }[] = [];
     for (const move of moves) {
-      if (this.outOfTime) { this.truncated = true; break; }
+      if (this.outOfTime || performance.now() > deadline) { this.truncated = true; break; }
       const weapon = move.pieces.find((piece) => piece.slot === ItemTypeEnum.weapon);
-      if (weapon && this.weaponSubType != null && this.context.items[weapon.id]?.itemSubTypeId !== this.weaponSubType) continue;
+      if (weapon && !this.weaponAllowed(weapon.id)) continue;
       const next = this.applySet(model, move);
       if (!this.keepsLocks(model, next)) continue;
       scored.push({ move, score: this.score(next) });
@@ -356,7 +376,12 @@ class BuildSearch {
   }
 }
 
-const ALL_SLOTS = [...EQUIPMENT_SLOT_KEYS, ...COSTUME_SLOT_KEYS] as OptimizableSlot[];
+const ALL_SLOTS = ALL_OPTIMIZABLE_SLOTS;
+
+/** Slots que a busca mexe quando `slots` não é informado: equipamentos e encantamentos de visual. */
+export function defaultSlots(options: Pick<BuildOptions, 'includeCostumes'> = {}): OptimizableSlot[] {
+  return [...EQUIPMENT_SLOT_KEYS, ...(options.includeCostumes === false ? [] : COSTUME_ENCHANT_SLOT_KEYS)];
+}
 const STAT_KEYS: StatKey[] = ['str', 'agi', 'vit', 'int', 'dex', 'luk', 'pow', 'sta', 'wis', 'spl', 'con', 'crt'];
 
 /**
@@ -369,8 +394,7 @@ export function optimizeBuild(
   const character = context.character;
   const objective = options.objective ?? 'avg';
   const locked = new Set(options.lockedSlots ?? []);
-  const slots = (options.slots ?? [...EQUIPMENT_SLOT_KEYS, ...(options.includeCostumes ? COSTUME_SLOT_KEYS : [])])
-    .filter((slot) => !locked.has(slot));
+  const slots = (options.slots ?? defaultSlots(options)).filter((slot) => !locked.has(slot));
   const catalog = buildCatalog(context.items, character, { maxRequiredLevel: model.level, ...options.catalog });
   const search = new BuildSearch(evaluator, context, character, catalog, options, model);
 
@@ -382,15 +406,19 @@ export function optimizeBuild(
   if (!isBetter(state.score, scoreBefore)) state = { model, score: scoreBefore };
   search.progress('stats', state.score);
 
-  // 2. Triagem por slot e de conjuntos.
+  // 2. Triagem por slot e de conjuntos. Com pouco tempo (ou máquina lenta), a triagem não
+  // pode consumir tudo: cada slot tem a sua fatia de até 45% do tempo, os conjuntos mais 5%,
+  // e o resto fica para combinar. Um slot cortado fica com os melhores que deu tempo de ver.
   const shortlists: Partial<Record<OptimizableSlot, number[]>> = {};
-  for (const slot of slots) {
-    shortlists[slot] = search.screen(state.model, slot, options.shortlistSize ?? DEFAULT_SHORTLIST);
+  for (const [index, slot] of slots.entries()) {
+    const deadline = search.budgetAt(SCREENING_SHARE * (index + 1) / slots.length);
+    shortlists[slot] = search.screen(state.model, slot, options.shortlistSize ?? DEFAULT_SHORTLIST, deadline);
     search.progress('screening', state.score, { slot });
     if (search.outOfTime) break;
   }
   const setMoves = options.optimizeSets === false ? [] : search.screenSets(
     state.model, findSetMoves(context.items, catalog, new Set(slots)), options.setShortlistSize ?? 20,
+    search.budgetAt(SCREENING_SHARE + 0.05),
   );
   search.progress('sets', state.score);
 
