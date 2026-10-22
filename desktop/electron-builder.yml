@@ -12,6 +12,9 @@ extraResources:
 win:
   target: nsis
 nsis:
+  # Sem espaços: o latest.yml aponta para este nome, e o job electron-bridge do CI envia o
+  # arquivo com `gh release upload` (que trocaria espaços por pontos).
+  artifactName: RO-Calc-Optimizer-Setup-${version}.${ext}
   oneClick: false
   allowToChangeInstallationDirectory: true
 mac:

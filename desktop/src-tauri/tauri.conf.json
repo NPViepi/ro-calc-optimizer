@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "RO Calc Optimizer",
+  "version": "../package.json",
+  "identifier": "br.com.npviepi.rocalcoptimizer",
+  "build": {
+    "frontendDist": "blank",
+    "beforeBuildCommand": "npm run web"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "publisher": "NPViepi",
+    "shortDescription": "Simulador RO LATAM com otimizador de builds",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "resources": {
+      "../web/": "web/"
+    },
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "installerHooks": "./windows/hooks.nsh",
+        "languages": [
+          "PortugueseBR"
+        ],
+        "displayLanguageSelector": false
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDgxREI5QkQ0MUI0NTRDQkIKUldTN1RFVWIxSnZiZ2RWbGgzYzhOWXlqenAyVW5HcnlqQ3pVa0VURWx6NnpyendIOG45QzJVb3oK",
+      "endpoints": [
+        "https://github.com/NPViepi/ro-calc-optimizer/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

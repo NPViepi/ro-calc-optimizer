@@ -1,0 +1,35 @@
+[package]
+name = "ro-calc-optimizer"
+version = "0.0.0" # a versão real vem de desktop/package.json (tauri.conf.json → "version")
+description = "App desktop do Simulador RO LATAM com otimizador de builds"
+authors = ["NPViepi"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.77.2"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-single-instance = "2"
+# native-tls (schannel no Windows) em vez de rustls: menor e sem compilar C (ring).
+tauri-plugin-updater = { version = "2", default-features = false, features = ["native-tls", "zip"] }
+serde_json = "1"
+mime_guess = "2"
+tokio = { version = "1", features = ["time"] }
+
+# Interceptação das requisições no WebView2 (só Windows). Mesmas versões do wry (cargo tree),
+# para não duplicar dependências; se divergirem, ainda compila: o ponteiro COM vindo do wry é convertido em
+# src/webview2.rs, então não precisamos casar a versão exata usada pelo Tauri.
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.39"
+windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_UI_Shell"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
