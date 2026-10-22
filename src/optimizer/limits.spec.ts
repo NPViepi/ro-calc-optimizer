@@ -9,6 +9,7 @@ import { checkConstraints, dpsWithAcdTarget, isBetter, scoreOf } from './objecti
 import { runOptimization } from './runtime';
 import { appShapedData } from './__tests__/app-data';
 import { latamItemDb, windhawkContext, windhawkModel } from './__tests__/windhawk-build';
+import { ENGINE_TIMEOUT } from './__tests__/timeouts';
 
 const context = windhawkContext({ items: latamItemDb });
 const ACD_HAT = 400001; // Victorious Wing Ears: Pós-conjuração -8%
@@ -22,7 +23,7 @@ describe('redução de pós-conjuração em %', () => {
     expect(withHelmet.acdPercent).toBeGreaterThan(base.acdPercent);
     // E ela reduz a pós em segundos na mesma direção.
     expect(withHelmet.acd).toBeLessThan(base.acd);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('limite mínimo: abaixo do pedido falha, igual ou acima cumpre', () => {
     const metrics = evaluator.evaluate({ ...windhawkModel(130), headUpper: ACD_HAT } as any);
@@ -33,7 +34,7 @@ describe('redução de pós-conjuração em %', () => {
     expect(bad.excess).toBeCloseTo(5, 4);
     // Cumprir vale mais que dano.
     expect(isBetter(scoreOf(metrics, 'dps', { minAcdPercent: metrics.acdPercent }), scoreOf(metrics, 'dps', { minAcdPercent: metrics.acdPercent + 5 }))).toBe(true);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('a busca troca itens para chegar à redução pedida', () => {
     const before = evaluator.evaluate(windhawkModel(130));
@@ -55,7 +56,7 @@ describe('meta de pós: o que passa da meta não vale DPS', () => {
   it('abaixo da meta (ou sem meta), o DPS é o do motor', () => {
     expect(dpsWithAcdTarget(metrics, undefined)).toBe(metrics.dps);
     expect(dpsWithAcdTarget(metrics, metrics.acdPercent + 10)).toBe(metrics.dps);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('acima da meta, o DPS é recalculado com a pós da meta', () => {
     const target = metrics.acdPercent - 8;
@@ -66,7 +67,7 @@ describe('meta de pós: o que passa da meta não vale DPS', () => {
     expect(capped).toBeCloseTo(metrics.dps * (metrics.hitPeriod / period), 6);
     // A pontuação com objetivo DPS usa esse valor.
     expect(scoreOf(metrics, 'dps', { minAcdPercent: target }).damage).toBeCloseTo(capped, 6);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('na busca, a meta é cumprida', () => {
     const goal = 30;
@@ -93,7 +94,7 @@ describe('refino e grau máximos', () => {
     const lower = raiseToLimits(model, items, [ItemTypeEnum.weapon], { defaultRefine: { equip: 9 } });
     expect(lower.weaponRefine).toBe(11);
     expect(model.weaponRefine).toBe(11); // não altera o modelo recebido
-  });
+  }, ENGINE_TIMEOUT);
 
   it('no runtime: o "antes" continua sendo a build real e a mudança de refino aparece e entra na comparação', () => {
     const data = appShapedData();

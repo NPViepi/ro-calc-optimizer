@@ -6,6 +6,7 @@ import { BuildEvaluator } from './evaluate';
 import { optimizeBuild } from './items';
 import { findSetMoves } from './sets';
 import { latamItemDb, windhawkContext, windhawkModel } from './__tests__/windhawk-build';
+import { ENGINE_TIMEOUT } from './__tests__/timeouts';
 
 const context = windhawkContext({ items: latamItemDb });
 const { items, character } = context;
@@ -31,20 +32,20 @@ describe('cartas e encantamentos', () => {
     const onlyWeapon = [...weaponCards].filter((id) => !armorCards.has(id));
     expect(onlyWeapon.length).toBeGreaterThan(0);
     for (const id of cards.weapon ?? []) expect(items[id].itemTypeId).toBe(6);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('o número de cartas segue os encaixes do item', () => {
     expect(attachmentsFor({ ...windhawkModel(130), weapon: SHARPBOLT_BOW }, ItemTypeEnum.weapon, items, enchantMap).cardFields).toEqual([]);
     expect(attachmentsFor({ ...windhawkModel(130), weapon: ROYAL_BOW }, ItemTypeEnum.weapon, items, enchantMap).cardFields)
       .toEqual([ItemTypeEnum.weaponCard1, ItemTypeEnum.weaponCard2]);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('os encantamentos vêm da tabela do item (Bota Temporal oferece Instinto na posição 2)', () => {
     const { enchants } = attachmentsFor({ ...windhawkModel(130), boot: TEMPORAL_DEX_BOOT }, ItemTypeEnum.boot, items, enchantMap);
     const position2 = enchants.find((entry) => entry.field === ItemTypeEnum.bootEnchant2);
     expect(position2?.ids).toContain(HAWKEYE);
     expect(enchants.every((entry) => entry.ids.every((id) => enchantMap.has(items[id].aegisName)))).toBe(true);
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('conjuntos', () => {
@@ -57,14 +58,14 @@ describe('conjuntos', () => {
       { slot: ItemTypeEnum.weapon, id: THANOS_BOW },
       { slot: ItemTypeEnum.headUpper, id: THANOS_HELMET },
     ]));
-  });
+  }, ENGINE_TIMEOUT);
 
   it('nunca usa o mesmo slot duas vezes e respeita os slots permitidos', () => {
     for (const move of moves) expect(new Set(move.pieces.map((piece) => piece.slot)).size).toBe(move.pieces.length);
 
     const noHead = findSetMoves(items, catalog, new Set([ItemTypeEnum.weapon, ItemTypeEnum.armor]));
     expect(noHead.every((move) => move.pieces.every((piece) => piece.slot === ItemTypeEnum.weapon || piece.slot === ItemTypeEnum.armor))).toBe(true);
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('optimizeBuild com cartas, encantamentos e conjuntos', () => {

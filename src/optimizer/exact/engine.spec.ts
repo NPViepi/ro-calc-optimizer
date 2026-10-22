@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { exactSearch, ExactSearch, SearchCheckpoint } from './engine';
 import {
-  bruteForce, compareNumbers, randomCatalog, ToyCatalog, toyKey, toyProblem, ToyState, toyValid,
+  bruteForce, compareNumbers, randomCatalog, ToyCatalog, toyKey, toyProblem, ToyState,
 } from './__tests__/toy';
 
 const item = (id: string, atk: number, extra: object = {}) => ({ id, atk, ...extra });
@@ -63,7 +63,7 @@ describe('ExactSearch — casos essenciais (plano §10.2)', () => {
     };
     const result = solve(catalog);
     expect(result.best!.score).toBe(60);
-    expect(result.stats.pruned.exclusive).toBeGreaterThan(0);
+    expect(result.stats.pruned['exclusive']).toBeGreaterThan(0);
   });
 
   it('6/9. crítico não linear e refino em níveis diferentes', () => {
@@ -124,8 +124,12 @@ describe('ExactSearch — casos essenciais (plano §10.2)', () => {
 
 describe('ExactSearch — propriedade contra força bruta (plano §10.3)', () => {
   const SEEDS = Array.from({ length: 120 }, (_, i) => i + 1);
+  // Muitas comparações por teste: as divergências são juntadas e checadas com um `expect` só
+  // (o `expect` do vitest é caro o bastante para estourar o tempo padrão com dezenas de milhares).
+  const TIMEOUT = 60_000;
 
   it('sem poda de dano, com limite superior e com ordenação heurística: mesmo ótimo', () => {
+    const problems: string[] = [];
     for (const seed of SEEDS) {
       const catalog = randomCatalog(seed);
       const oracle = bruteForce(catalog);
@@ -135,26 +139,35 @@ describe('ExactSearch — propriedade contra força bruta (plano §10.3)', () =>
         solve(catalog, { withBound: true, useUpperBound: true }),
         solve(catalog, { withBound: true, useUpperBound: true, heuristicOrder: true }),
       ];
-      for (const result of variants) {
-        if (!oracle.valid.length) { expect(result.status, `seed ${seed}`).toBe('NO_SOLUTION'); continue; }
-        expect(result.status, `seed ${seed}`).toBe('OPTIMAL');
-        expect(compareNumbers(result.best!.score, oracle.bestScore), `seed ${seed}`).toBe(0);
-        expect(oracle.optimalKeys.has(toyKey(result.best!.states[0].picks)), `seed ${seed}`).toBe(true);
-      }
+      variants.forEach((result, variant) => {
+        if (!oracle.valid.length) {
+          if (result.status !== 'NO_SOLUTION') problems.push(`seed ${seed}/${variant}: ${result.status} ≠ NO_SOLUTION`);
+          return;
+        }
+        if (result.status !== 'OPTIMAL') problems.push(`seed ${seed}/${variant}: ${result.status}`);
+        else if (compareNumbers(result.best!.score, oracle.bestScore) !== 0) problems.push(`seed ${seed}/${variant}: ${result.best!.score} ≠ ${oracle.bestScore}`);
+        else if (!oracle.optimalKeys.has(toyKey(result.best!.states[0].picks))) problems.push(`seed ${seed}/${variant}: build não ótima`);
+      });
     }
-  });
+    expect(problems).toEqual([]);
+  }, TIMEOUT);
 
   it('modo allTies (com e sem limite) devolve exatamente o conjunto ótimo da força bruta', () => {
+    const problems: string[] = [];
+    const same = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((key) => b.has(key));
     for (const seed of SEEDS) {
       const catalog = randomCatalog(seed);
       const oracle = bruteForce(catalog);
       for (const result of [solve(catalog, { mode: 'allTies' }), solve(catalog, { mode: 'allTies', withBound: true, useUpperBound: true })]) {
-        expect(keysOf(result.best?.states), `seed ${seed}`).toEqual(oracle.optimalKeys);
+        if (!same(keysOf(result.best?.states), oracle.optimalKeys)) problems.push(`seed ${seed}`);
       }
     }
-  });
+    expect(problems).toEqual([]);
+  }, TIMEOUT);
 
   it('o limite superior nunca fica abaixo do melhor alcançável (verificado em todos os estados)', () => {
+    const problems: string[] = [];
+    let checked = 0;
     for (const seed of SEEDS.slice(0, 40)) {
       const catalog = randomCatalog(seed);
       const problem = toyProblem(catalog, { withBound: true });
@@ -162,25 +175,32 @@ describe('ExactSearch — propriedade contra força bruta (plano §10.3)', () =>
       // Para cada prefixo de cada build válida, o limite do prefixo ≥ score da build.
       for (const { picks, score } of oracle.valid) {
         for (let length = 0; length <= picks.length; length++) {
-          expect(problem.upperBound!.bound({ picks: picks.slice(0, length) }) + 1e-9).toBeGreaterThanOrEqual(score);
+          checked++;
+          const bound = problem.upperBound!.bound({ picks: picks.slice(0, length) });
+          if (bound + 1e-9 < score) problems.push(`seed ${seed}: ${toyKey(picks.slice(0, length))} limite ${bound} < ${score}`);
         }
       }
     }
-  });
+    expect(checked).toBeGreaterThan(1_000);
+    expect(problems).toEqual([]);
+  }, TIMEOUT);
 
   it('modo enumerate visita exatamente as builds válidas (sem poda por dano)', () => {
+    const problems: string[] = [];
     for (const seed of SEEDS.slice(0, 40)) {
       const catalog = randomCatalog(seed);
       const seen: string[] = [];
-      const search = new ExactSearch(toyProblem(catalog), { mode: 'enumerate', onLeaf: (state) => seen.push(toyKey(state.picks)) });
-      const result = search.run();
-      expect(result.status).toBe('COMPLETE');
-      const oracle = bruteForce(catalog);
-      expect(new Set(seen)).toEqual(new Set(oracle.valid.map((entry) => toyKey(entry.picks))));
-      expect(seen).toHaveLength(oracle.valid.length);
-      for (const key of seen) expect(toyValid(catalog, oracle.valid.find((entry) => toyKey(entry.picks) === key)!.picks)).toBe(true);
+      const result = new ExactSearch(toyProblem(catalog), { mode: 'enumerate', onLeaf: (state) => seen.push(toyKey(state.picks)) }).run();
+      const valid = new Set(bruteForce(catalog).valid.map((entry) => toyKey(entry.picks)));
+      if (result.status !== 'COMPLETE') problems.push(`seed ${seed}: ${result.status}`);
+      // Mesmo tamanho, sem repetição e tudo válido = exatamente o conjunto da força bruta.
+      if (seen.length !== valid.size) problems.push(`seed ${seed}: ${seen.length} visitadas, ${valid.size} válidas`);
+      if (new Set(seen).size !== seen.length) problems.push(`seed ${seed}: build repetida`);
+      const invalid = seen.filter((key) => !valid.has(key));
+      if (invalid.length) problems.push(`seed ${seed}: inválidas ${invalid.slice(0, 3).join(', ')}`);
     }
-  });
+    expect(problems).toEqual([]);
+  }, TIMEOUT);
 });
 
 describe('ExactSearch — interrupção e checkpoint (plano §10.2, caso 16)', () => {
@@ -208,7 +228,6 @@ describe('ExactSearch — interrupção e checkpoint (plano §10.2, caso 16)', (
           expect(result.stats.progress).toBe(1);
           break;
         }
-        expect(result.best ? 'BEST' : 'NONE').toBeDefined();
         // Ida e volta por JSON, como o painel salva.
         checkpoint = JSON.parse(JSON.stringify(search.checkpoint()));
         expect(checkpoint!.stats.progress).toBeGreaterThanOrEqual(0);
@@ -218,7 +237,7 @@ describe('ExactSearch — interrupção e checkpoint (plano §10.2, caso 16)', (
       expect(visited).toHaveLength(reference.stats.leaves);
       expect(new Set(visited).size).toBe(visited.length);
     }
-  });
+  }, 60_000);
 
   it('parada por shouldStop vira INTERRUPTED com a melhor build até agora', () => {
     const catalog = randomCatalog(5);

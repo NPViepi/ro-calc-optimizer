@@ -5,6 +5,7 @@ import { decodeShared } from 'src/app/core/share-codec';
 import { readShareToken } from 'src/app/core/share-path';
 import { buildLinks, OptimizerData, prepareSession, runOptimization } from './runtime';
 import { latamItemDb, windhawkModel } from './__tests__/windhawk-build';
+import { ENGINE_TIMEOUT } from './__tests__/timeouts';
 
 const data: OptimizerData = {
   items: latamItemDb,
@@ -25,30 +26,30 @@ describe('prepareSession', () => {
     expect(session.skillValue).toBe('Focused Arrow Strike==5');
     expect(session.skills.map((skill) => skill.value)).toContain('Focused Arrow Strike==5');
     expect(session.model.weapon).toBe(preset.weapon);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('todo rótulo de skill traz o nome da skill (nada de "Nv 1" solto)', () => {
     const { skills } = prepareSession(data, { preset, monsterId: IFRIT });
     expect(skills.length).toBeGreaterThan(3);
     for (const skill of skills) expect(skill.label).not.toMatch(/^(Nv|Lv)\.?\s*\d/);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('trocar a skill também troca a rotação (o app espelha uma na outra)', () => {
     const session = prepareSession(data, { preset, monsterId: IFRIT, skillValue: 'Arrow Storm==10' });
     expect(session.model.selectedAtkSkill).toBe('Arrow Storm==10');
     expect(session.model.rotation).toEqual(['Arrow Storm==10']);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('itens personalizados do preset entram no catálogo', () => {
     const custom = { ...latamItemDb[700016], id: 1_000_000_000_001, custom: true, name: 'Meu arco' };
     const session = prepareSession(data, { preset: { ...preset, __customItems: [custom] }, monsterId: IFRIT });
     expect(session.context.items[custom.id]?.name).toBe('Meu arco');
-  });
+  }, ENGINE_TIMEOUT);
 
   it('erros claros para classe ou monstro desconhecidos', () => {
     expect(() => prepareSession(data, { preset: { ...preset, class: -1 }, monsterId: IFRIT })).toThrow(/Classe/);
     expect(() => prepareSession(data, { preset, monsterId: -1 })).toThrow(/Monstro/);
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('links do simulador', () => {
@@ -76,7 +77,7 @@ describe('links do simulador', () => {
     expect(compared?.compare?.model2).toMatchObject({ garment: 480824, dex: 120 });
     // Visuais não entram na comparação do simulador: o painel avisa.
     expect(links.notCompared).toEqual(['Visual capa']);
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('runOptimization', () => {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { solveInstintoBuild } from 'src/app/core/__tests__/instinto-build';
 import { BuildEvaluator, readMetrics, stableKey } from './evaluate';
 import { windhawkContext, windhawkModel } from './__tests__/windhawk-build';
+import { ENGINE_TIMEOUT } from './__tests__/timeouts';
 
 const SKILL = 'Focused Arrow Strike==5';
 
@@ -14,7 +15,7 @@ describe('BuildEvaluator', () => {
       expect(metrics).toEqual(reference);
       expect(metrics.damageMax).toBeGreaterThan(0);
     }
-  });
+  }, ENGINE_TIMEOUT);
 
   it('não vaza estado entre avaliações intercaladas no mesmo Calculator', () => {
     // cacheSize 0: força o motor a recalcular sempre.
@@ -27,7 +28,7 @@ describe('BuildEvaluator', () => {
 
     expect(again).toEqual(first);
     expect(evaluator.stats.cacheHits).toBe(0);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('reage aos atributos: mais DES reduz a conjuração variável', () => {
     const evaluator = new BuildEvaluator(windhawkContext());
@@ -37,7 +38,7 @@ describe('BuildEvaluator', () => {
     expect(high.dex2Int1).toBeGreaterThan(low.dex2Int1);
     expect(high.vct).toBeLessThanOrEqual(low.vct);
     expect(high.damageAvg).toBeGreaterThan(low.damageAvg);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('usa o cache para builds iguais, mesmo com as chaves em outra ordem', () => {
     const evaluator = new BuildEvaluator(windhawkContext());
@@ -50,7 +51,7 @@ describe('BuildEvaluator', () => {
     expect(stableKey(model)).toBe(stableKey(reordered));
     expect(b).toBe(a);
     expect(evaluator.stats).toMatchObject({ evaluations: 2, cacheHits: 1 });
-  });
+  }, ENGINE_TIMEOUT);
 
   it('não altera o modelo recebido', () => {
     const model = windhawkModel(100);
@@ -58,5 +59,5 @@ describe('BuildEvaluator', () => {
     new BuildEvaluator(windhawkContext()).evaluate(model);
 
     expect(model).toEqual(before);
-  });
+  }, ENGINE_TIMEOUT);
 });

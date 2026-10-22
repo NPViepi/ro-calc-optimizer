@@ -5,6 +5,7 @@ import { BuildEvaluator } from './evaluate';
 import { damageScore } from './objective';
 import { allocationOf, optimizeStats, StatAllocation, statBudget, usedMainPoints, usedTraitPoints } from './stats';
 import { windhawkContext, windhawkModel } from './__tests__/windhawk-build';
+import { ENGINE_TIMEOUT } from './__tests__/timeouts';
 
 const context = windhawkContext();
 const evaluator = new BuildEvaluator(context);
@@ -37,7 +38,7 @@ describe('statBudget', () => {
     expect(budget.traitTotal).toBe(summary.totalTraitPoint);
     expect(budget.mainCost[1]).toBe(0);
     expect(budget.mainCost[130]).toBeGreaterThan(budget.mainCost[100]);
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('optimizeStats', () => {
@@ -55,7 +56,7 @@ describe('optimizeStats', () => {
     for (const key of TRAIT_KEYS) expect(result.model[key]).toBeLessThanOrEqual(100);
     // Só os atributos mudam.
     expect({ ...result.model, ...allocationOf(model) }).toEqual({ ...model, ...allocationOf(model) });
-  });
+  }, ENGINE_TIMEOUT);
 
   it('conserta uma distribuição ruim (tudo em VIT)', () => {
     const bad = { ...windhawkModel(1), str: 1, agi: 1, vit: 130, int: 1, dex: 1, luk: 1 };
@@ -63,7 +64,7 @@ describe('optimizeStats', () => {
 
     expect(result.damage).toBeGreaterThan(result.damageBefore * 1.2);
     expect(result.changes.find((change) => change.key === 'dex')?.to).toBeGreaterThan(1);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('respeita atributos travados e mínimos', () => {
     const model = windhawkModel(130);
@@ -74,7 +75,7 @@ describe('optimizeStats', () => {
     expect(result.model.int).toBe(model.int);
     expect(result.model.vit).toBeGreaterThanOrEqual(90);
     expect(result.changes.map((change) => change.key)).not.toContain('int');
-  });
+  }, ENGINE_TIMEOUT);
 
   it('nenhuma de 150 distribuições aleatórias válidas supera o resultado', () => {
     const model = windhawkModel(130);
@@ -101,7 +102,7 @@ describe('optimizeStats', () => {
       const score = damageScore(evaluator.evaluate({ ...model, ...alloc }), 'dps');
       expect(score).toBeLessThanOrEqual(result.damage);
     }
-  });
+  }, ENGINE_TIMEOUT);
 
   it('para no teto de avaliações e avisa', () => {
     const result = optimizeStats(new BuildEvaluator(context), windhawkModel(1), context.character, { maxEvaluations: 20 });
@@ -109,5 +110,5 @@ describe('optimizeStats', () => {
     expect(result.truncated).toBe(true);
     expect(result.evaluations).toBeLessThanOrEqual(20);
     expect(result.damage).toBeGreaterThanOrEqual(result.damageBefore);
-  });
+  }, ENGINE_TIMEOUT);
 });

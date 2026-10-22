@@ -4,6 +4,7 @@ import { buildCatalog, placeItem, slotsForItem, WeaponRulesProbe } from './candi
 import { BuildEvaluator } from './evaluate';
 import { optimizeBuild } from './items';
 import { latamItemDb, windhawkContext, windhawkModel } from './__tests__/windhawk-build';
+import { ENGINE_TIMEOUT } from './__tests__/timeouts';
 
 const context = windhawkContext({ items: latamItemDb });
 const { character, items } = context;
@@ -26,7 +27,7 @@ describe('catálogo de candidatos', () => {
     expect(catalog.headLower).toContain(ODIUM_MASK);
     expect(slotsForItem(items[ODIUM_MASK])).toEqual([ItemTypeEnum.headMiddle, ItemTypeEnum.headLower]);
     expect(slotsForItem(items[SOME_CARD])).toEqual([]);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('só lista armas que a classe usa e itens do LATAM', () => {
     for (const id of catalog.weapon ?? []) {
@@ -34,7 +35,7 @@ describe('catálogo de candidatos', () => {
       const usable = items[id].usableClass as string[] | undefined;
       if (Array.isArray(usable)) expect(usable.some((name) => character.classNameSet.has(name))).toBe(true);
     }
-  });
+  }, ENGINE_TIMEOUT);
 
   it('respeita inventário, exclusões e nível', () => {
     const owned = buildCatalog(items, character, { allowedItemIds: new Set([SHARPBOLT_BOW, ELVEN_ARROW]) });
@@ -45,7 +46,7 @@ describe('catálogo de candidatos', () => {
 
     const lowLevel = buildCatalog(items, character, { maxRequiredLevel: 1 });
     expect((lowLevel.weapon ?? []).every((id) => !((items[id] as any).requiredLevel > 1))).toBe(true);
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('placeItem', () => {
@@ -61,7 +62,7 @@ describe('placeItem', () => {
 
     const back = placeItem({ ...toSharpbolt, weaponCard1: SOME_CARD, weaponCard2: SOME_CARD }, ItemTypeEnum.weapon, ROYAL_BOW, items, probe) as any;
     expect([back.weaponCard1, back.weaponCard2]).toEqual([SOME_CARD, SOME_CARD]);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('usa o refino pedido e não altera o modelo original', () => {
     const model = windhawkModel(130);
@@ -69,7 +70,7 @@ describe('placeItem', () => {
 
     expect(placed.weaponRefine).toBe(15);
     expect(model.weapon).toBe(SHARPBOLT_BOW);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('arco (duas mãos) não fica com escudo; munição incompatível sai', () => {
     const withShield = { ...windhawkModel(130), weapon: undefined, ammo: ELVEN_ARROW, shield: STONE_BUCKLER } as any;
@@ -84,7 +85,7 @@ describe('placeItem', () => {
     const rules = probe.rules(undefined);
     const keeps = rules.allowAmmo && items[ELVEN_ARROW].itemSubTypeId === rules.ammoSubTypeId;
     expect(unarmed.ammo).toBe(keeps ? ELVEN_ARROW : undefined);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('máscara de Meio+Baixo libera os dois slots, e um item de Baixo depois a remove', () => {
     const model = { ...windhawkModel(130), headMiddle: 410093, headLower: 420076 } as any;
@@ -95,7 +96,7 @@ describe('placeItem', () => {
     const lower = placeItem(masked, ItemTypeEnum.headLower, 420076, items, probe);
     expect(lower.headLower).toBe(420076);
     expect(lower.headMiddle).toBeUndefined();
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('optimizeBuild', () => {

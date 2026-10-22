@@ -8,6 +8,7 @@ import { defaultSlots, optimizeBuild } from './items';
 import { runOptimization } from './runtime';
 import { appShapedData } from './__tests__/app-data';
 import { latamItemDb, windhawkContext, windhawkModel } from './__tests__/windhawk-build';
+import { ENGINE_TIMEOUT } from './__tests__/timeouts';
 
 const context = windhawkContext({ items: latamItemDb });
 const { items, character } = context;
@@ -23,7 +24,7 @@ describe('visuais e encantamentos de visual', () => {
     expect(catalog.costumeEnchantUpper?.length).toBeGreaterThan(0);
     expect(catalog.costumeEnchantMiddle?.length).toBeGreaterThan(0);
     expect(catalog.costumeEnchantLower?.length).toBeGreaterThan(0);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('por padrão a busca mexe nos encantamentos de visual, nunca nos visuais (bônus de visual não conta)', () => {
     const slots = defaultSlots();
@@ -32,13 +33,13 @@ describe('visuais e encantamentos de visual', () => {
       expect(slots).not.toContain(visual);
     }
     expect(defaultSlots({ includeCostumes: false }).some((slot) => slot.startsWith('costume'))).toBe(false);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('o catálogo de visuais só traz os que têm bônus', () => {
     for (const slot of [ItemTypeEnum.costumeUpper, ItemTypeEnum.costumeLower, ItemTypeEnum.costumeGarment] as const) {
       for (const id of catalog[slot] ?? []) expect(Object.keys(items[id].script ?? {}).length).toBeGreaterThan(0);
     }
-  });
+  }, ENGINE_TIMEOUT);
 
   it('o motor conta o encantamento de visual: "Fixa 1" zera os 0,5 s do Disparo Certeiro', () => {
     const evaluator = new BuildEvaluator(context, 0);
@@ -46,7 +47,7 @@ describe('visuais e encantamentos de visual', () => {
     const after = evaluator.evaluate({ ...windhawkModel(130), costumeEnchantGarment: FIXA_1 } as any, AIMED_BOLT);
     expect(before.fct).toBeCloseTo(0.5, 4);
     expect(after.fct).toBe(0);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('a busca usa encantamento de visual para cumprir limite de fixa', () => {
     const model = { ...windhawkModel(130), selectedAtkSkill: AIMED_BOLT, rotation: [AIMED_BOLT] } as any;

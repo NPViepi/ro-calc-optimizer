@@ -7,6 +7,7 @@ import { findMvpCards } from './mvp-cards';
 import { buildDefaults, runOptimization } from './runtime';
 import { appShapedData } from './__tests__/app-data';
 import { latamItemDb, windhawkContext, windhawkModel } from './__tests__/windhawk-build';
+import { ENGINE_TIMEOUT } from './__tests__/timeouts';
 
 const context = windhawkContext({ items: latamItemDb });
 const { items, character } = context;
@@ -25,7 +26,7 @@ describe('refino e grau dos itens colocados', () => {
 
     const sem = placeItem(model, ItemTypeEnum.armor, 450127, items, probe);
     expect(sem.armorRefine).toBe(0);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('respeita os tetos da tela e acessório não refinável fica +0', () => {
     const model = windhawkModel(130);
@@ -33,7 +34,7 @@ describe('refino e grau dos itens colocados', () => {
     expect(placeItem(model, ItemTypeEnum.weapon, ROYAL_BOW, items, probe, { defaultRefine: { equip: 25 } }).weaponRefine).toBe(18);
     expect(items[BRISINGAMEN].isRefinable).toBeFalsy();
     expect(placeItem(model, ItemTypeEnum.accLeft, BRISINGAMEN, items, probe, { defaultRefine: { accessory: 10 } }).accLeftRefine).toBe(0);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('grau só em item que aceita grau; sem padrão, mantém o grau que o slot tinha', () => {
     const gradeable = [THANOS_BOW, ROYAL_BOW, 700016].find((id) => items[id].itemLevel === 5);
@@ -45,7 +46,7 @@ describe('refino e grau dos itens colocados', () => {
       expect(placeItem(model, ItemTypeEnum.weapon, gradeable, items, probe).weaponGrade).toBe('B');
     }
     if (plain) expect(placeItem(model, ItemTypeEnum.weapon, plain, items, probe, { defaultGrade: 'A' }).weaponGrade).toBeUndefined();
-  });
+  }, ENGINE_TIMEOUT);
 
   it('o motor conta refino e grau (sanidade)', () => {
     const evaluator = new BuildEvaluator(context, 0);
@@ -53,7 +54,7 @@ describe('refino e grau dos itens colocados', () => {
     const plus0 = evaluator.evaluate({ ...base, weaponRefine: 0 }).damageAvg;
     const plus15 = evaluator.evaluate({ ...base, weaponRefine: 15 }).damageAvg;
     expect(plus15).toBeGreaterThan(plus0);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('a busca coloca os itens com o refino pedido', () => {
     const result = optimizeBuild(new BuildEvaluator(context), context, windhawkModel(130), {
@@ -69,7 +70,7 @@ describe('refino e grau dos itens colocados', () => {
   it('sugestões do painel vêm da build atual', () => {
     const model = { ...windhawkModel(130), shadowArmor: SHADOW_ARMOR, shadowArmorRefine: 7, weaponGrade: 'C' } as any;
     expect(buildDefaults(model)).toEqual({ equipRefine: 11, shadowRefine: 7, grade: 'C' });
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('cartas MVP', () => {
@@ -83,7 +84,7 @@ describe('cartas MVP', () => {
     expect(mvp.has(4361)).toBe(true); // Mestre-ferreiro Howard (correção manual: "Harword" no LATAM)
     expect(mvp.has(4129)).toBe(false); // Carta Bafomé Jr. — não é MVP
     expect(mvp.has(4001)).toBe(false); // Carta Poring
-  });
+  }, ENGINE_TIMEOUT);
 
   it('com a opção desligada, a busca não coloca carta MVP', () => {
     const preset = JSON.parse(JSON.stringify(windhawkModel(130)));

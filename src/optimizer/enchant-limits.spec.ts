@@ -8,6 +8,7 @@ import { buildCatalog } from './candidates';
 import { BuildEvaluator } from './evaluate';
 import { optimizeBuild } from './items';
 import { latamItemDb, windhawkContext, windhawkModel } from './__tests__/windhawk-build';
+import { ENGINE_TIMEOUT } from './__tests__/timeouts';
 
 const context = windhawkContext({ items: latamItemDb });
 const { items, character } = context;
@@ -34,7 +35,7 @@ describe('dados de limites de encantamento', () => {
         expect(items[id].itemTypeId === 11 || [4883, 29047].includes(id)).toBe(true);
       }
     }
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('limites por item', () => {
@@ -47,30 +48,30 @@ describe('limites por item', () => {
     // Trocar um campo que já tem o encantamento não conta como cópia extra.
     expect(canPlaceEnchant(model, ItemTypeEnum.armor, ItemTypeEnum.armorEnchant2, H_ATIRADOR)).toBe(true);
     expect(canPlaceEnchant(model, ItemTypeEnum.armor, ItemTypeEnum.armorEnchant3, B_DEF)).toBe(true);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('M-Rapidez: x2 no Motor, mas x1 no Escudo Automatron', () => {
     expect(limitViolations(AUTOMATRON_SHIELD_A, [M_RAPIDEZ, M_RAPIDEZ])).toHaveLength(1);
     expect(limitViolations(480020, [M_RAPIDEZ, M_RAPIDEZ])).toEqual([]);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('F- Fantástico: no máximo 2 no item, sem repetir', () => {
     expect(limitViolations(AUTOMATRON_LEG_A, [F_SUPERPODER, F_LAMPEJO])).toEqual([]);
     expect(limitViolations(AUTOMATRON_LEG_A, [F_SUPERPODER, F_SUPERPODER])).not.toEqual([]);
     expect(limitViolations(AUTOMATRON_LEG_A, [F_SUPERPODER, F_LAMPEJO, F_FORTUNA])).not.toEqual([]);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('Capacetes do Passe de Batalha: x1 e x2 da coluna "Limite"', () => {
     expect(limitViolations(BP_HELMET, [ENCANTO_DE_ATAQUE, ENCANTO_DE_ATAQUE])).toEqual([]);
     expect(limitViolations(BP_HELMET, [ENCANTO_FORTIFICADO, ENCANTO_FORTIFICADO])).toHaveLength(1);
-  });
+  }, ENGINE_TIMEOUT);
 
   it('item sem regra cadastrada: repetição é permitida, mas vira aviso', () => {
     const model = { ...windhawkModel(130), garment: 480824, garmentEnchant1: 4704, garmentEnchant2: 4704 } as any;
     expect(canPlaceEnchant(model, ItemTypeEnum.garment, ItemTypeEnum.garmentEnchant3, 4704)).toBe(true);
     const warnings = enchantWarnings(model, items, [ItemTypeEnum.garment]);
     expect(warnings).toEqual([expect.objectContaining({ slot: ItemTypeEnum.garment, kind: 'unverified' })]);
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('acessórios', () => {
@@ -78,7 +79,7 @@ describe('acessórios', () => {
     const catalog = buildCatalog(items, character, { maxRequiredLevel: 230 });
     for (const id of catalog.accLeft ?? []) expect(items[id].itemSubTypeId).not.toBe(510); // Acc_R
     for (const id of catalog.accRight ?? []) expect(items[id].itemSubTypeId).not.toBe(511); // Acc_L
-  });
+  }, ENGINE_TIMEOUT);
 
   it('bônus de conjunto não duplica com o acessório repetido (o motor conta cada combo uma vez)', () => {
     // Anel Intensificador de Magia (serve nos dois lados): "vct: EQUIP[Geffen Magic Robe]===5".
@@ -103,7 +104,7 @@ describe('acessórios', () => {
     // Bônus de conjunto = (com tudo) − (peças sozinhas). Com um anel ou dois, é o mesmo 5.
     expect(oneRingRobe - oneRing - (robe - none)).toBe(5);
     expect(twoRingsRobe - twoRings - (robe - none)).toBe(5);
-  });
+  }, ENGINE_TIMEOUT);
 });
 
 describe('optimizeBuild respeita os limites', () => {

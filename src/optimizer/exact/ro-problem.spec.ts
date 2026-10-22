@@ -155,7 +155,7 @@ describe('RoBuildProblem × força bruta (simulador real)', () => {
   it('limites de encantamento podam (Ilusión ×1 nos lendários etc.) e as builds podadas são de fato inválidas', () => {
     const problem = new RoBuildProblem(evaluator, context, base, options);
     const result = exactSearch(problem, { mode: 'enumerate' });
-    expect(result.stats.pruned.enchantLimit ?? 0).toBeGreaterThanOrEqual(0);
+    expect(result.stats.pruned['enchantLimit'] ?? 0).toBeGreaterThanOrEqual(0);
     expect(result.stats.leaves).toBe(oracle.results.length);
   }, 120_000);
 
