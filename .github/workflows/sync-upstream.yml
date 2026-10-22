@@ -1,0 +1,75 @@
+# Traz as atualizações do repositório original (upstream) para o fork.
+#
+# Fluxo:
+#   upstream/main ──(fast-forward)──► origin/main ──(Pull Request)──► desktop
+#
+# - "main" é um espelho do upstream: nunca faça commits nela.
+# - "desktop" é a branch padrão do fork, com os seus commits.
+#
+# Configuração (Settings ▸ Secrets and variables ▸ Actions):
+#   Variable  UPSTREAM_REPO  ex.: adsonpleal/<repositorio-original>
+#   Secret    SYNC_TOKEN     (recomendado) token pessoal com permissões
+#                            "contents", "pull-requests" e "workflows". Sem ele o push
+#                            falha quando o upstream altera arquivos em .github/workflows,
+#                            e o PR aberto não dispara os checks automaticamente.
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: '17 9 * * *' # todo dia, 06:17 em São Paulo
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: vars.UPSTREAM_REPO != ''
+    env:
+      GH_TOKEN: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+      UPSTREAM_BRANCH: ${{ vars.UPSTREAM_BRANCH || 'main' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Atualizar main com o upstream
+        id: mirror
+        run: |
+          git remote add upstream "https://github.com/${{ vars.UPSTREAM_REPO }}.git"
+          git fetch upstream "$UPSTREAM_BRANCH"
+          before=$(git rev-parse HEAD)
+          if ! git merge --ff-only "upstream/$UPSTREAM_BRANCH"; then
+            echo "::error::A branch main do fork tem commits que não existem no upstream. Mova-os para a branch desktop e deixe main igual ao upstream."
+            exit 1
+          fi
+          git push origin main
+          echo "changed=$([ "$before" != "$(git rev-parse HEAD)" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Abrir PR main -> desktop
+        run: |
+          git fetch origin desktop
+          if [ -z "$(git rev-list origin/desktop..origin/main)" ]; then
+            echo "desktop já contém tudo do upstream."
+            exit 0
+          fi
+          existing=$(gh pr list --base desktop --head main --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            echo "PR #$existing já está aberto e foi atualizado com os novos commits."
+            exit 0
+          fi
+          gh pr create --base desktop --head main \
+            --title "Sync upstream ($(TZ=America/Sao_Paulo date +%F))" \
+            --body "Atualizações automáticas de \`${{ vars.UPSTREAM_REPO }}\`.
+
+          Revise e faça **merge** (não use squash nem rebase, para o git continuar reconhecendo o histórico do upstream).
+
+          $(git log --oneline origin/desktop..origin/main | head -50 | sed 's/^/- /')"
