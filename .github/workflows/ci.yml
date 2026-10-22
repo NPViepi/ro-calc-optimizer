@@ -1,21 +1,16 @@
-# Same preview action as latamvisuais, using the calculator's existing Firebase project.
-name: Deploy to Firebase Hosting on PR
+name: CI
 
 on: pull_request
 
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
 
 concurrency:
-  group: firebase-preview-${{ github.event.pull_request.number }}
+  group: ci-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  build_and_preview:
-    # Fork PRs cannot read deployment secrets.
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,10 +39,3 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Publish preview and comment its URL
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: simulador-latam-ro
-          expires: 7d
