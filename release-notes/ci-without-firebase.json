@@ -1,0 +1,4 @@
+{
+  "type": "patch",
+  "logs": ["Corrigida a integração contínua das PRs para executar as verificações, os testes e o build sem exigir credenciais do Firebase."]
+}
