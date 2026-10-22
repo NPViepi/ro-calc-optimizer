@@ -12,6 +12,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
 const { resolveSiteFile } = require('./site-files');
+const { setupTauriBridge } = require('./tauri-bridge');
 
 const SITE_HOST = 'simulador.latam-tools.com.br';
 const SITE_URL = `https://${SITE_HOST}/`;
@@ -106,8 +107,10 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     if (app.isPackaged) Menu.setApplicationMenu(null);
     serveSite();
-    createWindow();
+    const win = createWindow();
     setupAutoUpdate();
+    // Transição para o app Tauri: exporta os dados e oferece o novo instalador.
+    setupTauriBridge(win);
     app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
   });
 

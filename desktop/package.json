@@ -1,7 +1,7 @@
 {
   "name": "ro-calc-optimizer-desktop",
   "productName": "RO Calc Optimizer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "App desktop do Simulador RO LATAM com otimizador de builds",
   "author": "NPViepi",
   "license": "MIT",
@@ -17,13 +17,19 @@
     "dist": "npm run web && electron-builder",
     "dist:win": "npm run web && electron-builder --win",
     "release": "npm run web && electron-builder --publish always",
-    "test": "node --test test/site-files.test.js"
+    "test": "node --test test/site-files.test.js",
+    "tauri": "tauri",
+    "tauri:dev": "npm run web && tauri dev",
+    "tauri:dev:fast": "tauri dev",
+    "tauri:build": "tauri build",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "dependencies": {
     "electron-updater": "^6.6.2"
   },
   "devDependencies": {
     "electron": "^37.2.0",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "@tauri-apps/cli": "^2"
   }
 }

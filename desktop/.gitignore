@@ -1,3 +1,8 @@
 node_modules/
 web/
 release/
+src-tauri/target/
+src-tauri/gen/
+tauri-setup.log
+# chave privada do updater nunca entra no git
+*.key

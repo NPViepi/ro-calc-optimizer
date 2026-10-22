@@ -1,6 +1,6 @@
 # Fork desktop: como funciona
 
-Este repositório é um fork do Simulador RO LATAM. Ele adiciona um app desktop (Electron) e
+Este repositório é um fork do Simulador RO LATAM. Ele adiciona um app desktop (Tauri; antes Electron) e
 continua recebendo as atualizações do projeto original (upstream).
 
 ## Branches
@@ -38,8 +38,12 @@ Atualizações: `upstream/main` → `main` (automático) → PR para `desktop` (
 pnpm install          # dependências do app web (na raiz)
 cd desktop
 npm install
-npm start             # gera o build web e abre o app
+npm run tauri:dev     # Tauri: gera o build web e abre o app (tauri:dev:fast pula o build web)
+npm start             # Electron (versão antiga, mantida até o fim da migração)
 ```
+
+O app Tauri precisa do [Rust](https://rustup.rs) (toolchain MSVC) e do WebView2 (já vem no
+Windows 10/11). Testes do servidor local: `npm run test:rust`.
 
 ## Lançar uma versão (com auto-update)
 
@@ -49,13 +53,38 @@ git tag desktop-v0.2.0
 git push origin desktop-v0.2.0
 ```
 
-O workflow *Desktop release* gera o instalador do Windows e publica na aba Releases.
-Os apps já instalados baixam a versão nova sozinhos e instalam ao fechar.
+O workflow *Desktop release* gera o instalador do Windows (Tauri) e cria um **rascunho** na aba
+Releases, junto com o `latest.json` assinado. Revise e clique em **Publish release**: só então os
+apps já instalados baixam a versão nova sozinhos e instalam ao fechar.
+
+Chave do updater: já configurada (minisign `81DB9BD41B454CBB`). A pública está em
+`desktop/src-tauri/updater.pub` e em `plugins.updater.pubkey` (`tauri.conf.json`); a privada fica
+fora do repositório (`%USERPROFILE%\.tauri\ro-calc-optimizer.key`) e nos secrets
+`TAURI_SIGNING_PRIVATE_KEY` e `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. **Guarde um backup da chave
+privada e da senha:** sem elas, os apps instalados nunca mais aceitam uma atualização.
+Para gerar de novo (no PowerShell): `npx.cmd tauri signer generate -w "$env:USERPROFILE\.tauri\ro-calc-optimizer.key"`.
+
+## Migração Electron → Tauri
+
+Enquanto houver usuários na versão Electron, cada release também leva a versão Electron
+"ponte" (job `electron-bridge`):
+
+1. O Electron antigo atualiza para a ponte pelo `latest.yml`, como sempre.
+2. A ponte (`desktop/src/tauri-bridge.js`) exporta o `localStorage` para
+   `%APPDATA%\RO Calc Optimizer\migration.json` e oferece o instalador do Tauri.
+3. O instalador do Tauri remove o Electron (`desktop/src-tauri/windows/hooks.nsh`).
+4. No primeiro start, o Tauri restaura o `localStorage` a partir do `migration.json`
+   (`desktop/src-tauri/src/migration.rs`).
+
+Limpeza (fase 4), quando ninguém mais usar o Electron: remover `electron`, `electron-builder`,
+`electron-updater`, `src/main.js`, `src/preload.js`, `src/site-files.js`, `src/tauri-bridge.js`,
+`electron-builder.yml`, `test/site-files.test.js` e o job `electron-bridge`.
 
 ## Como o app carrega o site
 
-O Electron serve o build local em `https://simulador.latam-tools.com.br`, interceptando só
-esse domínio. Assim, links de compartilhamento, CORS e chamadas às APIs funcionam como no site,
+O app serve o build local em `https://simulador.latam-tools.com.br`, interceptando só
+esse domínio (Tauri: evento `WebResourceRequested` do WebView2, em
+`desktop/src-tauri/src/webview2.rs`; só funciona no Windows). Assim, links de compartilhamento, CORS e chamadas às APIs funcionam como no site,
 sem modificar o código do upstream. Rotas de servidor (`/mcp`, `/api/`) são buscadas na internet.
 
 ## Otimizador de build (desktop)
@@ -65,7 +94,8 @@ O app desktop mostra o botão **Otimizar build** no canto da tela. O código fic
 
 - `desktop/scripts/build-optimizer.mjs` empacota o painel (`optimizer/panel.js`) e o motor
   num Web Worker (`optimizer/worker.js`), e roda junto com `npm run web`.
-- `desktop/src/main.js` injeta o painel no `index.html` ao servir a página.
+- `desktop/src-tauri/src/site_server.rs` (e `desktop/src/main.js` no Electron) injeta o painel
+  no `index.html` ao servir a página.
 - O painel lê a build atual (o autosave do app) e devolve links `/s/<token>/`, o mesmo formato
   de compartilhamento do simulador: **Aplicar** abre a build otimizada, **Comparar** abre a atual
   com a otimizada na coluna de comparação.
