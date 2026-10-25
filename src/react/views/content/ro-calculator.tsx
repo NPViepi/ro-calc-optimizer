@@ -1,8 +1,44 @@
-import { Fragment } from 'react';
+import { Fragment, useRef, useState } from 'react';
+import { Icon } from '../../ui/primitives';
+import { IconName } from '../../../app/ui/icon-names';
 import { Render, displayPipe, interpolate, classNames, parseStyle, normalizeStyle, identityKey } from '../render';
 import { sanitizeHtml } from '../../ui/sanitize-html';
 import { PanelSearch } from '../../ui/panel-search';
+import { useViewportBand } from '../../ui/viewport';
+type Pane = 'build' | 'equip' | 'result';
+const PANES: { key: Pane; label: string; icon: IconName }[] = [
+  { key: 'build', label: 'Build', icon: 'pencil' },
+  { key: 'equip', label: 'Equip.', icon: 'shield' },
+  { key: 'result', label: 'Resultado', icon: 'bolt' },
+];
+/**
+ * Below the two-column width the calculator shows one pane at a time. A tablet gets the
+ * build (equipment included) and the result; a phone splits equipment into its own tab.
+ * Desktop never shows this bar; responsive.css decides which buttons each band shows.
+ */
+function PaneSwitcher({ pane, onPane }: { pane: Pane; onPane: (pane: Pane) => void }) {
+  // A tablet has no Equip. tab: the equipment pane left over from a phone width is part of the build.
+  const lit = useViewportBand() !== 'phone' && pane === 'equip' ? 'build' : pane;
+  return <nav className="calc-panes" aria-label="Painéis do simulador">
+    {PANES.map(entry => <button key={entry.key} type="button" aria-pressed={lit === entry.key}
+      className={`calc-panes__tab calc-panes__tab--${entry.key}`}
+      onClick={() => onPane(entry.key)}><Icon name={entry.icon} aria-hidden="true" /><span>{entry.label}</span></button>)}
+  </nav>;
+}
 export function Content({vm, services}: {vm: any; services: any}) {
+const [pane, setPane] = useState<Pane>('build');
+// Summary groups folded on a phone, by title; wider screens always show every group.
+const [foldedGroups, setFoldedGroups] = useState<Record<string, boolean>>({});
+const toggleGroup = (title: string) => setFoldedGroups(folded => ({ ...folded, [title]: !folded[title] }));
+const shell = useRef<HTMLElement | null>(null);
+const choosePane = (next: Pane) => {
+  setPane(next);
+  // A pane starts at its top, not at the scroll offset of the one it replaced.
+  // The shell's scroll-margin-top (responsive.css) clears the topbar and the switcher.
+  const margin = shell.current ? parseFloat(getComputedStyle(shell.current).scrollMarginTop) || 0 : 0;
+  const top = shell.current ? shell.current.getBoundingClientRect().top + window.scrollY - margin : 0;
+  if (window.scrollY > top) window.scrollTo({ top: Math.max(0, top) });
+};
 return <>{(() => { const reductionPop = (context: any) => { const cats = context["cats"];
 const sources = context["sources"];
 const target = context["target"]; return <><Render tag="div" props={{"className": ["reduction-pop"].filter(Boolean).join(' ')}}>{(() => { const __condition1 = !(cats?.length);  return __condition1 ? <><Render tag="div" props={{"className": ["reduction-empty"].filter(Boolean).join(' ')}}>{"Sem reduções de dano vs jogadores."}</Render></> : null; })()}
@@ -32,7 +68,7 @@ const target = context["target"]; return <><Render tag="div" props={{"className"
 "modal": true,
 "visible": vm.isShowMonsterEle,
 "visibleChange": (event: any) => vm.action(() => { const $event = event; (vm.isShowMonsterEle = $event) }),
-"style": normalizeStyle(Object.assign({}, normalizeStyle({"width": "92vw","max-width": "1600px","height": "85vh","min-height": "500px"})))}}><Render tag="app-elemental-table" props={{"monsterMap": vm.monsterDataMap,
+"style": normalizeStyle(Object.assign({}, normalizeStyle({"width": "92vw","max-width": "1600px","height": "85dvh","min-height": "min(500px, calc(100dvh - 2.5rem))"})))}}><Render tag="app-elemental-table" props={{"monsterMap": vm.monsterDataMap,
 "groupMonsterList": vm.groupMonsterList,
 "allSelectedMonsterIds": vm.allSelectedMonsterIds}}></Render></Render>
 <Render tag="app-ui-dialog" props={{"header": vm.bonusBreakdownTitle,
@@ -69,8 +105,10 @@ const target = context["target"]; return <><Render tag="div" props={{"className"
 "visibleChange": (event: any) => vm.action(() => { const $event = event; (vm.isShowAspdCurve = $event) }),
 "style": normalizeStyle(Object.assign({}, normalizeStyle({"width": "560px","max-width": "92vw"})))}}>{(() => { const __condition16 = vm.isShowAspdCurve;  return __condition16 ? <><Render tag="app-aspd-curve" props={{"aspd": (vm.totalSummary?.calc?.totalAspd || 0),
 "aspd2": (vm.isEnableCompare ? vm.totalSummary2?.calc?.totalAspd : null)}}></Render></> : null; })()}</Render>
-<Render tag="div" props={{"className": ["grid grid-nogutter"].filter(Boolean).join(' '),
-"style": normalizeStyle(Object.assign({}, parseStyle("min-width: 1500px")))}}><Render tag="div" props={{"className": ["ui-fluid col-7 editor_col"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["stats_stack"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["char_band"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["build_actions"].filter(Boolean).join(' ')}}><Render tag="button" props={{"type": "button",
+<PaneSwitcher pane={pane} onPane={choosePane} />
+<Render tag="div" props={{"className": ["grid grid-nogutter calc-shell"].filter(Boolean).join(' '),
+"data-pane": pane,
+"reference": (element: any) => { shell.current = element; }}}><Render tag="div" props={{"className": ["ui-fluid col-7 editor_col calc-col calc-col--build"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["stats_stack"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["char_band"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["build_actions"].filter(Boolean).join(' ')}}><Render tag="button" props={{"type": "button",
 "icon": "upload",
 "label": "Importar",
 "tooltipPosition": "bottom",
@@ -333,6 +371,9 @@ let sustainPanel: any = vm["sustainPanel"]; return <>{(() => { const __condition
 "tooltip": {text: item.compareTooltip, position: 'right', className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false},
 "activateWithKeys": item.compareClickable}}>{interpolate(["→ "," ",""], [item.compare.text,item.compare.deltaText])}</Render></> : null; })()}</Render></Fragment>; })}</Render>
 <Render tag="div" props={{"className": ["ss_grid"].filter(Boolean).join(' ')}}>{(vm.statsSummary.columns ?? []).map((__entry26: any, __index26: number, __array26: any[]) => { const column = __entry26; return <Fragment key={identityKey(vm.trackByIndex(__index26, __entry26))}><Render tag="div" props={{"className": ["ss_col"].filter(Boolean).join(' ')}}>{(column ?? []).map((__entry27: any, __index27: number, __array27: any[]) => { const group = __entry27; return <Fragment key={identityKey(vm.trackByTitle(__index27, __entry27))}><><Render tag="div" props={{"className": ["ss_group_header"].filter(Boolean).join(' ')}}><Render tag="span" props={{}}>{interpolate(["",""], [group.title])}</Render>
+<button type="button" className="ss_group_toggle" aria-expanded={!foldedGroups[group.title]}
+  aria-label={`${foldedGroups[group.title] ? 'Expandir' : 'Recolher'} ${group.title}`} onClick={() => toggleGroup(group.title)}>
+  <Icon name={foldedGroups[group.title] ? 'chevron-down' : 'chevron-up'} aria-hidden="true" /></button>
 {(() => { const __condition28 = group.showReduction;  return __condition28 ? <><Render tag="span" props={{"click": (event: any) => vm.action(() => { const $event = event; reductionPanel.toggle($event) }),
 "className": ["reduction-label ss_reduction bonus_clickable"].filter(Boolean).join(' '),
 "activateWithKeys": true}}><Render tag="app-icon" props={{"name": "shield"}}></Render>
@@ -341,8 +382,8 @@ let sustainPanel: any = vm["sustainPanel"]; return <>{(() => { const __condition
 "className": ["sustain-label ss_reduction bonus_clickable"].filter(Boolean).join(' '),
 "activateWithKeys": true}}><Render tag="app-icon" props={{"name": "heart"}}></Render>
 {" Cura e regen. "}</Render></> : null; })()}</Render>
-{(group.rows ?? []).map((__entry30: any, __index30: number, __array30: any[]) => { const row = __entry30; return <Fragment key={identityKey(vm.trackByLabel(__index30, __entry30))}><><Render tag="span" props={{"className": ["ss_label"].filter(Boolean).join(' ')}}>{interpolate(["",""], [row.label])}</Render>
-<Render tag="span" props={{"className": ["ss_value"].filter(Boolean).join(' ')}}><Render tag="span" props={{"tooltipPosition": "top",
+{(group.rows ?? []).map((__entry30: any, __index30: number, __array30: any[]) => { const row = __entry30; return <Fragment key={identityKey(vm.trackByLabel(__index30, __entry30))}><><Render tag="span" props={{"className": ["ss_label", (foldedGroups[group.title] ? "ss_folded" : '')].filter(Boolean).join(' ')}}>{interpolate(["",""], [row.label])}</Render>
+<Render tag="span" props={{"className": ["ss_value", (foldedGroups[group.title] ? "ss_folded" : '')].filter(Boolean).join(' ')}}><Render tag="span" props={{"tooltipPosition": "top",
 "click": (event: any) => vm.action(() => { const $event = event; vm.onSummaryClick(row) }),
 "className": ["ss_value_text",classNames(row.valueClass),(row.clickable ? "bonus_clickable" : '')].filter(Boolean).join(' '),
 "tooltip": {text: row.tooltip, position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false},
@@ -389,7 +430,7 @@ let sustainPanel: any = vm["sustainPanel"]; return <>{(() => { const __condition
 "compareItemChange": (event: any) => vm.action(() => { const $event = event; vm.onCompareItemChange() }),
 "compareSlotsChange": (event: any) => vm.action(() => { const $event = event; vm.onListItemComparingChange($event) }),
 "slotColorChange": (event: any) => vm.action(() => { const $event = event; vm.onSlotColorChange() })}}></Render></Render>
-<Render tag="div" props={{"className": ["ui-fluid col-5"].filter(Boolean).join(' ')}}><Render tag="app-ui-accordion" props={{"multiple": true,
+<Render tag="div" props={{"className": ["ui-fluid col-5 calc-col calc-col--result"].filter(Boolean).join(' ')}}><Render tag="app-ui-accordion" props={{"multiple": true,
 "activeIndex": vm.rightAccordionActiveIndices,
 "tabOpened": (event: any) => vm.action(() => { const $event = event; vm.onRightAccordionOpen($event) }),
 "tabClosed": (event: any) => vm.action(() => { const $event = event; vm.onRightAccordionClose($event) })}}><Render tag="app-ui-accordion-tab" props={{"header": "Consumíveis",
@@ -780,7 +821,7 @@ const i = __index59; return <Fragment key={identityKey(__entry59)}><>{(() => { c
 <Render tag="div" props={{"className": ["text_ellips"].filter(Boolean).join(' ')}}>{interpolate(["",""], [item.label])}</Render></Render></>; }}}></Render></Render>
 <Render tag="section" props={{"className": ["item-description-card"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["item-description-content"].filter(Boolean).join(' ')}}>{(() => { const __condition68 = !(vm.itemId);  return __condition68 ? <><Render tag="div" props={{"className": ["item-description-empty"].filter(Boolean).join(' ')}}><Render tag="app-icon" props={{"name": "arrow-circle-left",
 "style": normalizeStyle(Object.assign({}, parseStyle("font-size: 2.5rem")))}}></Render>
-<Render tag="p" props={{"className": ["mt-3 mb-0"].filter(Boolean).join(' ')}}>{"Selecione um item na lista ao lado para ver seus bônus e descrição."}</Render></Render></> : null; })()}
+<Render tag="p" props={{"className": ["mt-3 mb-0"].filter(Boolean).join(' ')}}><span className="where-beside">Selecione um item na lista ao lado para ver seus bônus e descrição.</span><span className="where-above">Selecione um item na lista acima para ver seus bônus e descrição.</span></Render></Render></> : null; })()}
 {(() => { const __condition69 = vm.itemId;  return __condition69 ? <><><Render tag="div" props={{"className": ["item-description-meta"].filter(Boolean).join(' ')}}><Render tag="img" props={{"alt": "",
 "src": displayPipe("iconUrl", vm.itemId, ["item"], services),
 "className": ["item-description-icon"].filter(Boolean).join(' '),
@@ -872,10 +913,10 @@ const i = __index59; return <Fragment key={identityKey(__entry59)}><>{(() => { c
 "className": ["replay-dropzone",(vm.replayDragOver ? "dragover" : '')].filter(Boolean).join(' '),
 "activateWithKeys": true}}>{(() => { let replayInput: any = vm["replayInput"]; return <><Render tag="app-icon" props={{"name": "upload",
 "className": ["replay-dropzone-icon"].filter(Boolean).join(' ')}}></Render>
-<Render tag="p" props={{"className": ["m-0"].filter(Boolean).join(' ')}}>{"Arraste um arquivo "}
+<Render tag="p" props={{"className": ["m-0 replay-dropzone-drag"].filter(Boolean).join(' ')}}>{"Arraste um arquivo "}
 <Render tag="b" props={{}}>{".rrf"}</Render>
 {" aqui"}</Render>
-<Render tag="p" props={{"className": ["my-2 text-sm"].filter(Boolean).join(' ')}}>{"ou"}</Render>
+<Render tag="p" props={{"className": ["my-2 text-sm replay-dropzone-drag"].filter(Boolean).join(' ')}}>{"ou"}</Render>
 <Render tag="button" props={{"type": "button",
 "icon": "folder-open",
 "label": "Selecionar arquivo",
@@ -944,6 +985,7 @@ const i = __index59; return <Fragment key={identityKey(__entry59)}><>{(() => { c
 "dismissableMask": true,
 "contentStyle": {"padding-top": "1rem"},
 "visibleChange": (event: any) => vm.action(() => { const $event = event; (vm.showSavesDialog = $event) }),
+"styleClass": "saves-dialog",
 "style": normalizeStyle(Object.assign({}, normalizeStyle({"width": "900px","max-width": "95vw"}))),
 "template_header": (context: any) => {  return <><Render tag="div" props={{"className": ["flex align-items-center justify-content-between"].filter(Boolean).join(' '),
 "style": normalizeStyle(Object.assign({}, parseStyle("width: 100%")))}}><Render tag="span" props={{"className": ["text-xl font-medium"].filter(Boolean).join(' ')}}>{"Simulações salvas"}</Render>

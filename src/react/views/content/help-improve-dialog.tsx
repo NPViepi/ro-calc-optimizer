@@ -136,10 +136,10 @@ return <><Render tag="app-ui-dialog" props={{"visible": vm.visible,
 "keydown": (event: any) => vm.action(() => { const $event = event; if (event.key?.toLowerCase() === "enter") { vm.replayInput.click() } }),
 "className": ["replay-dropzone mt-3",(vm.dragOver ? "dragover" : '')].filter(Boolean).join(' ')}}>{(() => { let replayInput: any = vm["replayInput"]; return <><Render tag="app-icon" props={{"name": "upload",
 "className": ["replay-dropzone-icon"].filter(Boolean).join(' ')}}></Render>
-<Render tag="p" props={{"className": ["m-0"].filter(Boolean).join(' ')}}>{"Arraste sua gravação "}
+<Render tag="p" props={{"className": ["m-0 replay-dropzone-drag"].filter(Boolean).join(' ')}}>{"Arraste sua gravação "}
 <Render tag="b" props={{}}>{".rrf"}</Render>
 {" aqui"}</Render>
-<Render tag="p" props={{"className": ["my-2 text-sm"].filter(Boolean).join(' ')}}>{"ou"}</Render>
+<Render tag="p" props={{"className": ["my-2 text-sm replay-dropzone-drag"].filter(Boolean).join(' ')}}>{"ou"}</Render>
 <Render tag="button" props={{"type": "button",
 "icon": "folder-open",
 "label": "Selecionar arquivo",

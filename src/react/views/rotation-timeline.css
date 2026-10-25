@@ -34,9 +34,12 @@
   cursor: pointer;
   border-radius: 3px;
 }
-:is(app-rotation-timeline, .ui-scope-app-rotation-timeline) .tl-icon:hover{
+@media (hover: hover){:is(app-rotation-timeline, .ui-scope-app-rotation-timeline) .tl-icon:hover{
   outline: 1px solid var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-rotation-timeline, .ui-scope-app-rotation-timeline) .tl-icon:active{
+  outline: 1px solid var(--primary-color);
+}}
 :is(app-rotation-timeline, .ui-scope-app-rotation-timeline) .tl-icon:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 1px;

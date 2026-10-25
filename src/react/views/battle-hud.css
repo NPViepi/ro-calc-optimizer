@@ -31,11 +31,6 @@
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-card-col--skill{
   flex: 60 1 0;
 }
-@media (max-width: 991px){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-cards{
-    flex-direction: column;
-  }
-
-}
  app-battle-hud .hud-card.ui-card,
  .ui-scope-app-battle-hud .hud-card.ui-card{
   height: 100%;
@@ -507,10 +502,14 @@
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero .clickable{
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero .clickable:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero .clickable:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero .clickable:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero .pcol.sim .pnum{
   color: var(--yellow-200);
 }
@@ -869,19 +868,6 @@
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-card-col--monster .monster_id_link{
   order: 5;
 }
-@container (max-width: 420px){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-card-col--monster  .ui-card-content{
-    display: block;
-  }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-card-col--monster .hud-monster-info{
-    width: auto;
-  }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-band-right{
-    border-left: none;
-    padding-left: 0;
-    margin-top: 8px;
-  }
-
-}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-rot-layout{
   display: flex;
   flex-direction: column;
@@ -967,9 +953,12 @@
   color: var(--primary-color);
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-help:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-help:hover{
   background: var(--highlight-bg);
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-help:active{
+  background: var(--highlight-bg);
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-warn-chip.ui-button,
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-invalid-chip{
 
@@ -988,11 +977,16 @@
   border: 1px solid var(--surface-border);
   color: var(--yellow-300, #ffe082);
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-warn-chip.ui-button:enabled:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-warn-chip.ui-button:enabled:hover{
   background: rgba(255, 224, 130, 0.08);
   border-color: var(--surface-border);
   color: var(--yellow-300, #ffe082);
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-warn-chip.ui-button:enabled:active{
+  background: rgba(255, 224, 130, 0.08);
+  border-color: var(--surface-border);
+  color: var(--yellow-300, #ffe082);
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-invalid-chip{
   border: 1px solid var(--red-300, #ff8980);
   color: var(--red-300, #ff8980);
@@ -1111,10 +1105,14 @@
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero-strip .clickable{
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero-strip .clickable:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero-strip .clickable:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero-strip .clickable:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-hero-strip .pdelta{
   font-size: 14px;
   font-weight: 700;
@@ -1206,9 +1204,12 @@
   cursor: pointer;
   user-select: none;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-desc-toggle:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-desc-toggle:hover{
   color: var(--text-color);
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-desc-toggle:active{
+  color: var(--text-color);
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-desc-toggle .ui-icon{
   font-size: 10px;
 }
@@ -1239,10 +1240,14 @@
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val{
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
@@ -1317,10 +1322,14 @@
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val{
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .pd-dmg-val:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
@@ -1417,16 +1426,26 @@
  .ui-scope-app-rotation-list .rot-clear.ui-button .ui-button-icon-left{
   margin-right: 0.3rem;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-optimize.ui-button:enabled:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-optimize.ui-button:enabled:hover{
   background: rgba(255, 224, 130, 0.08);
   border-color: var(--surface-border);
   color: #ffe082;
-}
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-clear.ui-button:enabled:hover{
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-optimize.ui-button:enabled:active{
+  background: rgba(255, 224, 130, 0.08);
+  border-color: var(--surface-border);
+  color: #ffe082;
+}}
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-clear.ui-button:enabled:hover{
   background: rgba(255, 137, 128, 0.08);
   border-color: var(--surface-border);
   color: var(--red-300, #ff8980);
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-clear.ui-button:enabled:active{
+  background: rgba(255, 137, 128, 0.08);
+  border-color: var(--surface-border);
+  color: var(--red-300, #ff8980);
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-add.ui-button{
   background: transparent;
   border: 1px dashed var(--surface-border);
@@ -1448,11 +1467,16 @@
  .ui-scope-app-rotation-list .rot-add.ui-button .ui-button-icon-left{
   margin-right: 0.4rem;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-add.ui-button:enabled:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-add.ui-button:enabled:hover{
   background: var(--highlight-bg);
   border-color: var(--surface-border);
   color: var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-add.ui-button:enabled:active{
+  background: var(--highlight-bg);
+  border-color: var(--surface-border);
+  color: var(--primary-color);
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-rows{
   display: flex;
   flex-direction: column;
@@ -1513,9 +1537,12 @@
   cursor: pointer;
   border-radius: 3px;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-icon--btn:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-icon--btn:hover{
   outline: 1px solid var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-icon--btn:active{
+  outline: 1px solid var(--primary-color);
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-icon--btn:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 1px;
@@ -1625,9 +1652,12 @@
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-branch{
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-branch:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-branch:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-branch:active{
+  text-decoration: underline;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-branch:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 1px;
@@ -1638,10 +1668,14 @@
   color: var(--teal-300, #61beb5);
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-val:hover,
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-val:hover,
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-crit-val.bonus_clickable:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-val:active,
+:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-crit-val.bonus_clickable:active{
+  text-decoration: underline;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-val:focus-visible,
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-crit-val:focus-visible{
   outline: 2px solid var(--primary-color);
@@ -1653,9 +1687,12 @@
   color: var(--yellow-200, #fde4a5);
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-sim:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-sim:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-sim:active{
+  text-decoration: underline;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-dmg-sim:focus-visible,
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-crit-sim:focus-visible{
   outline: 2px solid var(--primary-color);
@@ -1760,9 +1797,12 @@
   cursor: pointer;
   flex-shrink: 0;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-remove:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-remove:hover{
   color: var(--red-300, #ff8980);
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-remove:active{
+  color: var(--red-300, #ff8980);
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .rot-handle{
   height: 22px;
   display: flex;
@@ -2362,9 +2402,12 @@
   font-size: 11px;
   text-decoration: none;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .item-description-links a:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .item-description-links a:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .item-description-links a:active{
+  text-decoration: underline;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .item-description-bonuses{
   padding: 0.75rem;
 }
@@ -2398,9 +2441,12 @@
   text-decoration: none;
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) a.skill_link:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) a.skill_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) a.skill_link:active{
+  text-decoration: underline;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .summary_stat_atk{
 
   background-color: var(--stat-chip-bg, #121212);
@@ -2563,12 +2609,6 @@
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .auto-cast-shared-block{
   margin-bottom: 14px;
 }
-@media (max-width: 768px){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-selectors-row{
-    flex-direction: column;
-    gap: 8px;
-  }
-
-}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .dropdown_monster_group_label{
   background-color: var(--green-900);
   color: white;
@@ -2589,9 +2629,12 @@
   text-decoration: underline dotted transparent;
   transition: text-decoration-color 0.12s ease;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .bonus_clickable:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .bonus_clickable:hover{
   text-decoration: underline dotted currentColor;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .bonus_clickable:active{
+  text-decoration: underline dotted currentColor;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .bonus_breakdown_list{
   list-style: none;
   margin: 0;
@@ -2640,9 +2683,12 @@
   color: var(--primary-color);
   text-decoration: none;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .bonus_breakdown_calc_link:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .bonus_breakdown_calc_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .bonus_breakdown_calc_link:active{
+  text-decoration: underline;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .bonus_breakdown_calc_link .ui-icon{
   font-size: 0.7rem;
 }
@@ -2664,9 +2710,12 @@
   display: inline-flex;
   align-items: center;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .monster_id_link:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .monster_id_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .monster_id_link:active{
+  text-decoration: underline;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .img_monster{
 
 
@@ -2981,13 +3030,16 @@
 
 }
  app-ro-calculator .ui-accordion-tab .ui-highlight > button,
- .ui-scope-app-ro-calculator .ui-accordion-tab .ui-highlight > button,
- app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover,
- .ui-scope-app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover{
+ .ui-scope-app-ro-calculator .ui-accordion-tab .ui-highlight > button{
   color: var(--primary-color-text) !important;
   background: var(--primary-color) !important;
 
 }
+@media (hover: hover){ app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover,
+ .ui-scope-app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover{
+  color: var(--primary-color-text);
+  background: var(--primary-color);
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .job_img{
   width: 25px;
   height: 25px;
@@ -3008,9 +3060,12 @@
   cursor: pointer;
   transition: border-color 0.15s, background-color 0.15s;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .replay-dropzone:hover{
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .replay-dropzone:hover{
   border-color: var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .replay-dropzone:active{
+  border-color: var(--primary-color);
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .replay-dropzone.dragover{
   border-color: var(--primary-color);
   background-color: var(--surface-100);
@@ -3431,9 +3486,12 @@
   white-space: nowrap;
   cursor: pointer;
 }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .stats_compare_toggle:hover:not(:disabled){
+@media (hover: hover){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .stats_compare_toggle:hover:not(:disabled){
   color: #fdd87d;
-}
+}}
+@media (hover: none){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .stats_compare_toggle:active:not(:disabled){
+  color: #fdd87d;
+}}
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .stats_compare_toggle--on{
   padding: 0 6px;
   border-color: rgb(253 216 125 / 55%);
@@ -3596,14 +3654,4 @@
 }
 :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .auto-cast-beta-actions .ui-button{
   white-space: nowrap;
-}
-@media (max-width: 1100px){:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .auto-cast-beta-alert{
-    align-items: stretch;
-    flex-direction: column;
-  }
-:is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .auto-cast-beta-actions{
-    flex-wrap: wrap;
-    margin-left: 0;
-  }
-
 }

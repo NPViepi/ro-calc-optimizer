@@ -56,18 +56,28 @@
   cursor: pointer;
 }
 
-.eq-ribbon__clear:hover,
-.eq-ribbon__clear:focus-visible {
+.eq-ribbon__clear:focus-visible{
   background: rgb(253 216 125 / 20%);
   color: #fdd87d;
   outline: none;
 }
+@media (hover: hover){.eq-ribbon__clear:hover{
+  background: rgb(253 216 125 / 20%);
+  color: #fdd87d;
+  outline: none;
+}}
+@media (hover: none){.eq-ribbon__clear:active{
+  background: rgb(253 216 125 / 20%);
+  color: #fdd87d;
+  outline: none;
+}}
 
 /* auto-fit rather than two fixed tracks: inside the calculator's left pane this is one
-   column at 1500px and two once the window is wide enough to earn them. */
+   column on a narrower desktop and two once the window is wide enough to earn them. */
 .eq-grid__columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  /* A card never asks for more than the column has (a phone is narrower than 480px). */
+  grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
   gap: 16px;
   align-items: start;
 }

@@ -21,7 +21,13 @@ test('fixed appearance ignores old preferences while preserving stored data', as
   await boot(page);
   await expect(page.locator('html')).toHaveCSS('font-size', '14px');
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(23, 33, 47)');
-  await expect(page.getByRole('button', { name: 'Configurações' })).toHaveCount(0);
+  // The settings sidebar holds the previews switch only: no theme, scale or colour scheme.
+  await page.getByRole('button', { name: 'Configurações', exact: true }).click();
+  const settings = page.getByRole('dialog', { name: 'Configurações' });
+  await expect(settings).toContainText('Prévias');
+  await expect(settings.getByRole('group')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(settings).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('ui-test-unrelated'))).toBe('keep-me');
   expect(await page.evaluate(() => localStorage.getItem('theme'))).toBe('arya-orange');
   await expect(page.getByRole('button', { name: 'ATQ 26', exact: true })).toBeVisible();
@@ -293,6 +299,8 @@ for (const width of [1920, 390]) {
   test(`auto-cast effective-hit popup stays anchored to its row at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 918 });
     await boot(page);
+    // A phone shows the sections behind the bottom bar's "Resultado" tab.
+    if (width < 768) await page.getByRole('button', { name: 'Resultado', exact: true }).click();
     await page.getByRole('button', { name: 'Auto-conjuração', exact: true }).click();
     const trigger = page.locator('[data-auto-anchor="effective-hit"]');
     await trigger.scrollIntoViewIfNeeded();

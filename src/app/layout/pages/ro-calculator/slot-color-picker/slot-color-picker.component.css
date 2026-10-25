@@ -53,11 +53,18 @@
   color: var(--picker-muted);
 }
 
-.cpicker__row:hover,
-.cpicker__row:focus-visible {
+.cpicker__row:focus-visible{
   background: var(--picker-hover);
   outline: none;
 }
+@media (hover: hover){.cpicker__row:hover{
+  background: var(--picker-hover);
+  outline: none;
+}}
+@media (hover: none){.cpicker__row:active{
+  background: var(--picker-hover);
+  outline: none;
+}}
 
 .cpicker__row--selected .cpicker__label {
   font-weight: 700;
@@ -99,11 +106,18 @@
   cursor: pointer;
 }
 
-.cpicker__rename:hover,
-.cpicker__rename:focus-visible {
+.cpicker__rename:focus-visible{
   color: var(--picker-text);
   outline: none;
 }
+@media (hover: hover){.cpicker__rename:hover{
+  color: var(--picker-text);
+  outline: none;
+}}
+@media (hover: none){.cpicker__rename:active{
+  color: var(--picker-text);
+  outline: none;
+}}
 
 .cpicker__edit {
   display: flex;

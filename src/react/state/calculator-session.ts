@@ -719,6 +719,9 @@ await ((_event?: unknown) => {
     this.allSubs.push(this.layoutService.customItemCreate.subscribe((request) =>
       this.customStudio?.openCreate(request.kind, { slot: request.slot, compare: request.compare })));
     this.allSubs.push(this.layoutService.customItemEdit.subscribe((id) => this.openEditCustomItem(id)));
+    // The same guard as the character band's own Salvar / Link buttons.
+    this.allSubs.push(this.layoutService.buildSaveOpen.subscribe(() => this.action(() => { if (!this.isInProcessingPreset) this.openSaveDialog(); })));
+    this.allSubs.push(this.layoutService.buildShareOpen.subscribe(() => this.action(() => { if (!this.isInProcessingPreset) this.openShareDialog(); })));
 
     const isCalcSubs = listenDebounced(this.isCalculatingEvent, 100, value => { ((_event?: unknown) => {
       this.isCalculating = false;

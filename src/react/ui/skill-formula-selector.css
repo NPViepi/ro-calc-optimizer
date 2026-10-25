@@ -1,7 +1,8 @@
 .skill-formula-selector { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; font-size: 12px; }
 .skill-formula-field { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
 .skill-formula-info { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 1.75rem; height: 1.75rem; padding: 0; border: 0; border-radius: var(--border-radius); background: transparent; color: var(--text-color-secondary); cursor: pointer; }
-.skill-formula-info:hover { color: var(--primary-color); background: var(--surface-hover); }
+@media (hover: hover){.skill-formula-info:hover{ color: var(--primary-color); background: var(--surface-hover); }}
+@media (hover: none){.skill-formula-info:active{ color: var(--primary-color); background: var(--surface-hover); }}
 .skill-formula-info:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
 .skill-formula-references { width: min(30rem, calc(100vw - 3rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; font-size: 13px; line-height: 1.5; }
 .skill-formula-references p { margin-top: 0; }

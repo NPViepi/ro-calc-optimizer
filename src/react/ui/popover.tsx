@@ -27,6 +27,9 @@ export function Popover({ anchor, onClose, className = '', ariaLabel, centered =
     panelClass="ui-popover-pane" lock={false} onDismiss={() => { onClose(); if (anchor.isConnected) anchor.focus({ preventScroll: true }); }}
     onOutside={onClose} onOutsideScroll={onClose} onPosition={align}>
     <div ref={containerRef} className={`ui-overlaypanel ui-component ${className}`} role="region" aria-label={ariaLabel}>
+      {/* Shown on phones only (responsive.css), where a popover can fill the screen and
+          leave no outside to tap. */}
+      <button type="button" className="ui-overlaypanel-close" aria-label="Fechar" onClick={onClose}>✕</button>
       <div className="ui-overlaypanel-content">{children}</div>
     </div>
   </Portal>);

@@ -11,11 +11,16 @@
   cursor: pointer;
   transition: border-color 0.15s, background-color 0.15s;
 }
-:is(app-help-improve, .ui-scope-app-help-improve) .replay-dropzone:hover,
 :is(app-help-improve, .ui-scope-app-help-improve) .replay-dropzone:focus-visible,
 :is(app-help-improve, .ui-scope-app-help-improve) .replay-dropzone.dragover{
   border-color: var(--primary-color);
 }
+@media (hover: hover){:is(app-help-improve, .ui-scope-app-help-improve) .replay-dropzone:hover{
+  border-color: var(--primary-color);
+}}
+@media (hover: none){:is(app-help-improve, .ui-scope-app-help-improve) .replay-dropzone:active{
+  border-color: var(--primary-color);
+}}
 :is(app-help-improve, .ui-scope-app-help-improve) .replay-dropzone.dragover{
   background-color: var(--surface-100);
 }

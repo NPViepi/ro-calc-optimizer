@@ -271,17 +271,23 @@
   cursor: pointer;
 }
 
-.auto-damage-branch:hover {
+@media (hover: hover){.auto-damage-branch:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){.auto-damage-branch:active{
+  text-decoration: underline;
+}}
 
 .auto-dps-value {
   cursor: pointer;
 }
 
-.auto-dps-value:hover {
+@media (hover: hover){.auto-dps-value:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){.auto-dps-value:active{
+  text-decoration: underline;
+}}
 
 .rot-tag--dps {
   color: var(--teal-300, #61beb5);
@@ -318,43 +324,4 @@
 ::ng-deep .ui-scope-app-auto-cast-hud .auto-source-picker.ui-dropdown {
   width: min(28rem, 100%);
   max-width: 100%;
-}
-
-@media (max-width: 991px) {
-  .hud-cards {
-    flex-direction: column;
-  }
-
-}
-
-/* The calculator itself is a two-column desktop layout, so this panel is commonly only
-   about 600px wide even when the viewport is 1280px. Container queries respond to the
-   space the accordion actually has instead of waiting for the whole browser to shrink. */
-@media (max-width: 1400px) {
-  .auto-source-row {
-    flex-wrap: wrap;
-  }
-
-  .auto-source-dmg {
-    margin-left: 38px;
-  }
-}
-
-@media (max-width: 700px) {
-  .hud-cards {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .auto-source-dmg {
-    width: calc(100% - 38px);
-    margin-left: 38px;
-    justify-content: space-between;
-  }
-
-  ::ng-deep app-auto-cast-hud .auto-source-picker.ui-dropdown,
-::ng-deep .ui-scope-app-auto-cast-hud .auto-source-picker.ui-dropdown {
-    width: min(28rem, 100%);
-    max-width: 100%;
-  }
 }

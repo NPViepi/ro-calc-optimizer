@@ -145,6 +145,8 @@ for (const version of ['rebalance-2022-06', 'rebalance-2026-02'] as const) test(
   expect(mobileSidebarBounds!.x + mobileSidebarBounds!.width).toBe(await page.evaluate(() => document.documentElement.getBoundingClientRect().width));
   await page.screenshot({ path: '.tmp/settings-sidebar-mobile.png' });
   await settings.getByRole('button', { name: 'Fechar', exact: true }).click();
+  // A phone shows the sections behind the bottom bar's "Resultado" tab.
+  await page.getByRole('button', { name: 'Resultado', exact: true }).click();
   const mobileSelector = page.getByRole('region',{name:'Batalha',exact:true}).getByRole('combobox',{name:'Versão das fórmulas de habilidades'});
   await referencesButton.scrollIntoViewIfNeeded();
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));

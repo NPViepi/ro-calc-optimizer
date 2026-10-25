@@ -1,6 +1,8 @@
 import { Render, interpolate, classNames } from '../render';
 export function Content({vm, services}: {vm: any; services: any}) {
-return <><Render tag="div" props={{"className": ["ui-fluid"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["grid grid-nogutter"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["grid grid-nogutter col-5"].filter(Boolean).join(' ')}}><Render tag="div" props={{"hidden": !(vm.isShowElementalTable),
+return <><Render tag="div" props={{"className": ["ui-fluid"].filter(Boolean).join(' ')}}>{/* Ten element columns do not fit a phone; the tables scroll sideways (responsive.css). */}
+<p className="elemental-scroll-hint">Deslize as tabelas para o lado para ver todas as propriedades.</p>
+<Render tag="div" props={{"className": ["grid grid-nogutter"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["grid grid-nogutter col-5"].filter(Boolean).join(' ')}}><Render tag="div" props={{"hidden": !(vm.isShowElementalTable),
 "className": ["col-12"].filter(Boolean).join(' ')}}><Render tag="app-elemental-table-raw" props={{"calcMonsters": vm.elementalTable1}}></Render></Render>
 <Render tag="div" props={{"hidden": !(vm.isShowElementalTable),
 "className": ["col-12"].filter(Boolean).join(' ')}}><Render tag="app-elemental-table-raw" props={{"calcMonsters": vm.elementalTable2}}></Render></Render>

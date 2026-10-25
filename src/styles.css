@@ -213,9 +213,12 @@ html { scrollbar-gutter: stable; }
 .reduction-row.bonus_clickable {
   cursor: pointer;
 }
-.reduction-row.bonus_clickable:hover {
+@media (hover: hover){.reduction-row.bonus_clickable:hover{
   background: var(--surface-hover);
-}
+}}
+@media (hover: none){.reduction-row.bonus_clickable:active{
+  background: var(--surface-hover);
+}}
 .reduction-val {
   font-weight: 700;
   color: var(--green-400, #4ade80);
@@ -245,8 +248,8 @@ html { scrollbar-gutter: stable; }
 }
 
 /* The shell (sakai's _content.css / _responsive.css) gutters the page at 2rem, which is
-   a lot of edge for a layout whose whole job is fitting a 1500px-wide build editor next to
-   the damage HUD. Halved here rather than in the vendored layout files, and named so the
+   a lot of edge for a layout whose whole job is fitting the build editor next to the
+   damage HUD. Halved here rather than in the vendored layout files, and named so the
    gap between the two columns (.editor_col) is the same value rather than a literal that
    happens to match. */
 :root {

@@ -3,7 +3,7 @@ import { Fragment } from 'react';
 import { Render, displayPipe, interpolate, classNames, normalizeStyle, identityKey } from '../render';
 export function Content({vm, services}: {vm: any; services: any}) {
 return <>{(() => { const rowTpl = (context: any) => { const row = context["$implicit"];
-const i = context["i"]; return <><Render tag="button" props={{"type": "button",
+const i = context["i"]; return <><div className="picker__item"><Render tag="button" props={{"type": "button",
 "tabIndex": "-1",
 "tooltipPosition": "right",
 "tooltipStyleClass": "item_desc_tooltip",
@@ -20,7 +20,7 @@ const i = context["i"]; return <><Render tag="button" props={{"type": "button",
 {(() => { const __condition3 = row.preRelease;  return __condition3 ? <><Render tag="span" props={{"tooltipPosition": "top",
 "className": ["pre_release_tag"].filter(Boolean).join(' '),
 "tooltip": {text: "Prévia: item ainda não lançado no LATAM — nome e descrição em inglês, do kRO/iRO (divine-pride).", position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{"Prévia"}</Render></> : null; })()}
-{(() => { const __condition4 = row.group;  return __condition4 ? <><Render tag="span" props={{"className": ["picker__chevron"].filter(Boolean).join(' ')}}>{"›"}</Render></> : null; })()}</Render></>; }; return <><Render tag="div" props={{"tabIndex": "-1",
+{(() => { const __condition4 = row.group;  return __condition4 ? <><Render tag="span" props={{"className": ["picker__chevron"].filter(Boolean).join(' ')}}>{"›"}</Render></> : null; })()}</Render></div></>; }; return <><Render tag="div" props={{"tabIndex": "-1",
 "appTrapFocus": "",
 "appTrapFocusAutoCapture": "",
 "keydown": (event: any) => vm.action(() => { const $event = event; vm.onKeyDown($event) }),

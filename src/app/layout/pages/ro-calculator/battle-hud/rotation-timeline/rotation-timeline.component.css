@@ -47,9 +47,12 @@
   border-radius: 3px;
 }
 
-.tl-icon:hover {
+@media (hover: hover){.tl-icon:hover{
   outline: 1px solid var(--primary-color);
-}
+}}
+@media (hover: none){.tl-icon:active{
+  outline: 1px solid var(--primary-color);
+}}
 
 .tl-icon:focus-visible {
   outline: 2px solid var(--primary-color);

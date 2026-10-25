@@ -154,7 +154,18 @@ const i = __index3; return <Fragment key={identityKey(vm.trackByIndex(__index3, 
 "click": (event: any) => vm.action(() => { const $event = event; vm.remove(i) }),
 "className": ["rot-remove"].filter(Boolean).join(' '),
 "tooltip": {text: "Remover", position: "top", className: '', showDelay: 0, hideDelay: 0, escape: true, disabled: false},
-"activateWithKeys": true}}></Render></>; })()}</Render></Fragment>; })}</Render>
+"activateWithKeys": true}}></Render>
+{/* The drag handle's tap equivalent: touch screens show these instead of asking for a drag. */}
+{(() => { const __conditionMove = vm.entries.length > 1;  return __conditionMove ? <><Render tag="button" props={{"type": "button",
+"aria-label": ("Mover " + entry.name + " para cima"),
+"disabled": i === 0,
+"click": (event: any) => vm.action(() => { const $event = event; vm.moveBy(i,-(1),$event) }),
+"className": ["rot-move"].filter(Boolean).join(' ')}}><Render tag="app-icon" props={{"name": "chevron-up"}}></Render></Render>
+<Render tag="button" props={{"type": "button",
+"aria-label": ("Mover " + entry.name + " para baixo"),
+"disabled": i === vm.entries.length - 1,
+"click": (event: any) => vm.action(() => { const $event = event; vm.moveBy(i,1,$event) }),
+"className": ["rot-move"].filter(Boolean).join(' ')}}><Render tag="app-icon" props={{"name": "chevron-down"}}></Render></Render></> : null; })()}</>; })()}</Render></Fragment>; })}</Render>
 {(() => { const __condition23 = (vm.addingAt !== null);  return __condition23 ? <><Render tag="div" props={{"className": ["rot-row rot-row--adding"].filter(Boolean).join(' ')}}><Render tag="app-icon" props={{"aria-hidden": "true",
 "name": "bars",
 "className": ["rot-handle rot-handle--spacer"].filter(Boolean).join(' ')}}></Render>
@@ -197,7 +208,7 @@ const i = __index3; return <Fragment key={identityKey(vm.trackByIndex(__index3, 
 "click": (event: any) => vm.action(() => { const $event = event; vm.startAdding() }),
 "className": ["rot-add"].filter(Boolean).join(' '),
 "tooltip": {text: (vm.isFull ? (("A rotação chegou ao limite de " + vm.maxLength) + " habilidades.") : "A mesma habilidade pode entrar mais de uma vez"), position: "top", className: '', showDelay: 0, hideDelay: 0, escape: true, disabled: false},
-"button": true}}></Render></Render></> : null; })()}
+"button": true}}></Render>{vm.isFull && <span className="rot-full-note">{`A rotação chegou ao limite de ${vm.maxLength} habilidades.`}</span>}</Render></> : null; })()}
 <Render tag="span" props={{"aria-live": "polite",
 "className": ["sr-only"].filter(Boolean).join(' ')}}>{interpolate(["",""], [vm.moveAnnouncement])}</Render></Render></>;
 }

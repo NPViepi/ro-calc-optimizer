@@ -1,9 +1,11 @@
-import { Fragment, KeyboardEvent, ReactNode, Ref, SyntheticEvent, createElement, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, KeyboardEvent, ReactNode, Ref, SyntheticEvent, createContext, createElement, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Portal } from './portal';
 import { Icon } from './primitives';
 import { optionLabel, optionValue, chooseSelection, filteredRows, toggleAllSelection } from './selection';
 import { VirtualList, VirtualListHandle } from './virtual-list';
 
+/** True inside a rendered option (or a select's shown value), where a tap picks or opens rather than reaching the content. */
+export const InsideOption = createContext(false);
 export interface SelectHandle { setPanelWidth(width: number, constrain?: boolean): void; }
 export interface SelectProps {
   ref?: Ref<SelectHandle>;
@@ -152,7 +154,10 @@ export function Select({ options, value, onChange, kind = 'dropdown', optionLabe
     event.stopPropagation();
   };
   const tree = (entries: any[], depth = 0): ReactNode => <ul className={`ui-cascadeselect-items ${depth > 0 ? 'ui-cascadeselect-sublist' : ''}`} role="listbox" id={depth === 0 ? `${id}-list` : undefined}>
-    {entries.map((option, index) => <li key={index} className={`ui-cascadeselect-item ${path[depth] === option ? 'ui-highlight' : ''}`} role="option" aria-selected={selected(option)} onMouseEnter={() => expand(option, depth)}>
+    {entries.map((option, index) => <li key={index} className={`ui-cascadeselect-item ${path[depth] === option ? 'ui-highlight' : ''}`} role="option" aria-selected={selected(option)}
+      // Hover previews a branch for a mouse only. By touch (or pen) the button's click below
+      // is what opens it, so a tap never depends on a compatibility mouseenter.
+      onPointerEnter={event => { if (event.pointerType === 'mouse') expand(option, depth); }}>
       <button type="button" className="ui-cascadeselect-item-content ui-link" disabled={option.disabled}
         aria-expanded={childrenOf(option, depth).length ? path[depth] === option : undefined}
         onClick={event => childrenOf(option, depth).length ? expand(option, depth) : choose(option, event)} onKeyDown={event => treeKey(option, depth, event)}>
@@ -167,7 +172,7 @@ export function Select({ options, value, onChange, kind = 'dropdown', optionLabe
       aria-selected={selected(row.option)} aria-disabled={!!row.option?.disabled} onClick={event => choose(row.option, event)}
       onKeyDown={event => { if (event.key === 'Enter') choose(row.option, event); }}>
       {multi && <span className={`ui-checkbox-box ${selected(row.option) ? 'ui-highlight' : ''}`}>{selected(row.option) && <Icon name="check" />}</span>}
-      {renderItem ? renderItem(row.option) : labelOf(row.option)}
+      {renderItem ? <InsideOption.Provider value>{renderItem(row.option)}</InsideOption.Provider> : labelOf(row.option)}
     </li>;
   const control = <>
     <div className={`ui-component ui-${kind} ${className} ${disabled ? 'ui-disabled' : ''} ${open ? 'ui-focus' : ''}`}
@@ -177,7 +182,7 @@ export function Select({ options, value, onChange, kind = 'dropdown', optionLabe
         aria-labelledby={ariaLabelledBy} aria-expanded={open} aria-controls={open ? `${id}-list` : undefined}
         aria-activedescendant={open && active >= 0 ? `${id}-option-${active}` : undefined} aria-haspopup="listbox"
         onClick={() => open ? hide() : show()} onKeyDown={onKey} onBlur={onBlur}>
-        {!multi && renderSelected && selectedOption != null ? renderSelected(selectedOption) : label}
+        {!multi && renderSelected && selectedOption != null ? <InsideOption.Provider value>{renderSelected(selectedOption)}</InsideOption.Provider> : label}
       </button>
       {showClear && hasValue && <button type="button" className={`ui-select-clear ui-link ui-${kind}-clear-icon`} aria-label="Limpar seleção" disabled={disabled}
         onClick={event => { event.stopPropagation(); onChange(multi ? [] : null, event); onCleared?.(); }}><Icon name="times" /></button>}

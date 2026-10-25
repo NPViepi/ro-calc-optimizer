@@ -29,6 +29,9 @@ export class CalculatorLayout {
   readonly customItemCreate = new Events<{ kind: string; slot: string; compare: boolean }>();
   readonly customItemEdit = new Events<number>();
   readonly helpImproveOpen = new Events<void>();
+  /** The phone topbar's save and link buttons, which act on the calculator's build. */
+  readonly buildSaveOpen = new Events<void>();
+  readonly buildShareOpen = new Events<void>();
   readonly itemSearchOpen = new Events<ItemSearchOpenRequest | undefined>();
   readonly itemSearchTargets = new Store<readonly ItemSearchEquipTarget[]>([]);
   readonly itemSearchEquip = new Events<{ targetKey: string; itemId: number }>();
@@ -36,6 +39,8 @@ export class CalculatorLayout {
   openCustomItem(kind: string, slot: string, compare: boolean): void { this.customItemCreate.next({ kind, slot, compare }); }
   openCustomItemEdit(id: number): void { this.customItemEdit.next(id); }
   openHelpImprove(): void { this.helpImproveOpen.next(); }
+  openBuildSave(): void { this.buildSaveOpen.next(); }
+  openBuildShare(): void { this.buildShareOpen.next(); }
   openItemSearch(request?: ItemSearchOpenRequest): void { this.itemSearchOpen.next(request); }
 }
 export class SlotColorPreferences {
