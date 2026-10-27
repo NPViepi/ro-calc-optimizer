@@ -88,15 +88,14 @@ test('a phone splits build, equipment and result into bottom tabs', async ({ pag
   await page.getByRole('button', { name: 'Equip.', exact: true }).click();
   await expect(page.locator('app-equipment-grid')).toBeVisible();
   await expect(page.locator('.stats_stack')).toBeHidden();
-  // Search stays in the topbar, with save and link beside it, all 44px targets.
-  for (const name of ['Buscar itens', 'Salvar simulação', 'Gerar link para compartilhar', 'Menu']) {
+  // Search and the menu stay in the topbar as 44px targets; save and link live in the build card.
+  for (const name of ['Buscar itens', 'Menu']) {
     const button = page.locator('app-topbar').getByRole('button', { name, exact: true });
     const target = (await button.boundingBox())!;
     expect(target.width).toBeGreaterThanOrEqual(44);
     expect(target.height).toBeGreaterThanOrEqual(44);
   }
-  await page.locator('app-topbar').getByRole('button', { name: 'Gerar link para compartilhar', exact: true }).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.locator('app-topbar').getByRole('button', { name: 'Salvar simulação' })).toHaveCount(0);
 });
 
 test('a phone folds each summary group behind its header', async ({ page }) => {
@@ -171,8 +170,9 @@ test.describe('touch', () => {
     await expect(hud.locator('.rot-row')).toHaveCount(3);
     expect(await pageOverflow(page)).toBeLessThanOrEqual(0);
     const names = await hud.locator('.rot-name').allTextContents();
+    // Batalha keeps its desktop sizes on touch: the buttons are there, not finger-sized.
     const down = hud.getByRole('button', { name: /^Mover .* para baixo$/ }).first();
-    expect((await down.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await expect(down).toBeVisible();
     await down.tap();
     await expect(hud.locator('.rot-name').first()).toHaveText(names[1]);
   });
@@ -195,6 +195,34 @@ test.describe('touch', () => {
     await toggle.tap();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(dialog.getByLabel('Nome', { exact: true })).toBeVisible();
+  });
+
+  test('a phone item search is a bottom sheet that scrolls as one and opens descriptions in a popover', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await boot(page);
+    await page.getByRole('button', { name: 'Buscar itens', exact: true }).first().click();
+    const dialog = page.getByRole('dialog', { name: /Buscar itens/ });
+    await dialog.getByRole('button', { name: 'Buscar', exact: true }).tap();
+    const sheet = (await dialog.boundingBox())!;
+    const viewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight }));
+    // Edge to edge, less a classic scrollbar where the desktop browser draws one.
+    expect(sheet.width).toBeGreaterThanOrEqual(viewport.width - 17);
+    expect(Math.abs(sheet.y + sheet.height - viewport.height)).toBeLessThanOrEqual(1);
+    const content = dialog.locator('.ui-dialog-content');
+    const list = dialog.locator('.ui-datatable-wrapper');
+    expect(await list.evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(0);
+    await content.evaluate(element => { element.scrollTop = element.scrollHeight; });
+    expect(await content.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+    await expect(dialog.getByRole('navigation', { name: 'Paginação', exact: true })).toBeInViewport({ ratio: 1 });
+    await expect(dialog.locator('.item-search-detail')).toHaveCount(0);
+    const name = (await dialog.locator('tbody tr').nth(1).innerText()).trim();
+    await dialog.locator('tbody tr').nth(1).tap();
+    const popover = page.getByRole('region', { name: 'Descrição do item', exact: true });
+    await expect(popover.locator('strong').first()).toHaveText(name);
+    await expect(popover.getByRole('button', { name: 'Equipar', exact: true })).toBeVisible();
+    await page.locator('.item-search-detail-popover').getByRole('button', { name: 'Fechar', exact: true }).tap();
+    await expect(popover).toHaveCount(0);
+    await expect(dialog).toBeVisible();
   });
 
   test('a filled chip keeps a tappable clear button', async ({ page }) => {

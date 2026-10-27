@@ -47,7 +47,6 @@
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) :is(.calc-panes, .ss_group_toggle),
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-full-note,
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-panel .where-above,
-app-topbar .topbar-phone,
 app-topbar .topbar-menu,
 /* Shown only where they are needed (the blocks below): the info button beside an anchor
    with its own action and the rotation's up / down buttons on touch; the popover close
@@ -118,16 +117,13 @@ app-elemental-table .elemental-scroll-hint {
 }
 
 /* The battle HUD's two cards (monster 40 / skill 60) stay side by side while the column
-   can hold them; below that they stack, skill card first. This replaces the old viewport
+   can hold them; below that they stack, monster card first as on desktop. This replaces the old viewport
    rule at 991px, which fired on the very tablets that now give the sections full width. */
 @container sections (max-width: 539.98px) {
   :is(app-battle-hud, .ui-scope-app-battle-hud, app-auto-cast-hud, .ui-scope-app-auto-cast-hud,
     app-battle-damage-popovers, .ui-scope-app-battle-damage-popovers,
     app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-cards {
     flex-direction: column;
-  }
-  :is(app-battle-hud, .ui-scope-app-battle-hud, app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-cards > .hud-card-col--skill {
-    order: -1;
   }
   :is(app-battle-hud, .ui-scope-app-battle-hud, app-auto-cast-hud, .ui-scope-app-auto-cast-hud,
     app-battle-damage-popovers, .ui-scope-app-battle-damage-popovers,
@@ -170,7 +166,7 @@ app-elemental-table .elemental-scroll-hint {
     row-gap: 4px;
   }
   :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-body {
-    /* Room for the handle, step and icon (with its 44px touch box) on the same line. */
+    /* Room for the handle, step and icon on the same line. */
     flex: 1 1 calc(100% - 136px);
   }
   :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-name {
@@ -336,42 +332,15 @@ app-elemental-table .elemental-scroll-hint {
   }
   :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card, app-auto-cast-hud, .ui-scope-app-auto-cast-hud,
     app-battle-damage-popovers, .ui-scope-app-battle-damage-popovers, app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-band-right {
+    /* Under the portrait instead of beside it: the same padding, the divider on top. */
     border-left: none;
-    padding-left: 0;
-    margin-top: 8px;
-  }
-}
-
-/* ------------------------------------------------- rotation rows on touch (container) --- */
-
-/* On touch a rotation row adds two 44px move buttons and touch-sized damage figures, so
-   it needs a ~870px sections column (the list is ~30px narrower) for the name beside
-   them; narrower, it takes the two lines a mouse gets under 540px (the block above). */
-@media (hover: none) {
-  @container sections (max-width: 869.98px) {
-    /* A rotation row takes two lines: handle, step, icon and name; then the damage and
-       the row's buttons. The name may wrap instead of being cut to a few letters. */
-    :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-row {
-      flex-wrap: wrap;
-      row-gap: 4px;
-    }
-    :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-body {
-      /* Room for the 44px handle, the step and the icon (with its 44px touch box). */
-      flex: 1 1 calc(100% - 152px);
-    }
-    :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg {
-      flex: 1 1 auto;
-    }
-    :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-line2 {
-      flex-wrap: wrap;
-    }
+    border-top: 1px solid var(--surface-border);
   }
 }
 
 /* Under 440px there is no room for the name beside the handle, step and icon (a phone's
    102-142px left the name one letter wide): the name, its level and the cooldown warning
-   take a line of their own, and the warning wraps. Placed after the touch block above so
-   it wins for touch too. */
+   take a line of their own, and the warning wraps. */
 @container sections (max-width: 439.98px) {
   :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-body {
     flex-basis: 100%;
@@ -692,7 +661,7 @@ app-elemental-table .elemental-scroll-hint {
     gap: 8px;
   }
 
-  /* Topbar: logo, then four 44px icons — search, save, link, menu. */
+  /* Topbar: logo, then two 44px icons — search and menu. */
   .layout-topbar {
     height: var(--topbar-height);
   }
@@ -700,9 +669,6 @@ app-elemental-table .elemental-scroll-hint {
   app-topbar .topbar-settings,
   app-topbar .topbar-label {
     display: none;
-  }
-  app-topbar .topbar-phone {
-    display: inline-flex;
   }
   app-topbar .topbar-icon,
   app-topbar .topbar-search {
@@ -808,14 +774,14 @@ app-elemental-table .elemental-scroll-hint {
     padding: 6px 0;
     background: var(--surface-ground);
   }
-  /* The item's own chip takes a line of its own, so its name has the card's width. */
+  /* The item's own chip takes a line of its own, its name the card's width less the
+     clear and info buttons on the same row. */
   app-equipment-chip:has(.eq-chip--primary),
-  app-equipment-chip .eq-chip--primary {
-    flex: 1 1 100%;
-  }
   app-equipment-chip .eq-chip__picker:has(> .eq-chip--primary) {
     flex: 1 1 100%;
-    flex-wrap: wrap;
+  }
+  app-equipment-chip .eq-chip--primary {
+    flex: 1 1 0%;
   }
   /* Slot card: the header wraps instead of squeezing its controls. */
   :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__head {
@@ -824,21 +790,51 @@ app-elemental-table .elemental-scroll-hint {
     gap: 4px;
   }
 
-  /* Dialogs become bottom sheets, near full height. The item search and the custom item
-     studio keep the phone layouts they already had. */
-  .ui-overlay-host:not(.ui-scope-app-custom-item-studio):not(.ui-scope-app-item-search) > .ui-dialog-pane:not(.ui-dialog-sidebar-pane) {
+  /* Dialogs become bottom sheets, near full height. The custom item studio keeps the
+     phone layout it already had. */
+  .ui-overlay-host:not(.ui-scope-app-custom-item-studio) > .ui-dialog-pane:not(.ui-dialog-sidebar-pane) {
     align-self: flex-end;
     width: 100%;
     max-width: 100%;
     max-height: 92dvh;
     margin-top: 0;
   }
-  .ui-overlay-host:not(.ui-scope-app-custom-item-studio):not(.ui-scope-app-item-search) > .ui-dialog-pane:not(.ui-dialog-sidebar-pane) > .ui-dialog {
+  .ui-overlay-host:not(.ui-scope-app-custom-item-studio) > .ui-dialog-pane:not(.ui-dialog-sidebar-pane) > .ui-dialog {
     width: 100%;
     min-width: 100%;
     max-height: 92dvh;
     border-radius: 12px 12px 0 0;
     padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* The item search sheet scrolls as one: filters, then the list at its full page of
+     rows. The description opens in a popover from the tapped row (item-search.tsx). */
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog {
+    height: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog > .ui-dialog-content {
+    overflow-y: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-workspace {
+    flex: 1 1 0%;
+    align-self: flex-start;
+    min-height: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-filters {
+    flex: 0 0 auto;
+    min-height: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-filter-controls {
+    max-height: none;
+    overflow: visible;
+    background: none;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-results {
+    display: block;
+    flex: 0 0 auto;
+    height: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-list .ui-datatable-wrapper {
+    overflow: visible;
   }
 }
 
@@ -995,10 +991,18 @@ app-elemental-table .elemental-scroll-hint {
   app-equipment-grid .eq-ribbon__clear,
   :is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__rename,
   :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) :is(.eq-card__color, .eq-card__clear),
-  :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-help,
   .damage-taken-info {
     min-width: var(--touch-icon);
     min-height: var(--touch-icon);
+  }
+  /* Batalha keeps its desktop sizes on touch: its buttons, fields and headers are not
+     raised to a finger's height (fidelity first, at the cost of smaller targets). */
+  :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card,
+    app-battle-effects, app-rotation-list, .ui-scope-app-rotation-list, app-rotation-timeline, .ui-scope-app-rotation-timeline,
+    app-auto-cast-hud, .ui-scope-app-auto-cast-hud)
+    :is(.ui-button, .ui-inputtext, .ui-dropdown, .ui-multiselect, .ui-checkbox-label, .ui-accordion-header-link, select, .skill-formula-info, .damage-taken-info) {
+    min-width: 0;
+    min-height: 0;
   }
   :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) :is(.eq-card__color, .eq-card__clear) {
     border-radius: 22px;
@@ -1019,13 +1023,8 @@ app-elemental-table .elemental-scroll-hint {
      size and the box around it grows to a finger. */
   :is(app-status-input, .ui-scope-app-status-input) .status_extra,
   :is(app-ro-calculator, .ui-scope-app-ro-calculator) :is(.ss_value_text, .ss_delta, .ss_headline_value, .ss_headline_delta, .ss_reduction, .stats_compare_toggle),
-  :is(app-ro-calculator, .ui-scope-app-ro-calculator, app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .stats_side,
-  app-equipment-grid .eq-ribbon__text,
-  :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-compare-toggle,
-  :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) :is(.pnum, .monster_id_link, .hud-relieve-label, .tag-aura, .tag-map-reduction, .el-tag-clickable),
-  :is(app-rotation-list, .ui-scope-app-rotation-list, app-auto-cast-hud, .ui-scope-app-auto-cast-hud)
-    :is(.rot-dmg-val, .rot-dmg-sim, .rot-dmg-branch, .rot-pct, .rot-tag, .rot-crit-val, .rot-crit-sim, .el-tag-clickable),
-  :is(app-battle-hud, .ui-scope-app-battle-hud, app-auto-cast-hud, .ui-scope-app-auto-cast-hud) :is(.hud-meta.clickable, .hud-percycle, .probability-step--help, .auto-source-origin) {
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .stats_side,
+  app-equipment-grid .eq-ribbon__text {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1040,30 +1039,22 @@ app-elemental-table .elemental-scroll-hint {
     padding-block: calc((var(--touch-target) - 1lh) / 2);
   }
 
-  /* Rotation: the row's buttons grow to finger size, and up / down buttons stand in for
-     the drag handle (which still works). */
-  :is(app-rotation-list, .ui-scope-app-rotation-list, app-auto-cast-hud, .ui-scope-app-auto-cast-hud) :is(.rot-info, .rot-remove, .rot-move) {
+  /* Rotation: up / down buttons stand in for the drag handle (which still works). The
+     Batalha view keeps its desktop sizes on touch, so they are as small as the row's
+     other buttons. */
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-move {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: var(--touch-icon);
-    height: var(--touch-icon);
-    font-size: 16px;
-  }
-  /* The icon-only controls keep their glyph size inside the bigger box; removing goes last. */
-  :is(app-rotation-list, .ui-scope-app-rotation-list, app-auto-cast-hud, .ui-scope-app-auto-cast-hud) :is(.rot-info, .rot-remove, .rot-handle)::before {
-    mask-size: 16px;
-  }
-  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-remove {
-    order: 1;
-  }
-  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-move {
-    padding: 0;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--border-radius);
+    padding: 0 2px;
+    border: 0;
     background: transparent;
     color: var(--text-color-secondary);
+    font-size: 12px;
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-move:disabled {
+    opacity: 0.35;
   }
   /* A full rotation's add button is disabled, so its tip cannot open: the limit is
      printed beside it instead. */
@@ -1072,32 +1063,6 @@ app-elemental-table .elemental-scroll-hint {
     margin-left: 8px;
     color: var(--text-color-secondary);
     font-size: 12px;
-  }
-  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-move:disabled {
-    opacity: 0.35;
-  }
-  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-handle {
-    min-width: var(--touch-icon);
-    min-height: var(--touch-icon);
-  }
-  /* The skill icon that opens its details: a 44px hit box around the same 22px image. */
-  :is(app-rotation-list, .ui-scope-app-rotation-list, app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-icon--btn {
-    box-sizing: content-box;
-    padding: 11px;
-  }
-
-  /* The cycle timeline: bars and skill icons, each with a tip, at finger size. Pós-
-     conjuração and Recarga share a track, top and bottom half. */
-  :is(app-rotation-timeline, .ui-scope-app-rotation-timeline) .tl-track {
-    box-sizing: content-box;
-    height: calc(2 * var(--touch-target));
-  }
-  :is(app-rotation-timeline, .ui-scope-app-rotation-timeline) :is(.tl-block--pos, .tl-block--recarga) {
-    height: 50%;
-  }
-  :is(app-rotation-timeline, .ui-scope-app-rotation-timeline) .tl-icon {
-    box-sizing: content-box;
-    padding: 13px;
   }
 
   /* The stacked item search's filter box shows its touch-sized fields and first bonus. */
@@ -1157,25 +1122,6 @@ app-elemental-table .elemental-scroll-hint {
     font-size: 12px;
   }
 
-  /* The rotation entry's name opens its full text on tap: a finger-sized line, wrapped
-     instead of cut, so the tip only repeats what is already shown. */
-  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-name {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--touch-target);
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-line2 .ui-tag {
-    min-height: var(--touch-target);
-  }
-  /* Any tag with a tip (the battle HUD's "⚠ Requer", "Mão esq.", combo and auto-cast
-     flags) is a finger-sized target around the same small tag. */
-  app-ui-tag[data-tip-anchor] {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--touch-target);
-  }
   /* An attribute label holding the other build's value opens its tip by tap. */
   app-status-input .status_label--other {
     min-width: var(--touch-target);

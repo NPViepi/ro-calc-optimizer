@@ -234,8 +234,6 @@ export class AppTopBarComponent extends ViewState {
   }
 
   openCustomItems() { this.layoutService.openCustomItems(); }
-  openBuildSave() { this.layoutService.openBuildSave(); }
-  openBuildShare() { this.layoutService.openBuildShare(); }
 
   get showPreviews(): boolean { return this.layoutService.previews.getSnapshot(); }
   readonly previewOptions = [{ label: 'Sim', value: true }, { label: 'Não', value: false }];

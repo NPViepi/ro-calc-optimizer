@@ -64,10 +64,6 @@ return <><Render tag="div" props={{"className": ["layout-topbar"].filter(Boolean
 "className": ["ui-button-info ui-button-raised px-2 topbar-search"].filter(Boolean).join(' '),
 "button": true}}><Render tag="app-icon" props={{"name": "search"}}></Render>
 <Render tag="span" props={{"className": ["pl-1 topbar-label"].filter(Boolean).join(' ')}}>{"Buscar itens"}</Render></Render>
-<Button icon="save" aria-label="Salvar simulação" className="ui-button-success ui-button-raised topbar-icon topbar-phone"
-  onClick={() => vm.action(() => vm.openBuildSave())} />
-<Button icon="share-alt" aria-label="Gerar link para compartilhar" className="ui-button-success ui-button-raised topbar-icon topbar-phone"
-  onClick={() => vm.action(() => vm.openBuildShare())} />
 <Button icon="bars" aria-label="Menu" aria-haspopup="dialog" aria-expanded={menuOpen}
   className="ui-button-secondary ui-button-raised topbar-icon topbar-menu" onClick={() => setMenuOpen(true)} />
 <Button icon="cog" aria-label="Configurações" aria-haspopup="dialog" aria-expanded={vm.visibleSettings}
