@@ -45,6 +45,10 @@ pub fn respond(web_root: &Path, method: &str, uri: &str, accept: &str) -> Option
     if REMOTE_PREFIXES.iter().any(|prefix| pathname.starts_with(prefix)) {
         return None;
     }
+    if pathname == crate::migration::DONE_PATH {
+        crate::migration::mark_done();
+        return Some(SiteResponse { status: 204, reason: "No Content", content_type: "text/plain".into(), no_store: true, body: Vec::new() });
+    }
     #[cfg(debug_assertions)]
     if pathname == "/__desktop/selfcheck" {
         let report = url.query_pairs().find(|(k, _)| k == "r").map(|(_, v)| v.into_owned()).unwrap_or_default();

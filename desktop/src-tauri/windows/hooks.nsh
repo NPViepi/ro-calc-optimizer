@@ -4,7 +4,10 @@
 ; ficarem duas instalacoes. O electron-builder grava a pasta de instalacao em
 ; HKCU/HKLM\Software\<GUID>, onde GUID = UUIDv5(appId, namespace do electron-builder
 ; 50e065bc-3134-11e6-9bab-38c9862bdaf3) para appId br.com.npviepi.rocalcoptimizer.
-; A pasta %APPDATA%\RO Calc Optimizer (com o migration.json) nao e apagada pelo desinstalador.
+; A pasta %APPDATA%\RO Calc Optimizer NAO e apagada pelo desinstalador (deleteAppDataOnUninstall
+; e false no electron-builder): o app Tauri le o localStorage direto do LevelDB desse perfil
+; (src-tauri/src/electron_profile.rs), entao a migracao funciona mesmo vindo direto da 0.1.0,
+; sem a versao ponte. O migration.json da ponte e so reserva.
 
 !define RO_ELECTRON_GUID "a2a3cea5-e61a-547d-aa81-5e9dd501886f"
 !define RO_ELECTRON_UNINSTALLER "Uninstall RO Calc Optimizer.exe"

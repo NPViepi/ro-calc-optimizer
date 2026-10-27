@@ -73,8 +73,10 @@ Enquanto houver usuários na versão Electron, cada release também leva a vers�
 2. A ponte (`desktop/src/tauri-bridge.js`) exporta o `localStorage` para
    `%APPDATA%\RO Calc Optimizer\migration.json` e oferece o instalador do Tauri.
 3. O instalador do Tauri remove o Electron (`desktop/src-tauri/windows/hooks.nsh`).
-4. No primeiro start, o Tauri restaura o `localStorage` a partir do `migration.json`
-   (`desktop/src-tauri/src/migration.rs`).
+4. No primeiro start, o Tauri restaura o `localStorage` lendo direto o LevelDB do perfil do
+   Electron (`%APPDATA%\RO Calc Optimizer\Local Storage\leveldb`, que o desinstalador não apaga);
+   o `migration.json` é só reserva (`desktop/src-tauri/src/migration.rs` e `electron_profile.rs`).
+   Assim, quem instalar o Tauri direto da 0.1.0, sem passar pela ponte, também leva as builds.
 
 Limpeza (fase 4), quando ninguém mais usar o Electron: remover `electron`, `electron-builder`,
 `electron-updater`, `src/main.js`, `src/preload.js`, `src/site-files.js`, `src/tauri-bridge.js`,

@@ -4,6 +4,7 @@
 // (https://simulador.latam-tools.com.br) — ver site_server.rs e webview2.rs.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod electron_profile;
 mod migration;
 mod site_files;
 mod site_server;

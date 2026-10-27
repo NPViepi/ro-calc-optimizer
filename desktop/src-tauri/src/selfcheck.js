@@ -23,6 +23,7 @@
       check('4_mcp', async () => describe(await fetch('/mcp'))),
       check('4_api', async () => describe(await fetch('/api/'))),
       check('5_localStorage', async () => `execucoes=${runs} chaves=${localStorage.length}`),
+      check('7_migracao', async () => `${localStorage.getItem('roDesktop:migratedFromElectron')} ro-set=${(localStorage.getItem('ro-set') || '').length} chars`),
       check('6_share', async () => {
         const res = await fetch('/s/N4IgzglgNjBiB7AT.gWwK4wIYDUC/', { headers: { accept: 'text/html' } });
         return `${res.status} spa=${(await res.text()).includes('/optimizer/panel.js')}`;

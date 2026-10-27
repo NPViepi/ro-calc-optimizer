@@ -1,8 +1,9 @@
 // Versão Electron "ponte" para o app Tauri (fase 3 do plano de migração).
 //
 // 1. Exporta o localStorage do site (autosave, builds salvas) para
-//    %APPDATA%\RO Calc Optimizer\migration.json. O app Tauri lê esse arquivo no primeiro
-//    start e restaura os dados (desktop/src-tauri/src/migration.rs).
+//    %APPDATA%\RO Calc Optimizer\migration.json — reserva da migração: o app Tauri lê primeiro o
+//    perfil do Electron direto (LevelDB) e usa este arquivo se não conseguir
+//    (desktop/src-tauri/src/migration.rs).
 // 2. Procura na última GitHub Release o instalador do Tauri (*_x64-setup.exe) e oferece
 //    instalar. O instalador do Tauri remove esta versão Electron (src-tauri/windows/hooks.nsh).
 //
@@ -74,20 +75,35 @@ async function offerTauri(win) {
     detail: 'A nova versão é bem menor e mais leve. Suas builds salvas são levadas junto automaticamente.',
   });
   if (response !== 0) return;
+  let installer;
   try {
-    await exportLocalStorage(win);
     const res = await net.fetch(release.url);
     if (!res.ok) throw new Error(`download falhou: HTTP ${res.status}`);
-    const installer = path.join(os.tmpdir(), release.name);
+    installer = path.join(os.tmpdir(), release.name);
     fs.writeFileSync(installer, Buffer.from(await res.arrayBuffer()));
-    // Não instalar uma atualização Electron pendente ao fechar: o instalador do Tauri assume.
-    try { require('electron-updater').autoUpdater.autoInstallOnAppQuit = false; } catch { /* sem updater */ }
-    spawn(installer, [], { detached: true, stdio: 'ignore' }).unref();
-    app.quit();
   } catch (error) {
     console.error('[ponte tauri]', error);
     shell.openExternal(release.page);
+    return;
   }
+  // Exportação final, depois do download: o usuário pode ter alterado builds enquanto baixava.
+  // Se falhar, não instala (o app Tauri também lê o perfil do Electron direto, mas não arriscamos).
+  const exported = await exportLocalStorage(win).catch(error => { console.error('[ponte tauri] exportação', error); return false; });
+  if (!exported) {
+    if (!win.isDestroyed()) {
+      await dialog.showMessageBox(win, {
+        type: 'error',
+        title: 'Não foi possível atualizar',
+        message: 'Não conseguimos salvar suas builds para levar à nova versão.',
+        detail: 'A atualização foi cancelada e nada foi alterado. Tente de novo mais tarde.',
+      });
+    }
+    return;
+  }
+  // Não instalar uma atualização Electron pendente ao fechar: o instalador do Tauri assume.
+  try { require('electron-updater').autoUpdater.autoInstallOnAppQuit = false; } catch { /* sem updater */ }
+  spawn(installer, [], { detached: true, stdio: 'ignore' }).unref();
+  app.quit();
 }
 
 function setupTauriBridge(win) {

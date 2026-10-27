@@ -19,6 +19,8 @@ tauri-plugin-updater = { version = "2", default-features = false, features = ["n
 serde_json = "1"
 mime_guess = "2"
 tokio = { version = "1", features = ["time"] }
+# Lê o localStorage do perfil do Electron (LevelDB do Chromium) na migração.
+rusty-leveldb = "3"
 
 # Interceptação das requisições no WebView2 (só Windows). Mesmas versões do wry (cargo tree),
 # para não duplicar dependências; se divergirem, ainda compila: o ponteiro COM vindo do wry é convertido em

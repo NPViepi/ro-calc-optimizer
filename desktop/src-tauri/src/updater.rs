@@ -45,7 +45,9 @@ pub fn install_pending(app: &AppHandle) {
     let Some(state) = app.try_state::<PendingUpdate>() else { return };
     let pending = state.0.lock().unwrap().take();
     if let Some((update, bytes)) = pending {
-        if let Err(error) = update.install(bytes) {
+        // Sem reabrir depois de instalar: o usuário fechou o app (o padrão do plugin passa /R ao
+        // NSIS e reabriria). Mesmo comportamento do electron-updater (autoInstallOnAppQuit).
+        if let Err(error) = update.restart_after_install(false).install(bytes) {
             eprintln!("[auto-update] falha ao instalar: {error}");
         }
     }
