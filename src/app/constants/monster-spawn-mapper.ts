@@ -71,6 +71,15 @@ const Mapper = {
   // map-specific drops on divine-pride, which is where the codes above come
   // from. A pseudo-code keys the group instead, as MD_BETELGEUSE already does.
   MD_N_ARENA: 'Arena Noturna',
+  // Aquila (21531) and Simulation Juncea (21533) are EP19 memorial-dungeon bosses;
+  // Lasgand (21981) and Fallen Angel Slug (21982) are EP20 ones. Divine-pride records
+  // no spawn for any of the four and no instance map code is published for them, so a
+  // pseudo-code keys the group, as MD_N_ARENA and MD_BETELGEUSE already do. The label
+  // is the episode their dbname names — not a guess at the instance's pt-BR title. The
+  // EP 19 pair joins the jor_* group above; Snowstorm Angel (21996) needs neither, it
+  // spawns on the real jor_back4.
+  MD_EP19: 'EP 19',
+  MD_EP20: 'EP 20',
   hero_tra: 'Test damage',
   tra_fild: 'Test damage',
   prontera: 'Test damage',
