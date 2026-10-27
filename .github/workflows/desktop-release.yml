@@ -1,9 +1,17 @@
-# Gera os instaladores do app desktop e publica nas GitHub Releases do fork.
-# O app instalado usa essas releases para se atualizar sozinho (electron-updater).
+# Gera o instalador do app desktop (Tauri) e publica nas GitHub Releases do fork.
+# O app instalado usa essas releases para se atualizar sozinho (tauri-plugin-updater, latest.json).
+#
+# Durante a transição Electron → Tauri, a mesma release também recebe a versão Electron "ponte"
+# (latest.yml + instalador): os apps Electron antigos atualizam para a ponte, que exporta os
+# dados e oferece o instalador do Tauri. Remova o job `electron-bridge` na fase 4 (limpeza).
 #
 # Para lançar uma versão:
-#   1. Ajuste "version" em desktop/package.json (ex.: 0.2.0)
-#   2. git tag desktop-v0.2.0 && git push origin desktop-v0.2.0
+#   1. Ajuste "version" em desktop/package.json (ex.: 0.3.0)
+#   2. git tag desktop-v0.3.0 && git push origin desktop-v0.3.0
+#   3. Quando o workflow terminar, revise o rascunho em Releases e clique em "Publish release".
+#
+# Secrets necessários: TAURI_SIGNING_PRIVATE_KEY e TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+# (gerados com `npx tauri signer generate`, ver FORK.md).
 name: Desktop release
 
 on:
@@ -16,12 +24,69 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest] # adicione macos-latest / ubuntu-latest se quiser outras plataformas
-    runs-on: ${{ matrix.os }}
+  tauri:
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+
+      - name: Versão
+        id: version
+        shell: bash
+        run: echo "version=$(node -p "require('./desktop/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Instalar dependências do app web
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar dependências do desktop
+        working-directory: desktop
+        run: npm install
+
+      - name: Testes do servidor local (Rust)
+        working-directory: desktop
+        run: npm run test:rust
+
+      # `tauri build` roda `npm run web` (beforeBuildCommand) e gera o instalador NSIS,
+      # a assinatura do updater e o latest.json.
+      - name: Build e publicação
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: desktop
+          tauriScript: npm run tauri
+          args: --config src-tauri/tauri.release.conf.json
+          tagName: desktop-v__VERSION__
+          releaseName: RO Calc Optimizer v__VERSION__
+          releaseBody: Baixe o instalador `RO.Calc.Optimizer_*_x64-setup.exe`. Quem já tem o app instalado recebe a atualização sozinho.
+          # Rascunho: os apps instalados (Tauri e Electron) só veem releases publicadas. Revise e
+          # clique em "Publish release" no GitHub para liberar a atualização.
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: true
+
+  # Versão Electron "ponte" (fase 3 do plano de migração). Apague este job na fase 4.
+  electron-bridge:
+    needs: tauri
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -41,8 +106,15 @@ jobs:
         working-directory: desktop
         run: npm install
 
-      - name: Build e publicação
+      - name: Build da ponte Electron
         working-directory: desktop
+        run: npm run dist:win -- --publish never
+
+      - name: Anexar à release
+        working-directory: desktop
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run release
+        run: |
+          gh release upload "desktop-v${{ needs.tauri.outputs.version }}" \
+            release/*.exe release/*.blockmap release/latest.yml --clobber
