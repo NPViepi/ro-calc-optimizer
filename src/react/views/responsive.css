@@ -65,12 +65,17 @@ app-elemental-table .elemental-scroll-hint {
    1120px), a tablet pane never (it is wider) and a phone always. */
 
 @container sections (max-width: 622.98px) {
-  /* Auto-cast source rows wrap their damage under the name (formerly a 1400px viewport rule). */
+  /* Auto-cast source rows wrap their damage under the name (formerly a 1400px viewport
+     rule), lined up with the name (past the 22px icon and the row's 8px gap) and sharing
+     its line with the row's info button. */
   :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-row {
     flex-wrap: wrap;
   }
   :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-dmg {
-    margin-left: 38px;
+    /* The line less this indent and the info button with its gap (14px + 8px). */
+    flex: 1 1 calc(100% - 52px);
+    min-width: 0;
+    margin-left: 30px;
   }
   /* Bônus de Habilidade / Multiplicadores nests col-7 > (col-6 + col-6) beside a col-5;
      under 625px those inner tables are ~160px or less. Stack them. */
@@ -140,8 +145,6 @@ app-elemental-table .elemental-scroll-hint {
     align-items: stretch;
   }
   :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-dmg {
-    width: calc(100% - 38px);
-    margin-left: 38px;
     justify-content: space-between;
   }
   :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-picker.ui-dropdown {
@@ -353,15 +356,20 @@ app-elemental-table .elemental-scroll-hint {
   }
 }
 
-/* Under 440px there is no room for the name beside the handle, step and icon (a phone's
-   102-142px left the name one letter wide): the name, its level and the cooldown warning
-   take a line of their own, and the warning wraps. */
+/* Under 440px the second line (type, element, multiplier) has no room beside the handle,
+   step and icon: the body's lines join the row, so the name and its level stay beside the
+   icon (wrapping there with the cooldown warning) and the second line takes its own. */
 @container sections (max-width: 439.98px) {
   :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-body {
-    flex-basis: 100%;
+    display: contents;
   }
   :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-line1 {
+    flex: 1 1 0;
+    min-width: 0;
     flex-wrap: wrap;
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-line2 {
+    flex-basis: 100%;
   }
   :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-stall {
     white-space: normal;
@@ -571,7 +579,8 @@ app-elemental-table .elemental-scroll-hint {
   }
   /* The topbar's dialogs render elsewhere (a portal): their empty hosts take no part in
      the row, or each would add a gap after the menu button. */
-  .layout-topbar > :is(app-ui-dialog, app-help-improve) {
+  .layout-topbar > :is(app-ui-dialog, app-help-improve),
+  .layout-topbar > app-help-improve > app-ui-dialog {
     display: contents;
   }
 
