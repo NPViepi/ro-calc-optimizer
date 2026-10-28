@@ -47,9 +47,9 @@ const ABYSS_AUTO_CASTS: ClassAutoCastDefinition[] = [{
     }
     return { sources: [{
       key: 'abyss-square', kind: 'passive', skillId: 5321, skillLevel: squareLevel,
-      // rAthena battle.cpp uses 20%; its source marks the official chance as unconfirmed.
-      chance: 20, trigger: 'physical-attack', sourceName: 'Invocação do Abismo', skillData: skill,
-      chanceBreakdown: [{ label: 'Invocação do Abismo', value: '20% por ataque básico (rAthena; chance oficial a confirmar)' }],
+      // https://browiki.org/wiki/Fenda_do_Abismo: 1% per Abyss Square level (Lv1 1% ... Lv5 5%).
+      chance: squareLevel, trigger: 'physical-attack', sourceName: 'Invocação do Abismo', skillData: skill,
+      chanceBreakdown: [{ label: 'Invocação do Abismo', value: `${squareLevel}% por ataque básico` }],
     }] };
   },
 }];
