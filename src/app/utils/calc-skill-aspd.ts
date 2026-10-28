@@ -87,6 +87,7 @@ export const calcSkillAspd = (params: {
 
   return {
     timingUnknown: skillData.timingUnknown,
+    ignoreAspdFloor: skillData.ignoreAspdFloor,
     cd: skillCd,
     reducedCd,
     vct: skillVct,

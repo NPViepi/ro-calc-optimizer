@@ -262,6 +262,7 @@ export function toScheduleStep(input: { value: string; summary: any; damage: num
     acd: channelled ? 0 : calcSkill.reducedAcd || 0,
     cd: channelled ? 0 : calcSkill.reducedCd || 0,
     damage,
+    ignoreAspdFloor: calcSkill.ignoreAspdFloor,
   };
 }
 

@@ -648,12 +648,21 @@ export class BattleHudComponent extends ViewState {
     return aspdHitsPerSec > 0 && aspdHitsPerSec < castRatePerSec - 1e-5;
   }
 
+  // O teto que vale para esta habilidade. Zero — que as duas leituras acima tratam como
+  // "sem dado de Vel.Atq", ou seja sem teto — para as que o motor isenta por trazerem a
+  // própria pós-conjuração (`AtkSkillModel.ignoreAspdFloor`). Sem isto o painel anunciaria
+  // um teto que o número ao lado dele já não respeita.
+  private aspdCeiling(calcSkill: any, hitPerSecs?: number): number {
+    return calcSkill?.ignoreAspdFloor ? 0 : hitPerSecs || 0;
+  }
+
   get isAspdLimited(): boolean {
-    return this.isAspdLimiting(this.calcSkill?.totalHitPerSec || 0, this.totalSummary?.calc?.hitPerSecs || 0);
+    return this.isAspdLimiting(this.calcSkill?.totalHitPerSec || 0, this.aspdCeiling(this.calcSkill, this.totalSummary?.calc?.hitPerSecs));
   }
 
   get isAspdLimitedSim(): boolean {
-    return this.isAspdLimiting(this.totalSummary2?.calcSkill?.totalHitPerSec || 0, this.totalSummary2?.calc?.hitPerSecs || 0);
+    const calcSkill = this.totalSummary2?.calcSkill;
+    return this.isAspdLimiting(calcSkill?.totalHitPerSec || 0, this.aspdCeiling(calcSkill, this.totalSummary2?.calc?.hitPerSecs));
   }
 
   // Node-graph view of the real per-hit damage formula (see damage-calculator.ts
@@ -816,7 +825,7 @@ export class BattleHudComponent extends ViewState {
       hitPeriod,
       dps: this.heroPrimaryCurrent || 0,
       sumDex2Int1: this.calcSkill?.sumDex2Int1 || 0,
-      aspdHitsPerSec: this.totalSummary?.calc?.hitPerSecs || 0,
+      aspdHitsPerSec: this.aspdCeiling(this.calcSkill, this.totalSummary?.calc?.hitPerSecs),
     });
   }
 }
