@@ -77,7 +77,7 @@ import { MonsterModel } from '../../app/models/monster.model';
 import { BETELGEUSE_HP_OPTIONS, normalizeBetelgeuseHp, withBetelgeuseHp } from '../../app/constants/betelgeuse-hp';
 import { BaseStateCalculator } from 'src/app/core/base-state-calculator';
 import { Calculator } from 'src/app/core/calculator';
-import { resolveOffHandEviction } from 'src/app/core/off-hand-slots';
+import { OFF_HAND_RIVAL, OffHandSlot, resolveOffHandEviction } from 'src/app/core/off-hand-slots';
 import { applyGuaranaCandy, CalcChainInput, CalculatorController, collectAspdPotionSources, collectBuffBonuses, collectChanceSources, collectConsumables, withoutWeaponlessTalismans } from 'src/app/core/calculator-controller';
 import { customOptionScripts, ensureCustomAttachment } from 'src/app/core/custom-attachments';
 import { CalcStorage } from 'src/app/core/calc-storage';
@@ -593,49 +593,75 @@ export class CalculatorSession extends Store<number> {
   showLeftWeapon = false;
 
   /**
-   * True when the off-hand weapon row belongs on screen: a main weapon is equipped, the
-   * class dual wields with a weapon that leaves the hand free, and no shield is holding
-   * it. The compare row follows the main one — and so does whether a compared off-hand
-   * weapon counts, since prepare() feeds this same flag to resolveOffHandEviction. A
-   * comparison the user cannot see must not move the numbers either.
+   * What a build actually wears in a slot. The compared build answers for the slots being
+   * compared — empty counts, it is the comparison's answer — and wears the main build's
+   * piece everywhere else, which is the merge `calcCompare` performs.
    */
-  get isLeftWeaponShown(): boolean {
-    return !!this.model.weapon && this.showLeftWeapon && !this.model.shield;
+  private wears(side: 'main' | 'compare', itemType: ItemTypeEnum): number | undefined {
+    if (side === 'compare' && this.compareItemNames?.includes(itemType)) return this.model2?.[itemType];
+
+    return this.model?.[itemType];
   }
 
   /**
-   * What the compared build actually wears in a slot: its own choice where the slot is
-   * being compared — empty counts, it is the comparison's answer — and the main build's
-   * elsewhere, which is the merge `calcCompare` performs.
+   * Whether a build's main weapon leaves the off hand free. The engine has the main
+   * build's weapon loaded, so `hiddenMap.shield` is already its verdict, settled by the
+   * debounced item pass; the compared weapon never passes through a `Weapon`, so the
+   * screen asks the item itself.
    */
-  private compareWears(itemType: ItemTypeEnum): number | undefined {
-    return this.compareItemNames?.includes(itemType) ? this.model2?.[itemType] : this.model?.[itemType];
+  private weaponFreesOffHand(side: 'main' | 'compare'): boolean {
+    const weaponId = this.wears(side, ItemTypeEnum.weapon);
+    if (!weaponId) return false;
+
+    return side === 'main' ? !this.hiddenMap.shield : itemAllowsShield(this.items?.[weaponId]);
   }
 
   /**
-   * True when the main build can hold a shield. `hiddenMap.shield` is the weapon's own
-   * verdict, settled by the debounced item pass; an off-hand weapon is the other claimant
-   * to the same hand.
-   */
-  get isShieldShown(): boolean {
-    return !!this.model.weapon && !this.hiddenMap.shield && !this.model.leftWeapon;
-  }
-
-  /**
-   * True when the compared build could hold a shield. The shield row used to be read off
-   * the main build alone, so a two-handed weapon on the left hid the row for both sides
-   * and the comparison the board asked for — a two-handed staff against a one-hander with
-   * a shield — had nowhere to put the shield (card 9lvALhlAS6Njj6z2pp6Q, por iukkeN).
+   * Whether one of the two off-hand rows belongs on screen for a build: its main weapon
+   * leaves the hand free, and the rival claimant to that same hand is empty. The off-hand
+   * weapon also needs a class that dual wields at all.
    *
-   * The engine was already deciding the off hand per build: `resolveOffHandEviction` reads
-   * the compared weapon, not the main one. This is only the screen catching up.
+   * Both rows used to be read off the main build alone, so a two-handed weapon there took
+   * them off the screen entirely — and the compare button with them, leaving the
+   * comparison the board asked for nowhere to go: a two-handed staff against a one-hander
+   * with a shield (card 9lvALhlAS6Njj6z2pp6Q, por iukkeN), and the same story for a dagger
+   * in the left hand.
+   *
+   * The engine was already deciding the hand per build — `resolveOffHandEviction` reads the
+   * compared weapon, not the main one. This is the screen catching up.
    */
+  private isOffHandShown(side: 'main' | 'compare', slot: OffHandSlot): boolean {
+    if (side === 'compare' && !this.isEnableCompare) return false;
+    if (slot === ItemTypeEnum.leftWeapon && !this.isAllowLeftWeaponByClass) return false;
+
+    return this.weaponFreesOffHand(side) && !this.wears(side, OFF_HAND_RIVAL[slot]);
+  }
+
+  /** The four halves of the two off-hand rows — see {@link isOffHandShown}. */
+  get isShieldShown(): boolean {
+    return this.isOffHandShown('main', ItemTypeEnum.shield);
+  }
+
   get isCompareShieldShown(): boolean {
-    if (!this.isEnableCompare) return false;
+    return this.isOffHandShown('compare', ItemTypeEnum.shield);
+  }
 
-    const weaponId = this.compareWears(ItemTypeEnum.weapon);
+  get isLeftWeaponShown(): boolean {
+    return this.isOffHandShown('main', ItemTypeEnum.leftWeapon);
+  }
 
-    return !!weaponId && itemAllowsShield(this.items?.[weaponId]) && !this.compareWears(ItemTypeEnum.leftWeapon);
+  get isCompareLeftWeaponShown(): boolean {
+    return this.isOffHandShown('compare', ItemTypeEnum.leftWeapon);
+  }
+
+  /**
+   * Whether the off-hand weapon row is on screen at all, for either build. This is also
+   * what decides whether a compared off-hand weapon counts, because the two have to agree:
+   * a comparison the user cannot see must not move the numbers, and one they can see has
+   * to move them.
+   */
+  get isLeftWeaponOffered(): boolean {
+    return this.isLeftWeaponShown || this.isCompareLeftWeaponShown;
   }
 
   isEnableCompare = false;
@@ -803,7 +829,7 @@ await ((_event?: unknown) => {
         // compare item list, and an item change can turn the off-hand row on or off. Re-run
         // it when the two disagree, so a row that just went away stops being compared — and
         // one that came back starts again. Self-correcting, so it settles in one pass.
-        if (this.compareItemNames?.includes(ItemTypeEnum.leftWeapon) && !!this.showCompareItemMap.leftWeapon !== this.isLeftWeaponShown) {
+        if (this.compareItemNames?.includes(ItemTypeEnum.leftWeapon) && !!this.showCompareItemMap.leftWeapon !== this.isLeftWeaponOffered) {
           this.updateCompareEvent.next(1);
         }
         this.calculate();
@@ -831,7 +857,7 @@ await ((_event?: unknown) => {
           itemNames: this.compareItemNames || [],
           itemOrder: this.compareItemList,
           items: this.items,
-          leftWeaponShown: this.isLeftWeaponShown,
+          leftWeaponShown: this.isLeftWeaponOffered,
           compareStats: this.isCompareStats,
         });
         const model2 = comparison.model as ClassModel;
@@ -1129,7 +1155,7 @@ await ((_event?: unknown) => {
       // keeps the hand, and the losers are emptied here.
       const evictedSlots = resolveOffHandEviction({
         isWeaponTwoHanded: !calc.isAllowShield(),
-        canWieldOffHandWeapon: this.isLeftWeaponShown,
+        canWieldOffHandWeapon: this.isLeftWeaponOffered,
         hasShield: !!model2[ItemTypeEnum.shield],
         hasLeftWeapon: !!model2[ItemTypeEnum.leftWeapon],
         comparedSlots: this.compareItemNames ?? [],

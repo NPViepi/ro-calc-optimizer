@@ -162,6 +162,39 @@ describe('plain calculator session', () => {
     expect(session.isCompareShieldShown).toBe(false);
     session.dispose();
   });
+  /**
+   * A arma da mão esquerda tinha a mesma limitação do escudo, pelo mesmo motivo: a linha era
+   * só da build principal. Com um katar (duas mãos) na principal, "duas mãos contra uma mão
+   * + adaga na esquerda" não dava para montar — e a adaga comparada ainda era despejada da
+   * conta, porque `resolveOffHandEviction` recebia a resposta da build errada.
+   */
+  it('opens the off-hand weapon row for the compared build alone, and keeps its dagger in the numbers', async () => {
+    const KATAR = 1299, DAGGER = 13083, OFF_HAND_DAGGER = 13068;
+    const { session, storage } = makeSession();
+    storage.setItem('ro-set', JSON.stringify({ class: 4254, level: 200, jobLevel: 1, weapon: KATAR }));
+    session.start();
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(session.isAllowLeftWeaponByClass).toBe(true);
+    expect(session.isLeftWeaponShown).toBe(false);
+    expect(session.isLeftWeaponOffered).toBe(false);
+
+    session.isEnableCompare = true;
+    session.compareItemNames = [ItemTypeEnum.weapon, ItemTypeEnum.leftWeapon];
+    session.model2 = { rawOptionTxts: [], weapon: DAGGER, leftWeapon: OFF_HAND_DAGGER };
+    expect(session.isCompareLeftWeaponShown).toBe(true);
+    expect(session.isLeftWeaponOffered).toBe(true);
+
+    session.onCompareItemChange();
+    await vi.advanceTimersByTimeAsync(1000);
+    // Oferecida na tela e contada no motor: as duas respostas são a mesma.
+    expect(session.showCompareItemMap.leftWeapon).toBe(true);
+    expect(session.model2[ItemTypeEnum.leftWeapon]).toBe(OFF_HAND_DAGGER);
+
+    // Um katar na build comparada também fecha a linha: ele ocupa as duas mãos.
+    session.model2 = { rawOptionTxts: [], weapon: KATAR };
+    expect(session.isCompareLeftWeaponShown).toBe(false);
+    session.dispose();
+  });
 
   it('boots the real datasets, completes the solve and persists the existing autosave format', async () => {
     const { session, storage } = makeSession();

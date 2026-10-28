@@ -3,6 +3,18 @@ import { ItemTypeEnum } from 'src/app/constants';
 /** The two slots that share the character's off hand. */
 export const OFF_HAND_SLOTS: ItemTypeEnum[] = [ItemTypeEnum.shield, ItemTypeEnum.leftWeapon];
 
+/** One of the two. */
+export type OffHandSlot = ItemTypeEnum.shield | ItemTypeEnum.leftWeapon;
+
+/**
+ * The other claimant to the hand. Each of the two rows hides while its rival is filled,
+ * and that is the only thing the two questions differ in.
+ */
+export const OFF_HAND_RIVAL: Record<OffHandSlot, OffHandSlot> = {
+  [ItemTypeEnum.shield]: ItemTypeEnum.leftWeapon,
+  [ItemTypeEnum.leftWeapon]: ItemTypeEnum.shield,
+};
+
 export interface OffHandState {
   /** True when the compared build's main weapon needs both hands. */
   isWeaponTwoHanded: boolean;

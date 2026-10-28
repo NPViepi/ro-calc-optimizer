@@ -6,16 +6,19 @@ import { EquipmentGridComponent } from '../../../../../react/controllers/equipme
 import { SlotListBag } from './slot-list-bag.model';
 
 /**
- * Quem vê a linha do escudo.
+ * Quem vê as duas linhas que disputam a mão vazia: o escudo e a arma da mão esquerda.
  *
- * A linha era lida só pela build principal, então uma arma de duas mãos à esquerda sumia com
- * ela da tela inteira — e com o botão de comparar junto, que é o que o card
- * `9lvALhlAS6Njj6z2pp6Q` (iukkeN) relatou: não havia onde pôr o escudo da build comparada.
+ * As duas eram lidas só pela build principal, então uma arma de duas mãos nela sumia com as
+ * duas da tela inteira — e com o botão de comparar junto, que é o que o card
+ * `9lvALhlAS6Njj6z2pp6Q` (iukkeN) relatou do escudo: não havia onde pôr o escudo da build
+ * comparada. A arma da mão esquerda tinha exatamente a mesma limitação, então "duas mãos
+ * contra uma mão + adaga na esquerda" também não dava para montar.
  *
- * Quem responde por cada build é a sessão (`isShieldShown` e `isCompareShieldShown`); o que a
- * grade faz com as duas respostas é o que está fixado aqui. A metade principal não pode
- * oferecer um seletor quando a resposta dela é não: um escudo numa build de duas mãos escapa
- * da penalidade de Vel.Atq mas levaria os bônus do script para a conta.
+ * Quem responde por cada build é a sessão (`isShieldShown`, `isCompareShieldShown`,
+ * `isLeftWeaponShown` e `isCompareLeftWeaponShown`); o que a grade faz com as respostas é o
+ * que está fixado aqui. A metade principal não pode oferecer um seletor quando a resposta
+ * dela é não: um escudo numa build de duas mãos escapa da penalidade de Vel.Atq mas levaria
+ * os bônus do script para a conta.
  */
 
 const TWO_HANDED = 2019;
@@ -29,27 +32,37 @@ const ITEMS: Record<number, ItemModel> = {
   [ONE_HANDED]: item(ONE_HANDED, '[Aluguel] Cajado do Poder'),
 };
 
-function makeGrid(input: { weapon?: number; leftWeapon?: number; shieldShown?: boolean; compareShield?: boolean }) {
+function makeGrid(input: {
+  weapon?: number; leftWeapon?: number; shield?: number;
+  shieldShown?: boolean; compareShield?: boolean; leftWeaponShown?: boolean; compareLeftWeapon?: boolean;
+}) {
   // Sem o serviço de layout, como nos outros specs da grade: ele só alimenta a busca de itens.
   const grid = new EquipmentGridComponent({ hintPending: false, labels: {} } as any, undefined as any);
 
   grid.items = ITEMS;
   grid.mapEnchant = new Map();
   grid.lists = { refineList: [], shadowRefineList: [] } as unknown as SlotListBag;
-  grid.model = { rawOptionTxts: [], slotColors: {}, weapon: input.weapon, leftWeapon: input.leftWeapon };
+  grid.model = { rawOptionTxts: [], slotColors: {}, weapon: input.weapon, leftWeapon: input.leftWeapon, shield: input.shield };
   grid.model2 = { rawOptionTxts: [] };
   grid.compareItemNames = [];
   grid.showCompareItemMap = {};
   grid.isShieldShown = input.shieldShown ?? false;
   grid.isCompareShieldShown = input.compareShield ?? false;
+  grid.isLeftWeaponShown = input.leftWeaponShown ?? false;
+  grid.isCompareLeftWeaponShown = input.compareLeftWeapon ?? false;
   grid.refreshInputs();
 
   const slotKeys = grid.columns.flatMap((column) => column.flatMap((group) => group.slots.map((slot) => slot.key)));
 
-  return { grid, shown: slotKeys.includes(ItemTypeEnum.shield) };
+  return {
+    grid,
+    shown: slotKeys.includes(ItemTypeEnum.shield),
+    leftWeaponRowShown: slotKeys.includes(ItemTypeEnum.leftWeapon),
+  };
 }
 
 const shieldSlot = SLOTS_BY_KEY.get(ItemTypeEnum.shield)!;
+const leftWeaponSlot = SLOTS_BY_KEY.get(ItemTypeEnum.leftWeapon)!;
 
 describe('a linha do escudo na comparação', () => {
   it('fica fora da tela quando nenhuma das duas builds pode usar escudo', () => {
@@ -83,9 +96,41 @@ describe('a linha do escudo na comparação', () => {
     expect(grid.mainBlockedNote(shieldSlot)).toBe('Equipe uma arma para poder usar escudo');
   });
 
-  it('não toca em slot nenhum fora o escudo', () => {
+  it('não toca em slot nenhum fora as duas linhas da mão vazia', () => {
     const { grid } = makeGrid({ weapon: TWO_HANDED, compareShield: true });
 
     expect(grid.mainBlockedNote(SLOTS_BY_KEY.get(ItemTypeEnum.armor)!)).toBeNull();
+  });
+});
+
+describe('a linha da arma da mão esquerda na comparação', () => {
+  it('fica fora da tela quando nenhuma das duas builds pode usar a outra mão', () => {
+    expect(makeGrid({ weapon: TWO_HANDED }).leftWeaponRowShown).toBe(false);
+  });
+
+  it('aparece pela build comparada, com a principal dizendo o que ocupa as duas mãos', () => {
+    const { grid, leftWeaponRowShown } = makeGrid({ weapon: TWO_HANDED, compareLeftWeapon: true });
+
+    expect(leftWeaponRowShown).toBe(true);
+    expect(grid.mainBlockedNote(leftWeaponSlot)).toBe('[Aluguel] Cajado de Duas Mãos TE ocupa as duas mãos');
+  });
+
+  it('não põe recado nenhum quando a própria build principal dupla-empunha', () => {
+    const { grid, leftWeaponRowShown } = makeGrid({ weapon: ONE_HANDED, leftWeaponShown: true });
+
+    expect(leftWeaponRowShown).toBe(true);
+    expect(grid.mainBlockedNote(leftWeaponSlot)).toBeNull();
+  });
+
+  it('explica o escudo, que disputa a mesma mão', () => {
+    const { grid } = makeGrid({ weapon: ONE_HANDED, shield: ONE_HANDED, compareLeftWeapon: true });
+
+    expect(grid.mainBlockedNote(leftWeaponSlot)).toBe('[Aluguel] Cajado do Poder ocupa a outra mão');
+  });
+
+  it('pede uma arma quando não há nenhuma', () => {
+    const { grid } = makeGrid({ compareLeftWeapon: true });
+
+    expect(grid.mainBlockedNote(leftWeaponSlot)).toBe('Equipe uma arma para poder usar outra arma');
   });
 });

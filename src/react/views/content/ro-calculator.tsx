@@ -380,6 +380,7 @@ let sustainPanel: any = vm["sustainPanel"]; return <>{(() => { const __condition
 "headSlotOccupiedBy": vm.headSlotOccupiedBy,
 "hiddenMap": vm.hiddenMap,
 "isLeftWeaponShown": vm.isLeftWeaponShown,
+"isCompareLeftWeaponShown": vm.isCompareLeftWeaponShown,
 "isShieldShown": vm.isShieldShown,
 "isCompareShieldShown": vm.isCompareShieldShown,
 "revision": vm.equipRevision,
