@@ -74,10 +74,12 @@ export function previewSkillsForClass(className: ClassName): AtkSkillModel[] {
 }
 
 function buff(name: SKILL_NAME, label: string, maxLevel = 1, bonus?: (level: number) => Record<string, number>, previewDescription?: string): ActiveSkillModel {
-  return { name, label: `${label} (Prévia)`, preview: true, previewDescription, inputType: maxLevel === 1 ? 'selectButton' : 'dropdown', dropdown: [
-    { label: 'Não', value: 0, isUse: false },
-    ...Array.from({ length: maxLevel }, (_, index) => ({ label: maxLevel === 1 ? 'Sim' : `Nv ${index + 1}`, value: index + 1, isUse: true, bonus: bonus?.(index + 1) })),
-  ] };
+  const off = { label: 'Não', value: 0, isUse: false };
+  const levels = Array.from({ length: maxLevel }, (_, index) => ({ label: maxLevel === 1 ? 'Sim' : `Nv ${index + 1}`, value: index + 1, isUse: true, bonus: bonus?.(index + 1) }));
+  // Par de botões: o "Sim" à esquerda, como em todo o resto da aba de habilidades.
+  // Lista de níveis: começa no desligado. Ver select-button-order.spec.ts.
+  return { name, label: `${label} (Prévia)`, preview: true, previewDescription, inputType: maxLevel === 1 ? 'selectButton' : 'dropdown',
+    dropdown: maxLevel === 1 ? [...levels, off] : [off, ...levels] };
 }
 export function previewBuffsForClass(className: ClassName): ActiveSkillModel[] {
   switch (className) {

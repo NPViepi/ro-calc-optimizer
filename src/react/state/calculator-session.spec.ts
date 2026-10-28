@@ -135,6 +135,34 @@ describe('plain calculator session', () => {
     session.dispose();
   });
 
+  /**
+   * Card `9lvALhlAS6Njj6z2pp6Q` (iukkeN): com um cajado de duas mãos na build principal, a
+   * linha do escudo sumia da tela e não havia onde pôr o escudo da build comparada. Quem
+   * responde pela linha agora é cada build; o `Calculator` só sabe da principal.
+   */
+  it('opens the shield row for the compared build alone, and keeps its shield in the numbers', async () => {
+    const { session, storage } = makeSession();
+    storage.setItem('ro-set', JSON.stringify({ class: 4255, level: 200, jobLevel: 1, weapon: 2019 }));
+    session.start();
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(session.hiddenMap.shield).toBe(true);
+    expect(session.isCompareShieldShown).toBe(false);
+
+    session.isEnableCompare = true;
+    session.compareItemNames = [ItemTypeEnum.weapon, ItemTypeEnum.shield];
+    session.model2 = { rawOptionTxts: [], weapon: 1623, shield: 2101 };
+    expect(session.isCompareShieldShown).toBe(true);
+
+    session.onCompareItemChange();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(session.model2[ItemTypeEnum.shield]).toBe(2101);
+
+    // Uma arma de duas mãos dos dois lados fecha a linha de novo.
+    session.model2 = { rawOptionTxts: [], weapon: 2019 };
+    expect(session.isCompareShieldShown).toBe(false);
+    session.dispose();
+  });
+
   it('boots the real datasets, completes the solve and persists the existing autosave format', async () => {
     const { session, storage } = makeSession();
     session.start();

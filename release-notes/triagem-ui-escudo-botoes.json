@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "logs": [
+    "A linha do escudo agora aparece quando a build comparada pode usar um, mesmo que a principal esteja com uma arma de duas mãos: dá para comparar um cajado de duas mãos com um de uma mão mais escudo. Reportado por iukkeN.",
+    "Os botões de dois estados da aba de habilidades ficam todos na mesma ordem, com o \"Sim\" à esquerda. Eram 26 que apareciam ao contrário, entre eles as quatro insígnias no alvo e os buffs de prévia."
+  ]
+}

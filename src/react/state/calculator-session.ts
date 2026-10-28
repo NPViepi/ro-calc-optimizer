@@ -116,6 +116,7 @@ import { encodeBuild, decodeShared } from 'src/app/core/share-codec';
 import { shareEntryHref } from 'src/app/core/share-entry';
 import { buildSharePath, readShareToken, SHARE_PATH_PREFIX } from 'src/app/core/share-path';
 import { buildCharSpriteUrl, bareJobSprite } from 'src/app/domain/char-sprite-url';
+import { itemAllowsShield } from 'src/app/domain/weapon';
 import { AutoCastSimulation, buildAutoCastSimulation } from 'src/app/core/auto-cast';
 import { CustomItemDefinition, customDefinitionsForBuild, customItemDescriptionHtml, isCustomItem, validateCustomItems } from 'src/app/core/custom-items';
 import { shortenUrl } from 'src/app/core/shorten-url';
@@ -600,6 +601,41 @@ export class CalculatorSession extends Store<number> {
    */
   get isLeftWeaponShown(): boolean {
     return !!this.model.weapon && this.showLeftWeapon && !this.model.shield;
+  }
+
+  /**
+   * What the compared build actually wears in a slot: its own choice where the slot is
+   * being compared — empty counts, it is the comparison's answer — and the main build's
+   * elsewhere, which is the merge `calcCompare` performs.
+   */
+  private compareWears(itemType: ItemTypeEnum): number | undefined {
+    return this.compareItemNames?.includes(itemType) ? this.model2?.[itemType] : this.model?.[itemType];
+  }
+
+  /**
+   * True when the main build can hold a shield. `hiddenMap.shield` is the weapon's own
+   * verdict, settled by the debounced item pass; an off-hand weapon is the other claimant
+   * to the same hand.
+   */
+  get isShieldShown(): boolean {
+    return !!this.model.weapon && !this.hiddenMap.shield && !this.model.leftWeapon;
+  }
+
+  /**
+   * True when the compared build could hold a shield. The shield row used to be read off
+   * the main build alone, so a two-handed weapon on the left hid the row for both sides
+   * and the comparison the board asked for — a two-handed staff against a one-hander with
+   * a shield — had nowhere to put the shield (card 9lvALhlAS6Njj6z2pp6Q, por iukkeN).
+   *
+   * The engine was already deciding the off hand per build: `resolveOffHandEviction` reads
+   * the compared weapon, not the main one. This is only the screen catching up.
+   */
+  get isCompareShieldShown(): boolean {
+    if (!this.isEnableCompare) return false;
+
+    const weaponId = this.compareWears(ItemTypeEnum.weapon);
+
+    return !!weaponId && itemAllowsShield(this.items?.[weaponId]) && !this.compareWears(ItemTypeEnum.leftWeapon);
   }
 
   isEnableCompare = false;

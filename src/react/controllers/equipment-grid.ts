@@ -66,6 +66,9 @@ export class EquipmentGridComponent extends ViewState {
    headSlotOccupiedBy: Partial<Record<ItemTypeEnum, string>> = {};
    hiddenMap: { ammu: boolean; shield: boolean } = { ammu: true, shield: true };
    isLeftWeaponShown = false;
+  /** The two halves of the shield row's question, both settled by the host. */
+   isShieldShown = false;
+   isCompareShieldShown = false;
   /**
    * Bumped by the host at the end of each debounced pass. The models are mutated in place,
    * so nothing else tells the cards that a preset, a replay import or a share link landed.
@@ -150,6 +153,27 @@ private readonly colorPicker: SlotColorPreferences,
 
   occupiedBy(slot: EquipmentSlotDescriptor): string | null {
     return slot.headSlot ? (this.headSlotOccupiedBy?.[slot.key] ?? null) : null;
+  }
+
+  /**
+   * Why the main build is not offered a shield while the row is on screen for the
+   * comparison's sake. The row is there so the compared build can be given one; this half
+   * of it has to say what is holding the hand, or it would hand out a picker whose item
+   * the engine then ignores.
+   *
+   * The three reasons are the three terms of `isShieldShown`, in the same order.
+   */
+  mainBlockedNote(slot: EquipmentSlotDescriptor): string | null {
+    if (slot.visibility !== 'shield' || this.isShieldShown) return null;
+
+    if (!this.model?.['weapon']) return 'Equipe uma arma para poder usar escudo';
+    if (this.model?.['leftWeapon']) return `${this.itemName(this.model['leftWeapon']) ?? 'A arma da mão esquerda'} ocupa a outra mão`;
+
+    return `${this.itemName(this.model['weapon']) ?? 'A arma'} ocupa as duas mãos`;
+  }
+
+  private itemName(itemId: number): string | undefined {
+    return this.items?.[itemId]?.name;
   }
 
   // ── highlight colours ────────────────────────────────────────────────────────
@@ -644,7 +668,7 @@ private readonly colorPicker: SlotColorPreferences,
         case 'leftWeapon':
           return this.isLeftWeaponShown;
         case 'shield':
-          return !!this.model?.['weapon'] && !this.hiddenMap?.shield && !this.model?.['leftWeapon'];
+          return this.isShieldShown || this.isCompareShieldShown;
         default:
           return true;
       }

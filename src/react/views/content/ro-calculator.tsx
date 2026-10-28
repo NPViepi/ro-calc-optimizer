@@ -380,6 +380,8 @@ let sustainPanel: any = vm["sustainPanel"]; return <>{(() => { const __condition
 "headSlotOccupiedBy": vm.headSlotOccupiedBy,
 "hiddenMap": vm.hiddenMap,
 "isLeftWeaponShown": vm.isLeftWeaponShown,
+"isShieldShown": vm.isShieldShown,
+"isCompareShieldShown": vm.isCompareShieldShown,
 "revision": vm.equipRevision,
 "selectItem": (event: any) => vm.action(() => { const $event = event; vm.onSelectItem($event.itemType,$event.itemId,$event.refine) }),
 "clearItem": (event: any) => vm.action(() => { const $event = event; vm.onClearItem($event) }),
