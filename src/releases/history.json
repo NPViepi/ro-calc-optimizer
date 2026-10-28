@@ -1,5 +1,15 @@
 [
   {
+    "v": "0.1.188-beta",
+    "date": "28-10-2026",
+    "logs": [
+      "Corrigida a chance de auto-conjuração da Fenda do Abismo: agora é 1% por nível da habilidade, como na tabela do bROWiki, e não os 20% fixos que vinham do rAthena.",
+      "Cadastrado o efeito [Ataque Duplo] nos onze equipamentos que o concedem no jogo — entre eles a Carta Sorrateiro, o Chapéu de Jiboia, a Pedra de Ataque Duplo (Capa), o encante de visual Ataque Duplo, o Nagan, a Lança Peçonhenta e o Chapéu de Pintinho —, de modo que a habilidade passa a aparecer na aba de Auto-conjuração. Reportado por GetLemonade.",
+      "Completados os encantos dos equipamentos Ilusión: N-DEF e N-DEFM passam a ser oferecidos no Colete, no Motor e na Perna, o S-SPMax na Perna, e os encantos S-HPR, S-SPR, U-Vida e U-Alma foram cadastrados. U-Mental e U-Mana deixaram de aparecer nos dois acessórios ao mesmo tempo e voltaram a ser exclusivos de um lado cada, e agora somam a regeneração que concedem.",
+      "Adicionados os atributos dos chefes Aquila, Simulation Juncea, Lasgand, Fallen Angel Slug e Snowstorm Angel, que já apareciam pelo nome mas não podiam ser escolhidos como alvo."
+    ]
+  },
+  {
     "v": "0.1.187-beta",
     "date": "18-10-2026",
     "logs": [
