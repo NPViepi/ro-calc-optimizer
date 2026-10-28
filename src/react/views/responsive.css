@@ -49,10 +49,9 @@
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-panel .where-above,
 app-topbar .topbar-menu,
 /* Shown only where they are needed (the blocks below): the info button beside an anchor
-   with its own action and the rotation's up / down buttons on touch; the popover close
-   button on a phone; the elemental tables' scroll hint below desktop. */
+   with its own action and the rotation's up / down buttons on touch; the elemental
+   tables' scroll hint below desktop. */
 .tip-info,
-.ui-overlaypanel-close,
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-move,
 app-elemental-table .elemental-scroll-hint {
   display: none;
@@ -613,11 +612,18 @@ app-elemental-table .elemental-scroll-hint {
     max-height: calc(100dvh - var(--topbar-height) - var(--pane-bar-height) - env(safe-area-inset-bottom) - 16px);
     overflow-y: auto;
   }
-  .ui-overlaypanel-close {
+  /* The sheet's header (popover.tsx): stays on top while the content scrolls under it,
+     and takes its own row so the content keeps the sheet's whole width. */
+  .ui-overlaypanel-header {
     position: sticky;
     top: 0;
     z-index: 1;
-    float: right;
+    display: flex;
+    justify-content: flex-end;
+    background: var(--surface-card);
+    border-bottom: 1px solid var(--surface-border);
+  }
+  .ui-overlaypanel-close {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -682,11 +688,19 @@ app-elemental-table .elemental-scroll-hint {
     gap: 8px;
   }
 
-  /* Resultado: a section's content runs to the panel's edges, so its cards stand at the
-     page gutter like the Build and Equip. cards, with their own padding inside. */
-  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-col--result .ui-accordion-content {
-    padding-inline: 0;
+  /* Resultado: the sections run past the page gutter to the screen's sides, and pad their
+     content by that gutter, so their cards line up with the Build and Equip. cards. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-col--result {
+    margin-inline: calc(-1 * var(--page-gutter));
+  }
+  /* Outranks the accordion's first / last tab corner rules (_controls.css). */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-col--result .ui-accordion app-ui-accordion-tab:nth-child(n)
+    :is(.ui-accordion-header .ui-accordion-header-link, .ui-accordion-content) {
     border-inline: 0;
+    border-radius: 0;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-col--result .ui-accordion-content {
+    padding-inline: var(--page-gutter);
   }
 
   /* Topbar: logo, then two 44px icons — search and menu. */
