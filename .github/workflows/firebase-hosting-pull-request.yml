@@ -51,3 +51,6 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: simulador-latam-ro
           expires: 7d
+          # 15.34.1 checks that the Hosting API is enabled, which needs
+          # serviceusage.services.get; the CI service account lacks it (HTTP 403).
+          firebaseToolsVersion: 15.34.0
