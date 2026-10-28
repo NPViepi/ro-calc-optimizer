@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ElementType } from '../constants';
 import { resolveSkillMeta } from '../skills';
+import { skillDescHtml } from '../utils';
 import { AtkSkillModel, CharacterBase } from './_character-base.abstract';
 import { Shinkiro } from './Shinkiro';
 import { Shiranui } from './Shiranui';
@@ -58,17 +59,34 @@ const input = (over: { totalPow?: number; totalSpl?: number; baseLevel?: number 
     status: { totalPow: over.totalPow ?? 0, totalSpl: over.totalSpl ?? 0 },
   }) as any;
 
-const CLASSES: [string, new () => CharacterBase][] = [['Shinkiro', Shinkiro], ['Shiranui', Shiranui]];
+/** Cada classe empresta o ícone do seu próprio aplicador de [Pesadelo]: Shinkiro é a
+ *  metade POD e abre o estado pela linha Kunai, Shiranui é a metade SAB e o abre pela
+ *  linha Mahou. São as duas pré-requisitos das ultimates que consomem o estado. */
+const CLASSES: [string, new () => CharacterBase, number, string][] = [
+  ['Shinkiro', Shinkiro, 5485, 'Kunai Distorcida'],
+  ['Shiranui', Shiranui, 5492, 'Mahou da Escuridão'],
+];
 
-describe.each(CLASSES)('%s', (_name, Ctor) => {
+describe.each(CLASSES)('%s', (_name, Ctor, nightmareIcon, nightmareSkill) => {
   it('offers the [Pesadelo] state as a target toggle', () => {
     const toggle = new Ctor().activeSkills.find((s) => s.name === '_Nightmare_target');
     expect(toggle).toMatchObject({ label: 'Alvo em [Pesadelo]', inputType: 'selectButton' });
   });
 
+  it(`empresta ícone e descrição de ${nightmareSkill}, o aplicador da própria classe`, () => {
+    const toggle = new Ctor().activeSkills.find((s) => s.name === '_Nightmare_target');
+
+    // A tela lê o mesmo `icon` duas vezes: desenha a figura e, por `buffTooltip`, escolhe
+    // a descrição do balão. Sem ele o botão fica pelado, que é o que o card relatou.
+    expect(toggle?.icon).toBe(nightmareIcon);
+    expect(skillDescHtml(toggle?.icon)).toContain(nightmareSkill);
+    expect(skillDescHtml(toggle?.icon)).toContain('[Pesadelo]');
+  });
+
   it('keeps the toggle id-less, which is what lets the pt-BR label survive', () => {
-    // A name the catalog resolves gets the client label instead, and the LATAM client
-    // ships none for Sombra do Pesadelo (5493) — the panel would read in English.
+    // Um nome que o catálogo resolve troca o rótulo pelo do cliente, e não há entrada que
+    // signifique "o alvo está em [Pesadelo]": seis habilidades infligem o estado. O `icon`
+    // acima resolve a figura sem mexer no rótulo, que é por isso que ele vem do modelo.
     expect(resolveSkillMeta('_Nightmare_target')?.id).toBeUndefined();
   });
 

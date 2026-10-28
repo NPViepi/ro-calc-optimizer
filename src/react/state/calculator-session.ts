@@ -3671,7 +3671,11 @@ await ((_event?: unknown) => {
       this.buffTooltipCache.clear();
       this.buffTooltipVersion = this.itemDescriptionStore.version;
     }
-    const cacheKey = `${buff.name}:${selectedValue ?? ''}:${buff.preview ?? false}`;
+    // O ícone entra na chave porque é ele que escolhe a descrição logo abaixo: duas classes
+    // podem trazer o mesmo marcador com ícones diferentes — `_Nightmare_target` aponta para
+    // Kunai Distorcida no Shinkiro e para Mahou da Escuridão no Shiranui — e sem ele a
+    // primeira classe aberta ditaria o balão da outra pelo resto da sessão.
+    const cacheKey = `${buff.name}:${selectedValue ?? ''}:${buff.preview ?? false}:${buff.icon ?? ''}`;
     const cached = this.buffTooltipCache.get(cacheKey);
     if (cached !== undefined) return cached;
 

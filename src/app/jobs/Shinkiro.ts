@@ -534,16 +534,21 @@ export class Shinkiro extends Kagerou {
   private readonly activeSkillList4th: ActiveSkillModel[] = [
     {
       /**
-       * O estado [Pesadelo] no alvo, não a habilidade que o aplica: quem põe é Sombra do
-       * Pesadelo (5493), que o simulador ainda não modela. As duas ultimates do Pesadelo
-       * causam 1,5x de dano contra quem está nesse estado e o consomem.
+       * O estado [Pesadelo] no alvo, não a habilidade que o aplica. As duas ultimates do
+       * Pesadelo causam 1,5x de dano contra quem está nesse estado e o consomem.
        *
-       * Por isso é um marcador interno sem id, como `_ElementalMaster_spirit`: um nome que
-       * o catálogo resolve guarda o rótulo do cliente, e o cliente LATAM não traz nome em
-       * pt-BR para 5493 — o botão apareceria escrito "Shadow - Nightmare".
+       * É um marcador interno sem id, como `_ElementalMaster_spirit`: um nome que o
+       * catálogo resolve guarda o rótulo do cliente, e seis habilidades infligem o estado
+       * — não há uma entrada no catálogo que signifique "o alvo está em [Pesadelo]".
+       *
+       * O `icon` é lido duas vezes pela tela: desenha a figura e, por `buffTooltip`,
+       * escolhe a descrição do balão. Aponta para Kunai Distorcida (5485), que é como a linha Kunai, a metade POD da dupla,
+       * põe o alvo em [Pesadelo] — mesma ideia do `_Meister_Rush`, que empresta o ícone
+       * de Avanço Sísmico para explicar o estado [Avanço].
        */
       name: '_Nightmare_target',
       label: 'Alvo em [Pesadelo]',
+      icon: 5485, // Kunai Distorcida (5485)
       inputType: 'selectButton',
       dropdown: [
         { label: 'Sim', value: 1, isUse: true },

@@ -9,6 +9,8 @@ import { DataKey, DataManifest, manifestPath } from '../../app/core/data-manifes
 import { SKILL_DESC_BY_ID } from '../../app/skills';
 import { previewBuffsForClass } from '../../app/skills/preview-275';
 import { ClassName } from '../../app/jobs/_class-name';
+import { Shinkiro } from '../../app/jobs/Shinkiro';
+import { Shiranui } from '../../app/jobs/Shiranui';
 import { ItemTypeEnum } from '../../app/constants/item-type.enum';
 
 function makeSession(overrides: Partial<Record<DataKey, Promise<unknown>>> = {}) {
@@ -234,6 +236,21 @@ describe('plain calculator session', () => {
       const chasing = previewBuffsForClass(ClassName.AbyssChaser)[0];
       expect(session.buffTooltip({ ...chasing, icon: 6512 })).toContain('Adds 2500% per skill level to Unlucky Rush');
       expect(session.buffTooltip({ ...chasing, icon: 6512 })).not.toContain('retreats');
+    } finally {
+      session.dispose();
+    }
+  });
+
+  it('dá a cada classe o balão do seu próprio aplicador de [Pesadelo]', () => {
+    const { session } = makeSession();
+    try {
+      const toggleOf = (job: Shinkiro | Shiranui) => job.activeSkills.find((s) => s.name === '_Nightmare_target')!;
+
+      // O marcador tem o mesmo nome nas duas classes e só o ícone muda. Uma chave de cache
+      // sem o ícone serviria a descrição da primeira classe aberta pelo resto da sessão —
+      // a ordem das duas linhas abaixo é o teste.
+      expect(session.buffTooltip(toggleOf(new Shinkiro()))).toContain('Kunai Distorcida');
+      expect(session.buffTooltip(toggleOf(new Shiranui()))).toContain('Mahou da Escuridão');
     } finally {
       session.dispose();
     }
