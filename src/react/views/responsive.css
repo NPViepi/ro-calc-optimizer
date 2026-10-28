@@ -272,6 +272,22 @@ app-elemental-table .elemental-scroll-hint {
 
 /* ------------------------------------------------------ description sheet (phone) --- */
 
+/* A popover on a phone (popover.tsx): a bottom sheet the screen's width, which scrolls
+   on its own when its content is taller than most of the screen. */
+.ui-popover-pane--sheet {
+  width: 100%;
+  max-width: 100%;
+}
+.ui-popover-pane--sheet > .ui-overlaypanel {
+  width: 100%;
+  max-width: 100%;
+  max-height: 85dvh;
+  overflow-y: auto;
+  margin: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-radius: 12px 12px 0 0;
+}
+
 /* A long item description opened by tap on a phone (tooltip.tsx), as a bottom sheet. */
 .ui-tooltip.ui-tooltip-sheet {
   position: relative;
@@ -554,6 +570,11 @@ app-elemental-table .elemental-scroll-hint {
   .layout-topbar {
     gap: 4px;
   }
+  /* The topbar's dialogs render elsewhere (a portal): their empty hosts take no part in
+     the row, or each would add a gap after the menu button. */
+  .layout-topbar > :is(app-ui-dialog, app-help-improve) {
+    display: contents;
+  }
 
   /* Habilidades: the pane is wider than a desktop sections column but its three columns
      cut names short; take as many 260px columns as fit. */
@@ -659,6 +680,13 @@ app-elemental-table .elemental-scroll-hint {
   :is(app-elemental-table, .ui-scope-app-elemental-table) .hud-selectors-row {
     flex-direction: column;
     gap: 8px;
+  }
+
+  /* Resultado: a section's content runs to the panel's edges, so its cards stand at the
+     page gutter like the Build and Equip. cards, with their own padding inside. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-col--result .ui-accordion-content {
+    padding-inline: 0;
+    border-inline: 0;
   }
 
   /* Topbar: logo, then two 44px icons — search and menu. */

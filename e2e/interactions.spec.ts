@@ -296,7 +296,7 @@ test('custom editor segmented controls and virtual options support keyboard sele
 });
 
 for (const width of [1920, 390]) {
-  test(`auto-cast effective-hit popup stays anchored to its row at ${width}px`, async ({ page }) => {
+  test(`auto-cast effective-hit popup ${width < 768 ? 'opens as a bottom sheet' : 'stays anchored to its row'} at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 918 });
     await boot(page);
     // A phone shows the sections behind the bottom bar's "Resultado" tab.
@@ -311,11 +311,18 @@ for (const width of [1920, 390]) {
     expect(await anchor.evaluate(el => el.isConnected)).toBe(true);
     const source = await trigger.boundingBox();
     const panel = await popup.boundingBox();
-    const center = source.x + source.width / 2;
-    expect(center).toBeGreaterThanOrEqual(panel.x);
-    expect(center).toBeLessThanOrEqual(panel.x + panel.width);
-    const gap = Math.min(Math.abs(panel.y - source.y - source.height), Math.abs(source.y - panel.y - panel.height));
-    expect(gap).toBeLessThanOrEqual(20);
+    if (width < 768) {
+      // A phone opens popovers as a sheet along the bottom edge, the screen's width.
+      const viewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight }));
+      expect(panel.width).toBeGreaterThanOrEqual(viewport.width - 17);
+      expect(Math.abs(panel.y + panel.height - viewport.height)).toBeLessThanOrEqual(1);
+    } else {
+      const center = source.x + source.width / 2;
+      expect(center).toBeGreaterThanOrEqual(panel.x);
+      expect(center).toBeLessThanOrEqual(panel.x + panel.width);
+      const gap = Math.min(Math.abs(panel.y - source.y - source.height), Math.abs(source.y - panel.y - panel.height));
+      expect(gap).toBeLessThanOrEqual(20);
+    }
     await page.keyboard.press('Escape');
     await expect(popup).toHaveCount(0);
     await expect(trigger).toBeFocused();
