@@ -128,6 +128,19 @@ export const AllowShieldTable: Partial<Record<WeaponTypeName, true>> = {
   axe: true,
 };
 
+/** Whether a weapon type leaves the off hand free. No weapon at all means no restriction. */
+export const typeAllowsShield = (typeName?: WeaponTypeName): boolean => !typeName || AllowShieldTable[typeName] === true;
+
+/**
+ * The same question asked of an item.
+ *
+ * `Weapon.isAllowShield()` answers it for the build the engine has loaded, which is the
+ * main one. The screen also has to ask it about the compared build, whose weapon never
+ * passes through a `Weapon` — see `isCompareShieldShown`.
+ */
+export const itemAllowsShield = (itemData?: Pick<ItemModel, 'itemSubTypeId'>): boolean =>
+  typeAllowsShield(WeaponTypeNameMapBySubTypeId[itemData?.itemSubTypeId as keyof typeof WeaponTypeNameMapBySubTypeId]);
+
 
 const IsLongRange: Partial<Record<WeaponTypeName, boolean>> = {
   gun: true,
@@ -201,9 +214,7 @@ export class Weapon {
   }
 
   isAllowShield() {
-    if (!this._typeName) return true
-
-    return AllowShieldTable[this._typeName] || false;
+    return typeAllowsShield(this._typeName);
   }
 
   get data() {

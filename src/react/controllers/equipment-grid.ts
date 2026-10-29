@@ -15,11 +15,24 @@ import { Chip, slotOwnFields } from 'src/app/core/equipment-chips';
 import { SlotDerivation, cardsToClear, deriveSlot, reconcileEnchants } from 'src/app/core/equipment-slot-derivation';
 import { ensureCustomAttachment } from 'src/app/core/custom-attachments';
 import { costumeSlotDescriptor } from 'src/app/core/costume-slot-descriptor';
+import { OFF_HAND_RIVAL, OffHandSlot } from 'src/app/core/off-hand-slots';
 import { SLOT_COLOR_BY_ID, SlotColor } from 'src/app/core/slot-colors';
 import { ItemModel } from 'src/app/models/item.model';
 import { CalculatorLayout, SlotColorPreferences } from '../services/calculator-services';
 import { ChipPick } from './equipment-slot-card';
 import { SlotListBag } from '../../app/layout/pages/ro-calculator/equipment-grid/slot-list-bag.model';
+
+/** The first term of both off-hand questions: there is no off hand to speak of yet. */
+const NO_WEAPON_NOTE: Record<OffHandSlot, string> = {
+  [ItemTypeEnum.shield]: 'Equipe uma arma para poder usar escudo',
+  [ItemTypeEnum.leftWeapon]: 'Equipe uma arma para poder usar outra arma',
+};
+
+/** How to name the rival holding the hand when the catalogue has no name for it. */
+const RIVAL_FALLBACK: Record<OffHandSlot, string> = {
+  [ItemTypeEnum.shield]: 'O escudo',
+  [ItemTypeEnum.leftWeapon]: 'A arma da mão esquerda',
+};
 
 /** What the host needs to run onSelectItem — the same three arguments it always took. */
 export interface SelectItemEvent {
@@ -65,7 +78,11 @@ export class EquipmentGridComponent extends ViewState {
    showCompareItemMap: Record<string, boolean> = {};
    headSlotOccupiedBy: Partial<Record<ItemTypeEnum, string>> = {};
    hiddenMap: { ammu: boolean; shield: boolean } = { ammu: true, shield: true };
+  /** The four halves of the two off-hand rows' question, all settled by the host. */
    isLeftWeaponShown = false;
+   isCompareLeftWeaponShown = false;
+   isShieldShown = false;
+   isCompareShieldShown = false;
   /**
    * Bumped by the host at the end of each debounced pass. The models are mutated in place,
    * so nothing else tells the cards that a preset, a replay import or a share link landed.
@@ -150,6 +167,33 @@ private readonly colorPicker: SlotColorPreferences,
 
   occupiedBy(slot: EquipmentSlotDescriptor): string | null {
     return slot.headSlot ? (this.headSlotOccupiedBy?.[slot.key] ?? null) : null;
+  }
+
+  /**
+   * Why the main build is not offered this off-hand slot while the row is on screen for
+   * the comparison's sake. The row is there so the compared build can be given a shield or
+   * a second weapon; this half of it has to say what is holding the hand, or it would hand
+   * out a picker whose item the engine then ignores.
+   */
+  mainBlockedNote(slot: EquipmentSlotDescriptor): string | null {
+    if (slot.visibility === 'shield') return this.isShieldShown ? null : this.offHandBlockedNote(ItemTypeEnum.shield);
+    if (slot.visibility === 'leftWeapon') return this.isLeftWeaponShown ? null : this.offHandBlockedNote(ItemTypeEnum.leftWeapon);
+
+    return null;
+  }
+
+  /** The three reasons are the three terms of the row's question, in the same order. */
+  private offHandBlockedNote(slot: OffHandSlot): string {
+    if (!this.model?.['weapon']) return NO_WEAPON_NOTE[slot];
+
+    const rival = OFF_HAND_RIVAL[slot];
+    if (this.model?.[rival]) return `${this.itemName(this.model[rival]) ?? RIVAL_FALLBACK[rival]} ocupa a outra mão`;
+
+    return `${this.itemName(this.model['weapon']) ?? 'A arma'} ocupa as duas mãos`;
+  }
+
+  private itemName(itemId: number): string | undefined {
+    return this.items?.[itemId]?.name;
   }
 
   // ── highlight colours ────────────────────────────────────────────────────────
@@ -642,9 +686,9 @@ private readonly colorPicker: SlotColorPreferences,
     return EQUIPMENT_SLOTS.filter((slot) => {
       switch (slot.visibility) {
         case 'leftWeapon':
-          return this.isLeftWeaponShown;
+          return this.isLeftWeaponShown || this.isCompareLeftWeaponShown;
         case 'shield':
-          return !!this.model?.['weapon'] && !this.hiddenMap?.shield && !this.model?.['leftWeapon'];
+          return this.isShieldShown || this.isCompareShieldShown;
         default:
           return true;
       }

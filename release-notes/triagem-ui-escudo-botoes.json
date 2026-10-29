@@ -1,0 +1,8 @@
+{
+  "type": "patch",
+  "logs": [
+    "A linha do escudo agora aparece quando a build comparada pode usar um, mesmo que a principal esteja com uma arma de duas mãos: dá para comparar um cajado de duas mãos com um de uma mão mais escudo. Reportado por iukkeN.",
+    "A arma da mão esquerda ganhou a mesma abertura: com um katar na build principal, dá para comparar com uma adaga mais outra na mão esquerda — e a arma comparada entra na conta, com a Vel.Atq de duas armas junto.",
+    "Os botões de dois estados da aba de habilidades ficam todos na mesma ordem, com o \"Sim\" à esquerda. Eram 26 que apareciam ao contrário, entre eles as quatro insígnias no alvo e os buffs de prévia."
+  ]
+}
