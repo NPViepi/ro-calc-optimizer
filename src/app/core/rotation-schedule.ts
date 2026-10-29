@@ -12,6 +12,11 @@
  *     gate      = max(castEnd_i + acd_i,       // pós: every skill
  *                     start_i + aspdPeriod)    // VelAtq floor, start-to-start
  *
+ * A step that sets {@link RotationScheduleStep.ignoreAspdFloor} drops the second term:
+ * the skill is not paced by the attack motion, so it releases the next action as soon as
+ * its own pós-conjuração ends. It is per step, not per rotation — the skills around it
+ * keep their floor.
+ *
  * For a single-skill rotation this collapses to
  * `max(fct + vct + max(acd, cd), 1/aspd)` — exactly `calcSkillAspd`'s own `hitPeriod`
  * capped by ASPD. This module is a generalisation of `utils/calc-skill-aspd.ts`, not a
@@ -51,7 +56,21 @@ export interface RotationScheduleStep {
   cd: number;
   /** Total damage for one use, summed over all hits. */
   damage: number;
+  /**
+   * The VelAtq floor does not apply to this step — see `AtkSkillModel.ignoreAspdFloor`.
+   * The step still *starts* no earlier than the previous pós-conjuração; it just does not
+   * hold the next one back by `aspdPeriod`.
+   */
+  ignoreAspdFloor?: boolean;
 }
+
+/**
+ * O piso de VelAtq que vale para um passo: zero para as habilidades que o pagam com a
+ * própria pós-conjuração. O agendador aqui embaixo e a semente gulosa de
+ * `rotation-optimize.ts` leem daqui, para a exceção ter um lugar só.
+ */
+export const aspdFloorOf = (step: Pick<RotationScheduleStep, 'ignoreAspdFloor'>, aspdPeriod: number): number =>
+  step.ignoreAspdFloor ? 0 : aspdPeriod;
 
 export interface RotationLane {
   start: number;
@@ -214,7 +233,7 @@ export function simulateRotation(input: {
       const recEnd = castEnd + step.cd;
       ready.set(step.key, recEnd);
 
-      const aspdFloorEnd = start + floor;
+      const aspdFloorEnd = start + aspdFloorOf(step, floor);
       const next = Math.max(posEnd, aspdFloorEnd);
 
       lanes.push({
@@ -280,6 +299,6 @@ export function simulateRotation(input: {
     cdWaitTotal,
     period: period === 0 ? 0 : period,
     isEstimate: period !== 1,
-    unconstrainedDuration: steps.reduce((sum, s) => sum + Math.max(s.cast + s.acd, floor), 0),
+    unconstrainedDuration: steps.reduce((sum, s) => sum + Math.max(s.cast + s.acd, aspdFloorOf(s, floor)), 0),
   };
 }

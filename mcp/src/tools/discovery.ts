@@ -206,6 +206,9 @@ export function registerDiscoveryTools(server: McpServer, dataset: Dataset): voi
             name: s.name,
             label: meta?.label ?? s.label ?? s.name,
             id: meta?.id,
+            // Entrada de rotação sem dano (Esconderijo, Infiltrar): ocupa uma ação do ciclo
+            // e nunca pontua, então não serve para `calculate` sozinha.
+            utility: s.isUtility || undefined,
             element: s.element ? elementPtBr(s.element) : undefined,
             magic: s.isMatk || undefined,
             hits: s.hit || undefined,

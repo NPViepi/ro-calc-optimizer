@@ -36,6 +36,28 @@ interface DamageResultModel {
   skillFormulaGraphNoCri?: { min: DamageFormulaGraph; max: DamageFormulaGraph; };
 }
 
+/**
+ * Esconderijo e Infiltrar entram na rotação pelo tempo que ocupam e não batem em nada.
+ * Não adianta descer a cadeia de dano com proporção zero: ela devolveria 1, que é o piso
+ * da DEF suave — o mesmo fantasma que o guarda do `part2` mais abaixo evita. O que o
+ * passo contribui é só o tempo, e esse vem do `calcSkillAspd`.
+ */
+function noDamage(propertyAtk: ElementType, sizePenalty: number): DamageResultModel {
+  return {
+    canCri: false,
+    minDamage: 0,
+    maxDamage: 0,
+    rawMinNoCri: 0,
+    rawMaxNoCri: 0,
+    avgNoCriDamage: 0,
+    avgCriDamage: 0,
+    criDmgToMonster: 0,
+    propertyAtk,
+    propertyMultiplier: 1,
+    sizePenalty,
+  };
+}
+
 function repeatPackets(result: DamageResultModel, count: number): DamageResultModel {
   if (count === 1) return result;
   const repeated = { ...result };
@@ -2664,7 +2686,9 @@ export class DamageCalculator {
     let noStackMinCriDamage = 0;
     let noStackMinDamage = 0;
 
-    if (customFormula && typeof customFormula === 'function') {
+    if (skillData.isUtility) {
+      calculated = noDamage(skillData.element || propertyAtk, sizePenalty);
+    } else if (customFormula && typeof customFormula === 'function') {
       const skillPropertyAtk = typeof getElement === 'function' ? getElement(skillValue, this.infoForClass) : skillData.element || propertyAtk;
       const propertyMultiplier = this.getPropertyMultiplier(skillPropertyAtk);
 
@@ -2783,7 +2807,10 @@ export class DamageCalculator {
     // hit period read 0 and silently borrowed the basic ASPD rate (Firmamento's 61s cycle
     // came out at 2 uses/s). calc-skill-aspd.ts now keeps enough decimals that a real cast
     // always reports a real rate, which leaves this fallback to the case it was written for.
-    const skillHitsPerSec = skillAspd.timingUnknown ? 0 : Math.min(skillAspd.totalHitPerSec || basicAspd.hitsPerSec, basicAspd.hitsPerSec);
+    // `ignoreAspdFloor` lifts the cap for the skills that are not paced by the attack
+    // motion — today only Aegis Inferi, reported by Hatakashi on card tQu6cQrmdmxtWDyUKgRI.
+    const aspdCap = skillData.ignoreAspdFloor ? Number.POSITIVE_INFINITY : basicAspd.hitsPerSec;
+    const skillHitsPerSec = skillAspd.timingUnknown ? 0 : Math.min(skillAspd.totalHitPerSec || basicAspd.hitsPerSec, aspdCap);
     // A separate second packet contributes to every use, including the DPS row.
     // The averages above describe only the main packet.
     const skillDpsInputMin = (avgNoCriDamage || minDamage) + skillMinDamage2;

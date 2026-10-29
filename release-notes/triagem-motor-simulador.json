@@ -1,0 +1,9 @@
+{
+  "type": "patch",
+  "logs": [
+    "Adicionada a Colisão Astral do Magus: o asteroide e as 50 quedas de meteoritos entram como duas partes da mesma conjuração, com o bônus de dano contra Morto-vivo e Dragão.",
+    "Adicionadas as ultimates do Pesadelo, Kunai do Pesadelo e Mahou do Pesadelo, e um botão para dizer que o alvo está em [Pesadelo], caso em que as duas causam 1,5 vez mais dano.",
+    "A velocidade de ataque deixou de segurar a Aegis Inferi, que é paga pela própria pós-conjuração. Reportado por Hatakashi.",
+    "Esconderijo e Infiltration (Infiltrar, que o cliente ainda não traduz) agora podem entrar na rotação. Não somam dano nenhum: ocupam o tempo que ocupam no jogo, que é o que faltava para o DPS do ciclo fechar. Reportado por Samuel Costa e .Neblina."
+  ]
+}

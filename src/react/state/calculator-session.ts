@@ -90,7 +90,7 @@ import { ClassSwitchLoss, applyClassSwitch, findClassSwitchLosses, hasBuildToKee
 import { canUsedByClass } from 'src/app/utils/can-used-by-class';
 import { SLOTS_BY_KEY } from 'src/app/app-config/equipment-slots';
 import { SlotListBag } from '../../app/layout/pages/ro-calculator/equipment-grid/slot-list-bag.model';
-import { compactRotationForShare, firstRealSkill, isBasicAttack, pruneRotationForClass } from 'src/app/core/rotation';
+import { compactRotationForShare, defaultAtkSkill, firstRealSkill, isBasicAttack, isOffensiveSkill, pruneRotationForClass } from 'src/app/core/rotation';
 import { RotationScheduleStep } from 'src/app/core/rotation-schedule';
 import { optimizeRotation } from 'src/app/core/rotation-optimize';
 import { buildRotationView, RotationView, toScheduleStep } from '../../app/layout/pages/ro-calculator/battle-hud/rotation-view';
@@ -1276,7 +1276,9 @@ await ((_event?: unknown) => {
     this.model.rotation = kept.map(index => rotation[index]);
     if (this.model.rotationStacks) this.model.rotationStacks = kept.map(index => this.model.rotationStacks[index]);
     this.syncRotationMirror();
-    if (!pruneRotationForClass([this.model.selectedAtkSkill], this.atkSkills).length) this.model.selectedAtkSkill = this.atkSkills[0]?.value;
+    if (!pruneRotationForClass([this.model.selectedAtkSkill], this.atkSkills).length) {
+      this.model.selectedAtkSkill = defaultAtkSkill(this.atkSkills);
+    }
     this.updateItemEvent.next(true);
   }
 
@@ -1578,7 +1580,7 @@ await ((_event?: unknown) => {
 
     this.setModelByJSONString(presetStrOrModel);
 
-    this.model.selectedAtkSkill = this.model.selectedAtkSkill || this.atkSkills[0]?.value;
+    this.model.selectedAtkSkill = this.model.selectedAtkSkill || defaultAtkSkill(this.atkSkills);
     const selectedAtkSkill = this.model.selectedAtkSkill;
 
     const { level, jobLevel, ...bkModel } = this.model;
@@ -2550,7 +2552,9 @@ await ((_event?: unknown) => {
       if ((s as any).labelSuffix) return { ...s, label: `${s.label} (${(s as any).labelSuffix})` };
       return dupLabels.has(s.label) && s.element ? { ...s, label: `${s.label} - ${elementPtBr(s.element)}` } : s;
     });
-    this.offensiveSkills = [...new Set(catalog.map((a) => a.name)).values()].map((name) => {
+    // Utility entries (Esconderijo, Infiltrar) exist for the rotation only: the old
+    // single-skill panel asks "how much does this skill hit for", which they never answer.
+    this.offensiveSkills = [...new Set(catalog.filter(isOffensiveSkill).map((a) => a.name)).values()].map((name) => {
       const pt = this.resolveSkill(name);
       return { label: (pt?.name ?? name) + (catalog.some(s => s.name === name && s.preview) ? ' (Prévia)' : ''), value: name, icon: pt?.id };
     });
@@ -2580,10 +2584,10 @@ await ((_event?: unknown) => {
   }
 
   private setDefaultSkill(selectedSkill?: string) {
-    const defaultAtkSkill = this.atkSkills[0].value;
+    const fallbackAtkSkill = defaultAtkSkill(this.atkSkills);
     const selectedAtkSkill = this.model.selectedAtkSkill || selectedSkill;
     if (!selectedAtkSkill) {
-      this.model.selectedAtkSkill = defaultAtkSkill;
+      this.model.selectedAtkSkill = fallbackAtkSkill;
       return;
     }
 
@@ -2596,7 +2600,7 @@ await ((_event?: unknown) => {
     } else if (selectedValidSkill2?.value) {
       this.model.selectedAtkSkill = selectedAtkSkill;
     } else {
-      this.model.selectedAtkSkill = defaultAtkSkill;
+      this.model.selectedAtkSkill = fallbackAtkSkill;
     }
 
     this.setDefaultRotation();
@@ -3667,7 +3671,11 @@ await ((_event?: unknown) => {
       this.buffTooltipCache.clear();
       this.buffTooltipVersion = this.itemDescriptionStore.version;
     }
-    const cacheKey = `${buff.name}:${selectedValue ?? ''}:${buff.preview ?? false}`;
+    // O ícone entra na chave porque é ele que escolhe a descrição logo abaixo: duas classes
+    // podem trazer o mesmo marcador com ícones diferentes — `_Nightmare_target` aponta para
+    // Kunai Distorcida no Shinkiro e para Mahou da Escuridão no Shiranui — e sem ele a
+    // primeira classe aberta ditaria o balão da outra pelo resto da sessão.
+    const cacheKey = `${buff.name}:${selectedValue ?? ''}:${buff.preview ?? false}:${buff.icon ?? ''}`;
     const cached = this.buffTooltipCache.get(cacheKey);
     if (cached !== undefined) return cached;
 
