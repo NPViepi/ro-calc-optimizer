@@ -60,7 +60,7 @@ describe('class-owned auto-cast definitions', () => {
     expect(rule.resolve(context(0, 5)).sources).toBeUndefined();
     expect(rule.resolve(context(5, 0)).sources).toBeUndefined();
     expect(rule.resolve(context(5, 3)).sources).toContainEqual(expect.objectContaining({
-      skillId: 5321, skillLevel: 3, chance: 20, trigger: 'physical-attack',
+      skillId: 5321, skillLevel: 3, chance: 3, trigger: 'physical-attack', // 1% por nível de Fenda do Abismo.
     }));
   });
 

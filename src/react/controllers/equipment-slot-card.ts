@@ -46,6 +46,12 @@ export class EquipmentSlotCardComponent extends ViewState {
    compareDerivation!: SlotDerivation;
   /** Name of the multi-slot head gear that already fills this position, if any. */
    occupiedBy: string | null = null;
+  /**
+   * Why the main build has no picker here while the compared one does — the shield row
+   * against a two-handed weapon. Unlike `occupiedBy` it leaves the comparison alone: the
+   * row is on screen precisely so the other build can be given a shield.
+   */
+   mainBlockedNote: string | null = null;
   /** Slot keys currently in the comparison. */
    comparing: ReadonlySet<string> = new Set();
   /** False when the class or the weapon takes no ammo. */

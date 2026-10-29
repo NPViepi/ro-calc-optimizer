@@ -181,7 +181,7 @@ describe('an Insígnia under the target: +50% from the element it is weak to', (
   it('allows all four target debuffs at once', () => {
     const buffs = Object.fromEntries([1, 2, 3, 4].map((i) => {
       const name = `_Sorcerer_Insignia_Target_${i}`;
-      return [name, buff(name).dropdown[1].label];
+      return [name, buff(name).dropdown.find((option) => option.isUse).label];
     }));
     for (const skill of [WATER_SKILL, WIND_SKILL, EARTH_SKILL, FIRE_SKILL]) {
       expect(simulate({ skill, buffs }).skillPropertyMultiplier).toBe(1.5);

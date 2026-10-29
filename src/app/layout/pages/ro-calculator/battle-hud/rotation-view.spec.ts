@@ -114,6 +114,33 @@ describe('buildRotationView', () => {
     expect(result.entries[0].stackCount).toBe(4);
     expect(result.entries[0].damage).toBe(18_000);
   });
+  it('cala as leituras de dano de uma habilidade que não bate', () => {
+    // Esconderijo e Infiltrar entram na rotação pelo tempo que ocupam, não pelo dano
+    // (cards bLnU1DLpGeA2vxQ794I4 e FPpmOoKCq7KzPxV4NUZ3). A linha lia "0" ao lado de um
+    // elemento neutro e de um "Sem crít.", três números sobre um golpe que não acontece.
+    const value = 'Hiding==1';
+    const summary = summaryOf({ perHit: 4500, hits: 1 });
+    const utility = buildRotationView({
+      rotation: [value],
+      summaryByValue: new Map([[value, summary]]),
+      baseSummary: summary,
+      hasSelectedChances: false,
+      atkSkills: [{ value, label: 'Esconderijo Nv1', isUtility: true }],
+    });
+
+    expect(utility.entries[0]).toMatchObject({ showsDamage: false, damage: 0, damageRanges: [], requireTxt: '' });
+
+    // Sem a marca, a mesma habilidade volta a relatar o que a cadeia devolveu.
+    const offensive = buildRotationView({
+      rotation: [value],
+      summaryByValue: new Map([[value, summary]]),
+      baseSummary: summary,
+      hasSelectedChances: false,
+      atkSkills: [{ value, label: 'Esconderijo Nv1' }],
+    });
+
+    expect(offensive.entries[0]).toMatchObject({ showsDamage: true, damage: 4500 });
+  });
   it('keeps separate accumulation and damage for repeated rotation tiles', () => {
     const value = 'Eternal Slash==5';
     const first = summaryOf({ perHit: 4500, hits: 1 });

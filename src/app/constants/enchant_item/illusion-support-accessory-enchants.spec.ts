@@ -16,16 +16,23 @@ const derive = (id: number, slot: ItemTypeEnum) => deriveSlot({
 
 describe('Apoio Turbina Ilusión enchants', () => {
   it.each([
-    [490072, 32207, ItemTypeEnum.accRight],
-    [490073, 32208, ItemTypeEnum.accLeft],
-  ])('offers the regular accessory pools for support item %i', (supportId, regularId, slot) => {
+    // The side-only encantos: S-HPR, U-Vida and U-Mental on the right; S-SPR, U-Alma and
+    // U-Mana on the left. This test used to expect 29545 AND 29546 on both sides, which
+    // is how they were wired before the Módulo table on browiki's Equipamentos Ilusión
+    // page was read column by column (illusion-enchant-pools.spec.ts). The pair is one
+    // per side, and the two accessories do not share them.
+    [490072, 32207, ItemTypeEnum.accRight, [29529, 29543, 29545], [29532, 29544, 29546]],
+    [490073, 32208, ItemTypeEnum.accLeft, [29532, 29544, 29546], [29529, 29543, 29545]],
+  ])('offers the regular accessory pools for support item %i', (supportId, regularId, slot, own, other) => {
     const support = derive(supportId, slot);
     expect(support.cardSlots).toBe(1);
     expect(support.enchantLists).toEqual(derive(regularId, slot).enchantLists);
     expect(support.enchantLists[0]).toBeNull();
     for (const options of support.enchantLists.slice(1)) {
-      expect(options).toHaveLength(10);
-      expect(options!.map(option => option.value)).toEqual(expect.arrayContaining([29545, 29546]));
+      expect(options).toHaveLength(11);
+      const values = options!.map(option => option.value);
+      expect(values).toEqual(expect.arrayContaining(own));
+      for (const id of other) expect(values).not.toContain(id);
     }
   });
 

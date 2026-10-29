@@ -19,7 +19,7 @@
  * from the cycle the panel draws.
  */
 
-import { RotationScheduleStep, simulateRotation } from './rotation-schedule';
+import { aspdFloorOf, RotationScheduleStep, simulateRotation } from './rotation-schedule';
 
 const EPSILON = 1e-6;
 
@@ -231,7 +231,7 @@ function greedyOrder(rotation: string[], stepByValue: Map<string, RotationSchedu
       const start = Math.max(gate, ready.get(stepValue.key) ?? gate);
       const castEnd = start + stepValue.cast;
       ready.set(stepValue.key, castEnd + stepValue.cd);
-      gate = Math.max(castEnd + stepValue.acd, start + aspdPeriod);
+      gate = Math.max(castEnd + stepValue.acd, start + aspdFloorOf(stepValue, aspdPeriod));
     }
   }
 

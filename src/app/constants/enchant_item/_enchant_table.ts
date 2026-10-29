@@ -228,9 +228,26 @@ const eaFsSp15 = [...ea15, ...fs35, ...sp25, ...fatal14];
 const toyFactory = [...sp25, ...fs35, ...sh13, ...matk12, AttackDelay._1, ...aspd24];
 const racing3rd = [EA._1, EA._2, FS._1, FS._2, Sharp._1, Sharp._2, Fatal._1, Fatal._2, Spell._1, Spell._2, AttackDelay._1, AttackDelay._2];
 
-const illusionArmor = ['Improve_Orb_Atk', 'Improve_Orb_Matk', 'Improve_Orb_Archer', 'Improve_Orb_Delay'];
-const illusionGarment = ['Improve_Orb_Speed', 'Improve_Orb_Cast', 'Improve_Orb_Cri', 'Improve_Orb_Above'];
-const illusionBoot = [
+/*
+ * Encantos Ilusión — one const per column of the Módulo table on browiki's Equipamentos
+ * Ilusión page. The five pieces (Colete, Motor, Perna, Soquete and Turbina) take 3
+ * encantos each, and every socket offers that piece's whole column; the per-module
+ * "x1/x2/x3" repeat cap the wiki prints is a rule of the NPC, not of the list.
+ *
+ * The "Módulo de ..." items (25670-25705) are the NPC's input, not the socket's content:
+ * the table's Encanto column names what actually lands in the gear, and that is what these
+ * lists hold. It is the same split as Automatron, where the 98 "Automódulo de ..." items
+ * (1000105+) stay out of item.json and the `Automatic_Orb*` encantos are what get offered.
+ *
+ * The raw Korean strings are aegisNames of LATAM encantos that have no kRO enchant enum.
+ *
+ * @see https://browiki.org/wiki/Equipamentos_Ilusión
+ */
+/** The N- column, shared by Colete, Motor and Perna: N-DEF (29527) and N-DEFM (29528). */
+const illusionNormalDef = ['마력석_초록', '마력석_검정'];
+const illusionArmorOrbs = ['Improve_Orb_Atk', 'Improve_Orb_Matk', 'Improve_Orb_Archer', 'Improve_Orb_Delay'];
+const illusionGarmentOrbs = ['Improve_Orb_Speed', 'Improve_Orb_Cast', 'Improve_Orb_Cri', 'Improve_Orb_Above'];
+const illusionBootOrbs = [
   'Improve_Orb_Fix',
   'Improve_Orb_Heal',
   'Improve_Orb_L_Vit',
@@ -241,15 +258,34 @@ const illusionBoot = [
   'Improve_Orb_L_LUK',
   'Improve_Orb_Health',
 ];
-const illusionAcc = [EA._5, Spell._5, AttackDelay._4, Fatal._4, ...BaseState._3];
-// '마법석성' = U-Mental (29545), '마법석암' = U-Mana (29546): LATAM Illusion-accessory
-// magic-stone enchants (raw aegisNames — not in the kRO enchant enums).
-const illusionAccR = [EA._5, Spell._5, AttackDelay._4, Fatal._4, Str._3, Agi._3, Vit._3, Luk._3, '마법석성', '마법석암'];
-const illusionAccL = [EA._5, Spell._5, AttackDelay._4, Fatal._4, Int._3, Dex._3, Vit._3, Luk._3, '마법석성', '마법석암'];
+const illusionArmor = [...illusionNormalDef, ...illusionArmorOrbs];
+const illusionGarment = [...illusionNormalDef, ...illusionGarmentOrbs];
+// S-SPMax (29530) is the Perna's alone — the Escudo borrows the rest of the orb list.
+const illusionBoot = [...illusionNormalDef, ...illusionBootOrbs, '마력석_파랑'];
+/** The four encantos every Ilusión accessory column opens with. */
+const illusionAccShared = [EA._5, Spell._5, AttackDelay._4, Fatal._4];
+const illusionAcc = [...illusionAccShared, ...BaseState._3];
+// U-Mental and U-Vida are the right accessory's alone, U-Mana and U-Alma the left's —
+// the wiki's Ac. D. and Ac. E. columns do not share them, though both used to carry both.
+const illusionAccR = [
+  ...illusionAccShared, Str._3, Agi._3, Vit._3, Luk._3,
+  '청록색보석', // S-HPR (29529)
+  '마법석화', // U-Vida (29543)
+  '마법석성', // U-Mental (29545)
+];
+const illusionAccL = [
+  ...illusionAccShared, Int._3, Dex._3, Vit._3, Luk._3,
+  '파란색보석', // S-SPR (29532)
+  '마법석풍', // U-Alma (29544)
+  '마법석암', // U-Mana (29546)
+];
+// The Escudo Ilusión has no column on the wiki — it is not one of the five pieces Elyumina
+// hands out. Its pool stays the union it has always been, spelled out against the orb lists
+// so completing the five real columns does not silently widen a list with no source.
 const illusionShield = [
-  ...illusionArmor,
-  ...illusionBoot.filter((a) => a !== 'Improve_Orb_Fix'),
-  ...illusionGarment.filter((a) => a !== 'Improve_Orb_Above'),
+  ...illusionArmorOrbs,
+  ...illusionBootOrbs.filter((a) => a !== 'Improve_Orb_Fix'),
+  ...illusionGarmentOrbs.filter((a) => a !== 'Improve_Orb_Above'),
   ...illusionAcc,
 ];
 

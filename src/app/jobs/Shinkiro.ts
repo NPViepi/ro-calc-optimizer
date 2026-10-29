@@ -5,6 +5,11 @@ import { Kagerou } from './Kagerou';
 import { ActiveSkillModel, AtkSkillFormulaInput, AtkSkillModel, PassiveSkillModel } from './_character-base.abstract';
 import { ClassName } from './_class-name';
 
+/** The level picker's entries, in the shape the class catalog wants them: the English
+ *  skill name as the prefix, which setClassSkill() swaps for the pt-BR one. */
+const levelList = (name: string, maxLv: number) =>
+  Array.from({ length: maxLv }, (_, i) => ({ label: `${name} Nv${i + 1}`, value: `${name}==${i + 1}` }));
+
 /**
  * Job and trait bonuses — irowiki.org/wiki/Shinkiro#Job_&_Talent_Bonuses.
  *
@@ -444,8 +449,113 @@ export class Shinkiro extends Kagerou {
         return (450 + skillLevel * (950) + totalSpl * 5) * (baseLevel / 100);
       },
     },
+    {
+      /**
+       * Kunai do Pesadelo — ultimate do Shinkiro, nível único. 15.000% de ATQ mais
+       * (POD x 10), escalando pelo nível de base, numa área de 13x13 ao redor do usuário.
+       * A propriedade é a da Kunai equipada, então a habilidade não fixa elemento.
+       *
+       * Contra alvos em [Pesadelo] o dano é 1,5x e o estado é consumido.
+       *
+       * @see https://browiki.org/wiki/Kunai_do_Pesadelo
+       */
+      name: 'Kunai - Nightmare',
+      label: '[V2] Kunai - Nightmare Lv1',
+      value: 'Kunai - Nightmare==1',
+      acd: 0.5,
+      fct: 0.5,
+      vct: 2,
+      cd: 5,
+      formula: (input: AtkSkillFormulaInput): number => {
+        const { model, status } = input;
+        const { totalPow } = status;
+        const baseLevel = model.level;
+
+        return (15000 + totalPow * 10) * (baseLevel / 100) * this.nightmareMultiplier();
+      },
+    },
+    {
+      /**
+       * Mahou do Pesadelo — a contraparte mágica, 12.000% de ATQM mais (FEI x 10),
+       * propriedade Sombrio, área de 11x11 ao redor do usuário.
+       *
+       * O cliente e o bROWiki divergem no bônus contra [Pesadelo]: o cliente diz "1,5
+       * vezes mais dano", igual à Kunai do Pesadelo, e o wiki diz um acréscimo de 12.000%
+       * de dano mágico de propriedade Fogo. Fica o que o cliente do LATAM descreve, que é
+       * o que o jogador lê e o que vale para as duas ultimates.
+       *
+       * @see https://browiki.org/wiki/Mahou_do_Pesadelo
+       */
+      name: 'Dark Dragon - Nightmare',
+      label: '[V2] Dark Dragon - Nightmare Lv1',
+      value: 'Dark Dragon - Nightmare==1',
+      acd: 0.5,
+      fct: 1.5,
+      vct: 2,
+      cd: 5,
+      element: ElementType.Dark,
+      isMatk: true,
+      formula: (input: AtkSkillFormulaInput): number => {
+        const { model, status } = input;
+        const { totalSpl } = status;
+        const baseLevel = model.level;
+
+        return (12000 + totalSpl * 10) * (baseLevel / 100) * this.nightmareMultiplier();
+      },
+    },
+    {
+      /**
+       * Infiltrar (SS_SHIMIRU, 5477) na rotação — card FPpmOoKCq7KzPxV4NUZ3, reportado
+       * por .Neblina, que quer medir o auto-cast que a habilidade dispara e lembra que
+       * ela tem só 0,5 s de recarga no Nv 5.
+       *
+       * Entra sem dano de propósito. O bROWiki publica 700% de ATQ por nível, mas o
+       * cliente do LATAM não traz descrição nenhuma para a 5477, e a tabela de dano do
+       * simulador sai do cliente. Os tempos, esses sim, o cliente publica: recarga de
+       * 1,5 s a 0,5 s, nada de conjuração nem de pós-conjuração. Quando a descrição
+       * chegar, muda a `formula` **e** sai o `isUtility`: as duas marcas juntas são o que
+       * diz que esta entrada não pontua.
+       *
+       * O cliente também não traz nome em pt-BR para a 5477, então o catálogo cai no nome
+       * em inglês e o seletor mostra "Infiltration".
+       */
+      name: 'Infiltration',
+      label: 'Infiltration Lv5',
+      value: 'Infiltration==5',
+      levelList: levelList('Infiltration', 5),
+      isUtility: true,
+      acd: 0,
+      fct: 0,
+      vct: 0,
+      cd: (skillLevel: number) => 1.75 - skillLevel * 0.25,
+      formula: (): number => 0,
+    },
   ];
-  private readonly activeSkillList4th: ActiveSkillModel[] = [];
+  private readonly activeSkillList4th: ActiveSkillModel[] = [
+    {
+      /**
+       * O estado [Pesadelo] no alvo, não a habilidade que o aplica. As duas ultimates do
+       * Pesadelo causam 1,5x de dano contra quem está nesse estado e o consomem.
+       *
+       * É um marcador interno sem id, como `_ElementalMaster_spirit`: um nome que o
+       * catálogo resolve guarda o rótulo do cliente, e seis habilidades infligem o estado
+       * — não há uma entrada no catálogo que signifique "o alvo está em [Pesadelo]".
+       *
+       * O `icon` é lido duas vezes pela tela: desenha a figura e, por `buffTooltip`,
+       * escolhe a descrição do balão. Aponta para Kunai Distorcida (5485), que é como a linha Kunai, a metade POD da dupla,
+       * põe o alvo em [Pesadelo] — mesma ideia do `_Meister_Rush`, que empresta o ícone
+       * de Avanço Sísmico para explicar o estado [Avanço].
+       */
+      name: '_Nightmare_target',
+      label: 'Alvo em [Pesadelo]',
+      icon: 5485, // Kunai Distorcida (5485)
+      inputType: 'selectButton',
+      dropdown: [
+        { label: 'Sim', value: 1, isUse: true },
+        { label: 'Não', value: 0, isUse: false },
+      ],
+    },
+  ];
   private readonly passiveSkillList4th: PassiveSkillModel[] = [
     {
       name: 'Shadow Hunting',
@@ -502,6 +612,11 @@ export class Shinkiro extends Kagerou {
       dropdown: genSkillList(10),
     },
   ];
+
+  /** 1,5x contra alvos em [Pesadelo], que as duas ultimates do Pesadelo compartilham. */
+  private nightmareMultiplier(): number {
+    return this.isSkillActive('_Nightmare_target') ? 1.5 : 1;
+  }
 
   constructor() {
     super();

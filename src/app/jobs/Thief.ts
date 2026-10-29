@@ -154,7 +154,28 @@ export class Thief extends CharacterBase {
   protected override initialStatusPoint = 40;
 
   protected readonly classNames = [ClassName.Thief];
-  protected readonly _atkSkillList: AtkSkillModel[] = [];
+  protected readonly _atkSkillList: AtkSkillModel[] = [
+    {
+      /**
+       * Esconderijo na rotação — card bLnU1DLpGeA2vxQ794I4, reportado por Samuel Costa:
+       * "skill sem dano, apenas para calcular o DPS do ciclo". Esconder-se custa uma ação
+       * e é isso que o ciclo precisa saber.
+       *
+       * O cliente não publica linha de conjuração/espera para Esconderijo (id 51), então
+       * os quatro tempos são zero e o que sobra é o piso de VelAtq: uma ação, um período
+       * de ataque. Ver a lista NO_CLIENT_ROW em skills/skill-delay.spec.ts.
+       */
+      name: 'Hiding',
+      label: 'Hiding',
+      value: 'Hiding==1',
+      isUtility: true,
+      acd: 0,
+      fct: 0,
+      vct: 0,
+      cd: 0,
+      formula: (): number => 0,
+    },
+  ];
   protected readonly _activeSkillList: ActiveSkillModel[] = [];
   protected readonly _passiveSkillList: PassiveSkillModel[] = [
     ImproveDodgeFn(),

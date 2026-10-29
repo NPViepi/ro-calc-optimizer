@@ -9,6 +9,8 @@ import { DataKey, DataManifest, manifestPath } from '../../app/core/data-manifes
 import { SKILL_DESC_BY_ID } from '../../app/skills';
 import { previewBuffsForClass } from '../../app/skills/preview-275';
 import { ClassName } from '../../app/jobs/_class-name';
+import { Shinkiro } from '../../app/jobs/Shinkiro';
+import { Shiranui } from '../../app/jobs/Shiranui';
 import { ItemTypeEnum } from '../../app/constants/item-type.enum';
 
 function makeSession(overrides: Partial<Record<DataKey, Promise<unknown>>> = {}) {
@@ -135,6 +137,67 @@ describe('plain calculator session', () => {
     session.dispose();
   });
 
+  /**
+   * Card `9lvALhlAS6Njj6z2pp6Q` (iukkeN): com um cajado de duas mãos na build principal, a
+   * linha do escudo sumia da tela e não havia onde pôr o escudo da build comparada. Quem
+   * responde pela linha agora é cada build; o `Calculator` só sabe da principal.
+   */
+  it('opens the shield row for the compared build alone, and keeps its shield in the numbers', async () => {
+    const { session, storage } = makeSession();
+    storage.setItem('ro-set', JSON.stringify({ class: 4255, level: 200, jobLevel: 1, weapon: 2019 }));
+    session.start();
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(session.hiddenMap.shield).toBe(true);
+    expect(session.isCompareShieldShown).toBe(false);
+
+    session.isEnableCompare = true;
+    session.compareItemNames = [ItemTypeEnum.weapon, ItemTypeEnum.shield];
+    session.model2 = { rawOptionTxts: [], weapon: 1623, shield: 2101 };
+    expect(session.isCompareShieldShown).toBe(true);
+
+    session.onCompareItemChange();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(session.model2[ItemTypeEnum.shield]).toBe(2101);
+
+    // Uma arma de duas mãos dos dois lados fecha a linha de novo.
+    session.model2 = { rawOptionTxts: [], weapon: 2019 };
+    expect(session.isCompareShieldShown).toBe(false);
+    session.dispose();
+  });
+  /**
+   * A arma da mão esquerda tinha a mesma limitação do escudo, pelo mesmo motivo: a linha era
+   * só da build principal. Com um katar (duas mãos) na principal, "duas mãos contra uma mão
+   * + adaga na esquerda" não dava para montar — e a adaga comparada ainda era despejada da
+   * conta, porque `resolveOffHandEviction` recebia a resposta da build errada.
+   */
+  it('opens the off-hand weapon row for the compared build alone, and keeps its dagger in the numbers', async () => {
+    const KATAR = 1299, DAGGER = 13083, OFF_HAND_DAGGER = 13068;
+    const { session, storage } = makeSession();
+    storage.setItem('ro-set', JSON.stringify({ class: 4254, level: 200, jobLevel: 1, weapon: KATAR }));
+    session.start();
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(session.isAllowLeftWeaponByClass).toBe(true);
+    expect(session.isLeftWeaponShown).toBe(false);
+    expect(session.isLeftWeaponOffered).toBe(false);
+
+    session.isEnableCompare = true;
+    session.compareItemNames = [ItemTypeEnum.weapon, ItemTypeEnum.leftWeapon];
+    session.model2 = { rawOptionTxts: [], weapon: DAGGER, leftWeapon: OFF_HAND_DAGGER };
+    expect(session.isCompareLeftWeaponShown).toBe(true);
+    expect(session.isLeftWeaponOffered).toBe(true);
+
+    session.onCompareItemChange();
+    await vi.advanceTimersByTimeAsync(1000);
+    // Oferecida na tela e contada no motor: as duas respostas são a mesma.
+    expect(session.showCompareItemMap.leftWeapon).toBe(true);
+    expect(session.model2[ItemTypeEnum.leftWeapon]).toBe(OFF_HAND_DAGGER);
+
+    // Um katar na build comparada também fecha a linha: ele ocupa as duas mãos.
+    session.model2 = { rawOptionTxts: [], weapon: KATAR };
+    expect(session.isCompareLeftWeaponShown).toBe(false);
+    session.dispose();
+  });
+
   it('boots the real datasets, completes the solve and persists the existing autosave format', async () => {
     const { session, storage } = makeSession();
     session.start();
@@ -234,6 +297,21 @@ describe('plain calculator session', () => {
       const chasing = previewBuffsForClass(ClassName.AbyssChaser)[0];
       expect(session.buffTooltip({ ...chasing, icon: 6512 })).toContain('Adds 2500% per skill level to Unlucky Rush');
       expect(session.buffTooltip({ ...chasing, icon: 6512 })).not.toContain('retreats');
+    } finally {
+      session.dispose();
+    }
+  });
+
+  it('dá a cada classe o balão do seu próprio aplicador de [Pesadelo]', () => {
+    const { session } = makeSession();
+    try {
+      const toggleOf = (job: Shinkiro | Shiranui) => job.activeSkills.find((s) => s.name === '_Nightmare_target')!;
+
+      // O marcador tem o mesmo nome nas duas classes e só o ícone muda. Uma chave de cache
+      // sem o ícone serviria a descrição da primeira classe aberta pelo resto da sessão —
+      // a ordem das duas linhas abaixo é o teste.
+      expect(session.buffTooltip(toggleOf(new Shinkiro()))).toContain('Kunai Distorcida');
+      expect(session.buffTooltip(toggleOf(new Shiranui()))).toContain('Mahou da Escuridão');
     } finally {
       session.dispose();
     }

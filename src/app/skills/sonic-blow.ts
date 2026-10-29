@@ -34,7 +34,7 @@ export const SONIC_BLOW: AtkSkillModel = {
   verifyItemFn: ({ weapon }) => weapon.isType('katar') ? '' : 'katar',
 };
 
-const yesNo = [{ label: 'Não', value: 0, isUse: false }, { label: 'Sim', value: 1, isUse: true }];
+const yesNo = [{ label: 'Sim', value: 1, isUse: true }, { label: 'Não', value: 0, isUse: false }];
 
 export const SONIC_BLOW_BUFFS: ActiveSkillModel[] = [
   { name: 'Assassin Spirit', label: 'Espírito do Mercenário', inputType: 'selectButton', dropdown: yesNo },

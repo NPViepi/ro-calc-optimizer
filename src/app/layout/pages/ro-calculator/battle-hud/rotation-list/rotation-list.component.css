@@ -695,6 +695,12 @@
   color: rgba(255, 255, 255, 0.35);
 }
 
+/* Uma habilidade de utilidade não tem leitura de dano nenhuma para mostrar; o recado fica
+   no mesmo tom apagado do "Sem crít.", que é a outra ausência que a linha nomeia. */
+.rot-nodmg {
+  color: rgba(255, 255, 255, 0.35);
+}
+
 /* The add button sits at the start of its own line, at its label's width. */
 .rot-addline {
   display: flex;

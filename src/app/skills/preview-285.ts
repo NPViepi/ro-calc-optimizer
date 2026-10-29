@@ -121,12 +121,13 @@ export const preview285SkillsForClass = (name: ClassName): AtkSkillModel[] =>
 
 function buff(name: SKILL_NAME, maxLevel = 1, bonus?: (level: number) => Record<string, number>, description?: string): ActiveSkillModel {
   const r = PREVIEW_285_REFERENCE.find(s => s.name === name);
+  const off = { label: 'Não', value: 0, isUse: false };
+  const levels = Array.from({ length: maxLevel }, (_, n) => ({ label: maxLevel === 1 ? 'Sim' : `Nv ${n + 1}`, value: n + 1, isUse: true, bonus: bonus?.(n + 1) }));
   return { name, label: `${name.replace('_Preview_', '')} (Prévia)`, preview: true, previewVersion: '285/65',
     previewDescription: description ?? (r ? PREVIEW_285_DESCRIPTIONS[r.id] : undefined),
-    inputType: maxLevel === 1 ? 'selectButton' : 'dropdown', dropdown: [
-      { label: 'Não', value: 0, isUse: false },
-      ...Array.from({ length: maxLevel }, (_, n) => ({ label: maxLevel === 1 ? 'Sim' : `Nv ${n + 1}`, value: n + 1, isUse: true, bonus: bonus?.(n + 1) })),
-    ],
+    inputType: maxLevel === 1 ? 'selectButton' : 'dropdown',
+    // Par de botões: o "Sim" à esquerda. Lista de níveis: começa no desligado.
+    dropdown: maxLevel === 1 ? [...levels, off] : [off, ...levels],
   };
 }
 

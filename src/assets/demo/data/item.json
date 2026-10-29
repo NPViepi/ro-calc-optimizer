@@ -909,6 +909,9 @@
     "script": {
       "cri": [
         "10"
+      ],
+      "enable_skill__48": [
+        "5"
       ]
     }
   },
@@ -90103,6 +90106,9 @@
     "location": null,
     "compositionPos": null,
     "script": {
+      "2029": [
+        "EQUIP_ID[310190||1000223]20"
+      ],
       "criDmg": [
         "15",
         "EQUIP_ID[310191||1000222]15"
@@ -90110,11 +90116,11 @@
       "atkPercent": [
         "EQUIP_ID[310191||1000222]5"
       ],
-      "2029": [
-        "EQUIP_ID[310190||1000223]20"
-      ],
       "acd": [
         "EQUIP_ID[310189||1000224]5"
+      ],
+      "enable_skill__48": [
+        "SKILL_ID[134==10]3"
       ]
     }
   },
@@ -229228,7 +229234,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "magicHealHp": [
+        "800"
+      ]
+    }
   },
   "300733": {
     "id": 300733,
@@ -232761,6 +232771,9 @@
       ],
       "spRestoreOnKill": [
         "EQUIP_ID[19193]100"
+      ],
+      "enable_skill__48": [
+        "EQUIP_ID[19194]10"
       ]
     }
   },
@@ -234602,7 +234615,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "magicHealSp": [
+        "160"
+      ]
+    }
   },
   "24083": {
     "id": 24083,
@@ -234861,7 +234878,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "enable_skill__48": [
+        "5"
+      ]
+    }
   },
   "24388": {
     "id": 24388,
@@ -236239,7 +236260,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "enable_skill__48": [
+        "3"
+      ]
+    }
   },
   "4084": {
     "id": 4084,
@@ -248561,6 +248586,15 @@
       ],
       "subrace_player_doram": [
         "3"
+      ],
+      "hp": [
+        "50"
+      ],
+      "sp": [
+        "50"
+      ],
+      "enable_skill__48": [
+        "2"
       ]
     }
   },
@@ -254741,6 +254775,9 @@
         "5"
       ],
       "p_race_player_human": [
+        "5"
+      ],
+      "enable_skill__48": [
         "5"
       ]
     }
@@ -268642,6 +268679,9 @@
       ],
       "p_element_all": [
         "11===20"
+      ],
+      "enable_skill__48": [
+        "EQUIP_ID[20847]REFINE[weapon,garment==22]4"
       ]
     }
   },
@@ -326455,7 +326495,11 @@
     "requiredLevel": null,
     "location": null,
     "compositionPos": 65535,
-    "script": {}
+    "script": {
+      "enable_skill__48": [
+        "3"
+      ]
+    }
   },
   "25303": {
     "id": 25303,
@@ -329126,6 +329170,9 @@
       ],
       "acd": [
         "EQUIP_ID[310189||1000224]5"
+      ],
+      "enable_skill__48": [
+        "SKILL_ID[134==10]3"
       ]
     }
   },
@@ -331444,7 +331491,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "enable_skill__48": [
+        "1"
+      ]
+    }
   },
   "4122": {
     "id": 4122,
@@ -373999,5 +374050,139 @@
     "location": null,
     "compositionPos": 65535,
     "script": {}
+  },
+  "29529": {
+    "id": 29529,
+    "aegisName": "청록색보석",
+    "name": "S-HPR",
+    "unidName": "S-HPR",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "hpRecovRate": [
+        "20"
+      ]
+    }
+  },
+  "29530": {
+    "id": 29530,
+    "aegisName": "마력석_파랑",
+    "name": "S-SPMax",
+    "unidName": "S-SPMax",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "spPercent": [
+        "5"
+      ],
+      "sp": [
+        "7===100",
+        "9===150"
+      ]
+    }
+  },
+  "29532": {
+    "id": 29532,
+    "aegisName": "파란색보석",
+    "name": "S-SPR",
+    "unidName": "S-SPR",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "spRecovRate": [
+        "20"
+      ]
+    }
+  },
+  "29543": {
+    "id": 29543,
+    "aegisName": "마법석화",
+    "name": "U-Vida",
+    "unidName": "U-Vida",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "hpDrain": [
+        "2"
+      ]
+    }
+  },
+  "29544": {
+    "id": 29544,
+    "aegisName": "마법석풍",
+    "name": "U-Alma",
+    "unidName": "U-Alma",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "spDrain": [
+        "1"
+      ]
+    }
   }
 }

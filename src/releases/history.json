@@ -1,5 +1,28 @@
 [
   {
+    "v": "0.1.189-beta",
+    "date": "29-10-2026",
+    "logs": [
+      "Adicionada a Colisão Astral do Magus: o asteroide e as 50 quedas de meteoritos entram como duas partes da mesma conjuração, com o bônus de dano contra Morto-vivo e Dragão.",
+      "Adicionadas as ultimates do Pesadelo, Kunai do Pesadelo e Mahou do Pesadelo, e um botão para dizer que o alvo está em [Pesadelo], caso em que as duas causam 1,5 vez mais dano.",
+      "A velocidade de ataque deixou de segurar a Aegis Inferi, que é paga pela própria pós-conjuração. Reportado por Hatakashi.",
+      "Esconderijo e Infiltration (Infiltrar, que o cliente ainda não traduz) agora podem entrar na rotação. Não somam dano nenhum: ocupam o tempo que ocupam no jogo, que é o que faltava para o DPS do ciclo fechar. Reportado por Samuel Costa e .Neblina.",
+      "A linha do escudo agora aparece quando a build comparada pode usar um, mesmo que a principal esteja com uma arma de duas mãos: dá para comparar um cajado de duas mãos com um de uma mão mais escudo. Reportado por iukkeN.",
+      "A arma da mão esquerda ganhou a mesma abertura: com um katar na build principal, dá para comparar com uma adaga mais outra na mão esquerda — e a arma comparada entra na conta, com a Vel.Atq de duas armas junto.",
+      "Os botões de dois estados da aba de habilidades ficam todos na mesma ordem, com o \"Sim\" à esquerda. Eram 26 que apareciam ao contrário, entre eles as quatro insígnias no alvo e os buffs de prévia."
+    ]
+  },
+  {
+    "v": "0.1.188-beta",
+    "date": "28-10-2026",
+    "logs": [
+      "Corrigida a chance de auto-conjuração da Fenda do Abismo: agora é 1% por nível da habilidade, como na tabela do bROWiki, e não os 20% fixos que vinham do rAthena.",
+      "Cadastrado o efeito [Ataque Duplo] nos onze equipamentos que o concedem no jogo — entre eles a Carta Sorrateiro, o Chapéu de Jiboia, a Pedra de Ataque Duplo (Capa), o encante de visual Ataque Duplo, o Nagan, a Lança Peçonhenta e o Chapéu de Pintinho —, de modo que a habilidade passa a aparecer na aba de Auto-conjuração. Reportado por GetLemonade.",
+      "Completados os encantos dos equipamentos Ilusión: N-DEF e N-DEFM passam a ser oferecidos no Colete, no Motor e na Perna, o S-SPMax na Perna, e os encantos S-HPR, S-SPR, U-Vida e U-Alma foram cadastrados. U-Mental e U-Mana deixaram de aparecer nos dois acessórios ao mesmo tempo e voltaram a ser exclusivos de um lado cada, e agora somam a regeneração que concedem.",
+      "Adicionados os atributos dos chefes Aquila, Simulation Juncea, Lasgand, Fallen Angel Slug e Snowstorm Angel, que já apareciam pelo nome mas não podiam ser escolhidos como alvo."
+    ]
+  },
+  {
     "v": "0.1.187-beta",
     "date": "18-10-2026",
     "logs": [

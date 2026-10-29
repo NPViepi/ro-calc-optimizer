@@ -47,7 +47,7 @@ const compare = context["compare"]; return <><Render tag="div" props={{"classNam
 "className": ["eq-card__clear"].filter(Boolean).join(' '),
 "tooltip": {text: "Limpar slot", position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{" ✕ "}</Render></> : null; })()}</>; })()}</Render>
 {(() => { const __condition10 = vm.occupiedBy;  return __condition10 ? <><Render tag="div" props={{"className": ["eq-card__occupied"].filter(Boolean).join(' ')}}>{interpolate([""," (ocupado)"], [vm.occupiedBy])}</Render></> : null; })()}
-{(() => { const __condition11 = !(vm.occupiedBy);  return __condition11 ? <><>{body({"rows": vm.mainRows,"entry": vm.item,"compare": false})}
+{(() => { const __condition11 = !(vm.occupiedBy);  return __condition11 ? <><>{vm.mainBlockedNote ? <Render tag="div" props={{"className": ["eq-card__occupied"].filter(Boolean).join(' ')}}>{vm.mainBlockedNote}</Render> : body({"rows": vm.mainRows,"entry": vm.item,"compare": false})}
 {(() => { const __condition12 = vm.compareRows.length;  return __condition12 ? <><Render tag="div" props={{"className": ["eq-card__compare-row"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["eq-card__compare-actions"].filter(Boolean).join(' ')}}>{(() => { const __condition13 = vm.canSwap;  return __condition13 ? <><Render tag="button" props={{"type": "button",
 "aria-label": "Inverter: trocar este item pelo comparado",
 "tooltipPosition": "left",
