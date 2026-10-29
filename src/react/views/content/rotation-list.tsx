@@ -77,7 +77,7 @@ const i = __index3; return <Fragment key={identityKey(vm.trackByIndex(__index3, 
 "value": entry.stackCount,
 "onModelChange": (value: any, event: any) => vm.action(() => { ((event: any) => vm.action(() => { const $event = event; vm.stackChange.emit({"index": entry.index,"stack": $event.value}) }))({value, originalEvent: event}); })}}></Render></Render></> : null; })()}
 {(() => { const __condition8 = (entry.occurrence > 0);  return __condition8 ? <><Render tag="span" props={{"className": ["rot-repeat"].filter(Boolean).join(' ')}}>{interpolate(["","ª vez"], [(entry.occurrence + 1)])}</Render></> : null; })()}</>; })()}</Render>
-<Render tag="div" props={{"className": ["rot-line2"].filter(Boolean).join(' ')}}><Render tag="span" props={{}}>{interpolate(["",""], [entry.dmgTypeLabel])}</Render>
+<Render tag="div" props={{"className": ["rot-line2"].filter(Boolean).join(' ')}}>{(() => { const __conditionND1 = entry.showsDamage;  return __conditionND1 ? <><Render tag="span" props={{}}>{interpolate(["",""], [entry.dmgTypeLabel])}</Render>
 <Render tag="app-ui-tag" props={{"icon": "search",
 "tooltipPosition": "top",
 "value": displayPipe("monsterTerm", entry.element, ["element"], services),
@@ -101,10 +101,10 @@ const i = __index3; return <Fragment key={identityKey(vm.trackByIndex(__index3, 
 "click": (event: any) => vm.action(() => { const $event = event; vm.critBreakdownClick.emit({"index": i,"event": $event}) }),
 "className": ["rot-crit-sim bonus_clickable"].filter(Boolean).join(' '),
 "activateWithKeys": true}}>{interpolate(["","%"], [displayPipe("number", sim.critRate, ["1.1-1"], services)])}</Render></></> : null; })()}</></> : null; })()}</Render></> : null; })()}
-{(() => { const __condition13 = (!(entry.canCrit) && !(entry.isMagic));  return __condition13 ? <><Render tag="span" props={{"className": ["rot-crit rot-crit--none"].filter(Boolean).join(' ')}}>{"• Sem crít."}</Render></> : null; })()}
+{(() => { const __condition13 = (!(entry.canCrit) && !(entry.isMagic));  return __condition13 ? <><Render tag="span" props={{"className": ["rot-crit rot-crit--none"].filter(Boolean).join(' ')}}>{"• Sem crít."}</Render></> : null; })()}</> : (entry.requireTxt ? null : <Render tag="span" props={{"className": ["rot-nodmg"].filter(Boolean).join(' ')}}>{"Não causa dano"}</Render>); })()}
 {(() => { const __condition14 = entry.requireTxt;  return __condition14 ? <><Render tag="span" props={{"className": ["rot-require"].filter(Boolean).join(' ')}}>{interpolate(["⚠ Requer ",""], [entry.requireTxt])}</Render></> : null; })()}</Render>
 {(() => { const __condition15 = entry.stalled;  return __condition15 ? <><Render tag="div" props={{"className": ["rot-stall"].filter(Boolean).join(' ')}}>{interpolate([" Recarga não fecha — faltam ","s "], [displayPipe("number", entry.lane.cdWait, ["1.2-2"], services)])}</Render></> : null; })()}</Render>
-<Render tag="span" props={{"className": ["rot-dmg"].filter(Boolean).join(' ')}}>{(() => { const __condition16 = entry.hasDamageSpread;  return __condition16 ? <><Render tag="span" props={{"className": ["rot-dmg-split"].filter(Boolean).join(' ')}}>{(entry.damageRanges ?? []).map((__entry17: any, __index17: number, __array17: any[]) => { const range = __entry17; return <Fragment key={identityKey(__entry17)}><><Render tag="span" props={{"role": "button",
+{(() => { const __conditionND2 = entry.showsDamage;  return __conditionND2 ? <><Render tag="span" props={{"className": ["rot-dmg"].filter(Boolean).join(' ')}}>{(() => { const __condition16 = entry.hasDamageSpread;  return __condition16 ? <><Render tag="span" props={{"className": ["rot-dmg-split"].filter(Boolean).join(' ')}}>{(entry.damageRanges ?? []).map((__entry17: any, __index17: number, __array17: any[]) => { const range = __entry17; return <Fragment key={identityKey(__entry17)}><><Render tag="span" props={{"role": "button",
 "tabIndex": "0",
 "tooltipPosition": "top",
 "tooltipStyleClass": "auto_cast_tip",
@@ -136,7 +136,7 @@ const i = __index3; return <Fragment key={identityKey(vm.trackByIndex(__index3, 
 {(() => { const __condition22 = vm.showsContribution;  return __condition22 ? <><><Render tag="span" props={{"className": ["rot-sep"].filter(Boolean).join(' ')}}>{"·"}</Render>
 <Render tag="span" props={{"tooltipPosition": "top",
 "className": ["rot-pct"].filter(Boolean).join(' '),
-"tooltip": {text: vm.contributionTooltip(entry), position: "top", className: '', showDelay: 0, hideDelay: 0, escape: true, disabled: false}}}>{interpolate(["","%"], [displayPipe("number", entry.contributionPercent, ["1.1-1"], services)])}</Render></></> : null; })()}</Render></Render></Render>
+"tooltip": {text: vm.contributionTooltip(entry), position: "top", className: '', showDelay: 0, hideDelay: 0, escape: true, disabled: false}}}>{interpolate(["","%"], [displayPipe("number", entry.contributionPercent, ["1.1-1"], services)])}</Render></></> : null; })()}</Render></Render></Render></> : null; })()}
 <Render tag="app-icon" props={{"role": "button",
 "tabIndex": "0",
 "label": "Detalhes da habilidade",

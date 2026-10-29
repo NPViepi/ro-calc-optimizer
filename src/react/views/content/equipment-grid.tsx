@@ -20,6 +20,7 @@ return <><Render tag="div" props={{"className": ["eq-grid"].filter(Boolean).join
 "derivation": vm.derivations[slot.key],
 "compareDerivation": vm.compareDerivations[slot.key],
 "occupiedBy": vm.occupiedBy(slot),
+"mainBlockedNote": vm.mainBlockedNote(slot),
 "comparing": vm.comparing,
 "color": vm.colorOf(slot),
 "colorHint": vm.showsColorHint(slot),

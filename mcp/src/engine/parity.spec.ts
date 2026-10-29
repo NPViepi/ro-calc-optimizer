@@ -11,6 +11,7 @@
  * See that spec for the replay sources and the EXTRA_INT explanation.
  */
 import { describe, expect, it } from 'vitest';
+import { defaultAtkSkill } from 'src/app/core/rotation';
 import { loadDatasetFromDisk } from '../data/dataset.node';
 import { BuildInput, resolveBuild } from './build-input';
 import { projectResult } from './project';
@@ -92,7 +93,7 @@ describe('facade derivation', () => {
 
   it('falls back to the class default when the attack skill is unknown', () => {
     const rb = resolveBuild({ class: 4261, atkSkill: 'Not A Real Skill==9' }, dataset);
-    expect((rb.model as any).selectedAtkSkill).toBe(rb.char.atkSkills[0].value);
+    expect((rb.model as any).selectedAtkSkill).toBe(defaultAtkSkill(rb.char.atkSkills));
   });
 
   it('rejects a class that is not released on LATAM', () => {

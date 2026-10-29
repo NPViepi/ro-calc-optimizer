@@ -22,6 +22,8 @@ export interface RotationSkillMeta {
   /** `boolean` when the skill always (or never) crits; a function when it depends on
    *  the character's state — which is what makes the row's crit reading conditional. */
   canCri?: boolean | ((input: any) => boolean);
+  /** Declared on skills whose whole point is not to hit — see {@link RotationEntryView.isUtility}. */
+  isUtility?: boolean;
 }
 
 export interface RotationEntryView {
@@ -48,6 +50,17 @@ export interface RotationEntryView {
   propertyMultiplier: number;
   /** Set when the build cannot cast this skill (weapon gating). Damage is then 0. */
   requireTxt: string;
+  /**
+   * Whether the row has any damage to report. False for a utility skill that never hits
+   * (Esconderijo, Infiltrar — cards bLnU1DLpGeA2vxQ794I4 e FPpmOoKCq7KzPxV4NUZ3) and for
+   * a skill this build cannot cast at all.
+   *
+   * The row then leaves out every damage reading instead of printing a zero next to a
+   * neutral element and "Sem crít." — figures that describe a hit that never happens. What
+   * it still carries is what the skill is in the rotation for: its place and its time.
+   * Which of the two it is, {@link requireTxt} says.
+   */
+  showsDamage: boolean;
   /**
    * Crit state, which every row states explicitly — silence would read as missing data.
    * `canCrit` false renders "Sem crít."; true renders the rate.
@@ -262,6 +275,7 @@ export function toScheduleStep(input: { value: string; summary: any; damage: num
     acd: channelled ? 0 : calcSkill.reducedAcd || 0,
     cd: channelled ? 0 : calcSkill.reducedCd || 0,
     damage,
+    ignoreAspdFloor: calcSkill.ignoreAspdFloor,
   };
 }
 
@@ -337,7 +351,10 @@ export function buildRotationView(input: {
     // the crit its damage was computed with.
     const edmg = basic ? dmg : effectedDpsInputs(dmg, hasSelectedChances);
     const requireTxt = basic ? '' : dmg?.requireTxt || '';
-    const readings = requireTxt ? NO_DAMAGE : basic ? basicDamagePerUse(summary, hasSelectedChances) : skillDamagePerUse(edmg);
+    // A utility skill reads 0 from the chain already (see utility-skill-no-damage.spec.ts);
+    // saying so here is what lets the row drop the readings rather than print the zeros.
+    const noDamage = !basic && (!!requireTxt || !!meta?.isUtility);
+    const readings = noDamage ? NO_DAMAGE : basic ? basicDamagePerUse(summary, hasSelectedChances) : skillDamagePerUse(edmg);
 
     const occurrence = seen.get(value) ?? 0;
     seen.set(value, occurrence + 1);
@@ -360,6 +377,7 @@ export function buildRotationView(input: {
       element: basic ? summary?.propertyAtk ?? '' : summary?.calcSkill?.propertySkill ?? '',
       propertyMultiplier: basic ? 1 : dmg?.skillPropertyMultiplier ?? 1,
       requireTxt,
+      showsDamage: !noDamage,
       // Ataque básico always rolls crit; a skill only where the engine says so.
       isMagic: !basic && summary?.calcSkill?.dmgType === SkillType.MAGICAL,
       canCrit: basic ? (dmg?.criRateToMonster ?? 0) > 0 : !!dmg?.skillCanCri,

@@ -39,7 +39,7 @@ describe('285/65 preview coverage', () => {
     for (const name of new Set(PREVIEW_285_ATTACKS.flatMap(d => d.classes).concat([ClassName.ShadowCross, ClassName.NightWatch, ClassName.SpiritHandler]))) {
       const cls = job(name);
       for (const skill of [...cls.getAtkSkills(), ...cls.activeSkills]) supported.add(skill.name);
-      for (const control of preview285BuffsForClass(name)) expect(control.dropdown[0].value).toBe(0);
+      for (const control of preview285BuffsForClass(name)) expect(control.dropdown.find(o => !o.isUse)?.value).toBe(0);
     }
     for (const ref of PREVIEW_285_REFERENCE) {
       expect(SKILL_ID_BY_NAME[ref.name]).toBe(ref.id);

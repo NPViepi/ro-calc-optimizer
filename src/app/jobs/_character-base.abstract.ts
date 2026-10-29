@@ -115,6 +115,23 @@ export interface AtkSkillModel {
   isMelee?: boolean | ((weaponType: WeaponTypeName, input?: AtkSkillFormulaInput) => boolean);
   /** No published timing data: damage per use is available, DPS is not. */
   timingUnknown?: boolean;
+  /**
+   * The skill is not held back by VelAtq: its own pós-conjuração paces it, and the
+   * attack motion never gets a say. Off by default, because the cap is right for almost
+   * every skill — set it only where a report says the skill spams past the ASPD floor.
+   *
+   * Read in two places that have to agree: `damage-calculator.ts`'s single-skill DPS and
+   * `rotation-schedule.ts`'s start-to-start floor.
+   */
+  ignoreAspdFloor?: boolean;
+  /**
+   * A skill that belongs in a rotation but deals no damage — Esconderijo, Infiltrar.
+   * It is here, among the attack skills, because the rotation needs exactly what an
+   * `AtkSkillModel` carries: the client's fct/vct/acd/cd, a level list and a `value` the
+   * share token already speaks. What it must not do is show up in the single-skill
+   * "Resumo de Batalha (antigo)" picker, which asks "how much does this skill hit for".
+   */
+  isUtility?: boolean;
   isDevMode?: boolean;
   isIgnoreDef?: boolean | ((parmas: AtkSkillFormulaInput) => boolean);
   isIgnoreSDef?: boolean | ((parmas: AtkSkillFormulaInput) => boolean);

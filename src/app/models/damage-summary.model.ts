@@ -230,6 +230,9 @@ export interface SkillDamageSummaryModel {
 
 export interface SkillAspdModel {
   timingUnknown?: boolean;
+  /** Mirrors `AtkSkillModel.ignoreAspdFloor`, so the rotation scheduler can read it from
+   *  the solved summary without reaching back into the class catalog. */
+  ignoreAspdFloor?: boolean;
   cd: number;
   reducedCd: number;
   vct: number;
