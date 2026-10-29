@@ -1,5 +1,17 @@
 [
   {
+    "v": "0.1.190-beta",
+    "date": "29-10-2026",
+    "logs": [
+      "Dados do cliente atualizados: 527 itens novos passam a ser reconhecidos pelo simulador e 112 descrições foram substituídas pelo texto em português do cliente.",
+      "Corrigidos 83 nomes de itens que estavam desatualizados — entre eles as armas do antigo \"Glaciar Sombrio\", agora \"Vil Invernal\", as cartas de Issgard e os encantos \"Flor Invernal\" e \"Cristal Invernal\".",
+      "Os 44 equipamentos que apareciam marcados como Prévia, com nome e descrição em inglês — as peças e armas Invernais de Issgard entre eles —, saíram da prévia: já estão no LATAM e passam a mostrar o texto em português.",
+      "Adicionados 11 trajes visuais que o cliente já trazia e que não podiam ser escolhidos no simulador.",
+      "Conjuração e espera conferidas contra a tabela do cliente em 68 habilidades das classes de 4ª e corrigidas onde divergiam. As maiores mudanças estão na recarga de Punho Labareda, Meteoro Ômega, Círculo Elemental, Mandala das Feras e Firmamento, que caiu de 60 para 2 a 5 segundos, e na das Armadilhas Terrestre, Ardente, Sombria e Zéfira, que caiu de 20 a 30 para 2,5 segundos. A recarga de Colisão Astral caiu de 60 para 6 segundos e a dos Kunais e do Dragão Negro do Pesadelo de 5 para 1 segundo.",
+      "Cadastrados o custo de SP e as resistências que o novo texto do cliente explicita em doze cartas de Issgard."
+    ]
+  },
+  {
     "v": "0.1.189-beta",
     "date": "29-10-2026",
     "logs": [
