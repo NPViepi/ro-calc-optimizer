@@ -26,8 +26,10 @@ describe('Issgard equipment and remaining previews', () => {
   it('publishes all three Issgard crowns with a card slot and their crystal pools', () => {
     for (const id of crowns) {
       const item = db[id];
-      expect(item).toMatchObject({ preRelease: true, location: 'Upper', slots: 1, requiredLevel: 230, usableClass: ['all'] });
-      expect(item.description).toContain('CON +');
+      const client = (latam as Record<string, { description?: string }>)[id];
+      expect(item).toMatchObject({ location: 'Upper', slots: 1, requiredLevel: 230, usableClass: ['all'] });
+      expect(item.preRelease, String(id)).toBe(client ? undefined : true);
+      expect(client?.description ?? item.description).toContain('CON +');
       const pools = getEnchants(item.aegisName);
       expect(pools).toHaveLength(4);
       expect(pools?.[0]).toBeNull();

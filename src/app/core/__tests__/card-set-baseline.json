@@ -6790,10 +6790,12 @@
  "300361": {
   "scenarios": {
    "alone": {
+    "spCostPercent": 7,
     "sMatk": 1,
     "m_my_element_water": 28
    },
    "with:300359": {
+    "spCostPercent": 7,
     "matkPercent": 10,
     "sMatk": 1,
     "m_my_element_water": 28
@@ -6814,10 +6816,12 @@
  "300362": {
   "scenarios": {
    "alone": {
+    "spCostPercent": 7,
     "pAtk": 1,
     "melee": 20
    },
    "with:300360": {
+    "spCostPercent": 7,
     "atkPercent": 10,
     "pAtk": 1,
     "melee": 20
@@ -6962,10 +6966,12 @@
  "300381": {
   "scenarios": {
    "alone": {
+    "spCostPercent": 7,
     "pAtk": 1,
     "range": 20
    },
    "with:300363": {
+    "spCostPercent": 7,
     "atkPercent": 10,
     "pAtk": 1,
     "range": 20

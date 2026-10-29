@@ -92,9 +92,9 @@ describe.each(CLASSES)('%s', (_name, Ctor, nightmareIcon, nightmareSkill) => {
 
   describe('Kunai do Pesadelo', () => {
     it('keeps the client cast, delay and recarga', () => {
-      // skill-delay.json row 5494: fct 500, vct 2000, acd 500, cd 5000 (ms).
+      // skill-delay.json row 5494: fct 500, vct 2000, acd 500, cd 1000 (ms).
       expect(skillOf(classWith(Ctor, false), 'Kunai - Nightmare'))
-        .toMatchObject({ fct: 0.5, vct: 2, acd: 0.5, cd: 5, value: 'Kunai - Nightmare==1' });
+        .toMatchObject({ fct: 0.5, vct: 2, acd: 0.5, cd: 1, value: 'Kunai - Nightmare==1' });
     });
 
     it('fixes no element — the equipped Kunai decides it', () => {
@@ -115,9 +115,9 @@ describe.each(CLASSES)('%s', (_name, Ctor, nightmareIcon, nightmareSkill) => {
 
   describe('Mahou do Pesadelo', () => {
     it('keeps the client cast, delay and recarga', () => {
-      // skill-delay.json row 5495: fct 1500, vct 2000, acd 500, cd 5000 (ms).
+      // skill-delay.json row 5495: fct 1000, vct 2000, acd 500, cd 1000 (ms).
       expect(skillOf(classWith(Ctor, false), 'Dark Dragon - Nightmare'))
-        .toMatchObject({ fct: 1.5, vct: 2, acd: 0.5, cd: 5, value: 'Dark Dragon - Nightmare==1' });
+        .toMatchObject({ fct: 1, vct: 2, acd: 0.5, cd: 1, value: 'Dark Dragon - Nightmare==1' });
     });
 
     it('is Sombrio magic damage', () => {

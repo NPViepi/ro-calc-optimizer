@@ -47,7 +47,6 @@ const NO_CLIENT_ROW = new Set([
   2243, // Investida de Worg (Wug Strike)
   2308, // Toque do Oblívio (Banishing Point)
   2593, // Chute Solar (Blaze Kick)
-  6001, // Dragonic Breath — a preview skill LATAM has not received, so the client has no row
 ]);
 
 const at = (value: number | number[], level: number): number => (Array.isArray(value) ? value[level - 1] : value);

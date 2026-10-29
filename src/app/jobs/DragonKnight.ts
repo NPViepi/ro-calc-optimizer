@@ -217,10 +217,10 @@ export class DragonKnight extends RuneKnight {
       name: 'Hack and Slasher',
       label: '[V2] Hack and Slasher Lv10',
       value: 'Hack and Slasher==10',
-      acd: 0.5,
+      acd: 0.25,
       fct: 0,
       vct: 0,
-      cd: 0.3,
+      cd: 0.7,
       totalHit: 2,
       verifyItemFn: ({ weapon }) => {
         const requires: WeaponTypeName[] = ['twohandSword', 'twohandSpear'];
@@ -246,7 +246,7 @@ export class DragonKnight extends RuneKnight {
       acd: 0.5,
       fct: 0,
       vct: 0,
-      cd: 0.35,
+      cd: 0.3,
       canCri: true,
       baseCriPercentage: 1,
       criDmgPercentage: 0.5,
@@ -271,8 +271,8 @@ export class DragonKnight extends RuneKnight {
       label: '[V2] Madness Crusher Lv5',
       value: 'Madness Crusher==5',
       acd: 0.5,
-      fct: 0.4,
-      vct: 0.4,
+      fct: 0.5,
+      vct: 0,
       cd: 0.35,
       verifyItemFn: ({ weapon }) => {
         const requires: WeaponTypeName[] = ['twohandSword', 'twohandSpear'];
