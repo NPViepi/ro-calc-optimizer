@@ -364,7 +364,7 @@ Formas que o valor de uma entrada pode assumir (depois que as condições passam
 | `"Y(texto)"`               | Valor fixo `Y`; o texto entre parênteses é só anotação (ignorado). | `"50(90 seg)"` → 50 |
 | `"<status>:N---Y"`         | Por ponto de status: `floor(status / N) · Y`. `<status>` ∈ `level jobLevel str int dex agi vit luk`. | `"dex:10---1"` |
 | `"<status>:N===Y"`         | `+Y` se `model[status] ≥ N`. | `"str:80===10"` |
-| `"level:N(min-max)---Y"`   | A cada `N` níveis dentro da faixa: escala por `(min(max, nível) − min + 1)`. Também `jobLevel:N(min-max)---Y`, sobre o nível de classe. | `"level:1(1-125)---1"`, `"jobLevel:5(1-30)----1"` |
+| `"level:N(min-max)---Y"`   | A cada `N` níveis dentro da faixa: escala por `(min(max, nível) − min + 1)`. Também `jobLevel:N(min-max)---Y`, sobre o nível de classe, e `<status>:N(min-max)---Y` (`str int dex agi vit luk`), sobre o atributo base. | `"level:1(1-125)---1"`, `"jobLevel:5(1-30)----1"`, `"str:10(1-50)----5"` |
 | `"SUM[a,b==N]---Y"`        | `floor((soma dos status a,b) / N) · Y`. | `"SUM[str,luk==80]---6"` |
 | `"REFINE[slot==N]---Y"`    | `floor((refino somado dos slots) / N) · Y`. | `"REFINE[boot==1]---2"` |
 | `"REFINE[slot==N(C)]---Y"` | Como acima, mas o refino somado é **limitado a C** — para conjuntos do tipo "a cada refino de cada peça do conjunto (**até o +C**)". | `"REFINE[shadowWeapon,shadowArmor==1(30)]---1"` |

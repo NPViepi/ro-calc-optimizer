@@ -57955,6 +57955,18 @@
     "compositionPos": 0,
     "cardPrefix": "Evil Fanatic",
     "script": {
+      "p_element_fire": [
+        "-30"
+      ],
+      "p_element_holy": [
+        "-30"
+      ],
+      "m_element_fire": [
+        "-30"
+      ],
+      "m_element_holy": [
+        "-30"
+      ],
       "p_element_dark": [
         "30"
       ],
@@ -80495,19 +80507,23 @@
     "cardPrefix": "Higher Level",
     "script": {
       "m_my_element_holy": [
-        "12===25",
+        "-25",
+        "12===50",
         "ITEM_LV[me==2]===8"
       ],
       "m_my_element_ghost": [
-        "12===25",
+        "-25",
+        "12===50",
         "ITEM_LV[me==2]===8"
       ],
       "m_my_element_neutral": [
-        "12===25",
+        "-25",
+        "12===50",
         "ITEM_LV[me==2]===8"
       ],
       "m_my_element_dark": [
-        "12===25",
+        "-25",
+        "12===50",
         "ITEM_LV[me==2]===8"
       ],
       "subele_neutral": [
@@ -80708,6 +80724,9 @@
       ],
       "m_my_element_undead": [
         "100"
+      ],
+      "subele_all": [
+        "-30"
       ]
     }
   },
@@ -339389,22 +339408,28 @@
     ],
     "script": {
       "hp": [
-        "1000"
+        "1000",
+        "vit:10(1-50)----200"
       ],
       "atk": [
-        "25"
+        "25",
+        "str:10(1-50)----5"
       ],
       "matk": [
-        "25"
+        "25",
+        "int:10(1-50)----5"
       ],
       "criDmg": [
-        "10"
+        "10",
+        "luk:10(1-50)----2"
       ],
       "range": [
-        "5"
+        "5",
+        "dex:10(1-50)----1"
       ],
       "aspdPercent": [
-        "10"
+        "10",
+        "agi:10(1-50)----2"
       ]
     }
   },
