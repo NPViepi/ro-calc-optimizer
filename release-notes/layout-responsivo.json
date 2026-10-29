@@ -1,8 +1,0 @@
-{
-  "type": "patch",
-  "logs": [
-    "Adaptado o simulador para tablets e celulares: no tablet, Build e Resultado alternam por um seletor fixo no topo; no celular, Build, Equip. e Resultado ficam em abas na parte de baixo da tela. Sugerido por Octávio Moreira.",
-    "Adicionado suporte a toque: dicas e detalhes abrem com um toque, botões e campos ganharam tamanho para o dedo e a rotação pode ser reordenada com botões de subir e descer.",
-    "No celular, o seletor de itens, a busca de itens e os detalhes (como os da habilidade na Batalha) abrem como painel inferior; a busca rola por inteiro e recolhe os filtros depois de cada busca."
-  ]
-}
