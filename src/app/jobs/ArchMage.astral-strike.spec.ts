@@ -35,8 +35,8 @@ const input = (over: { skillLevel: number; totalSpl?: number; baseLevel?: number
 
 describe('Colisão Astral', () => {
   it('keeps the client cast, delay and recarga', () => {
-    // skill-delay.json row 5230: fct 1500, vct 4000, acd 500, cd 60000 (ms).
-    expect(skill()).toMatchObject({ fct: 1.5, vct: 4, acd: 0.5, cd: 60, isMatk: true });
+    // skill-delay.json row 5230: fct 1500, vct 4000, acd 500, cd 6000 (ms).
+    expect(skill()).toMatchObject({ fct: 1.5, vct: 4, acd: 0.5, cd: 6, isMatk: true });
   });
 
   it('offers every level the client caps it at', () => {

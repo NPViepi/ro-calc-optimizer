@@ -544,7 +544,7 @@ export class ArchMage extends Warlock {
       acd: 0.5,
       fct: 1.5,
       vct: 4,
-      cd: 60,
+      cd: 6,
       isMatk: true,
       element: ElementType.Neutral,
       formula: (input: AtkSkillFormulaInput): number => {

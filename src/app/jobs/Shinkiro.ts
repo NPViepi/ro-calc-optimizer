@@ -465,7 +465,7 @@ export class Shinkiro extends Kagerou {
       acd: 0.5,
       fct: 0.5,
       vct: 2,
-      cd: 5,
+      cd: 1,
       formula: (input: AtkSkillFormulaInput): number => {
         const { model, status } = input;
         const { totalPow } = status;
@@ -490,9 +490,9 @@ export class Shinkiro extends Kagerou {
       label: '[V2] Dark Dragon - Nightmare Lv1',
       value: 'Dark Dragon - Nightmare==1',
       acd: 0.5,
-      fct: 1.5,
+      fct: 1,
       vct: 2,
-      cd: 5,
+      cd: 1,
       element: ElementType.Dark,
       isMatk: true,
       formula: (input: AtkSkillFormulaInput): number => {
