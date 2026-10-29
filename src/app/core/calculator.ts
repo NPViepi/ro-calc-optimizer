@@ -831,7 +831,9 @@ export class Calculator {
     // level:1(1-125)---1
     // jobLevel:5(1-30)----1  — same shape on the job level, for "a cada 5 níveis de classe
     // até o 30: todos os talentos -1" (Colar de Ampulheta, 490087).
-    const [, rangedStatus, everyBaseLv, range] = condition.match(/(level|jobLevel):(-*\d+)\((.+)\)/) ?? [];
+    // str:10(1-50)----5  — and on a base stat, for "a cada 10 de FOR base até o 50: ATQ -5"
+    // (Carta Gemaring, 4662).
+    const [, rangedStatus, everyBaseLv, range] = condition.match(/(level|jobLevel|str|int|dex|agi|vit|luk):(-*\d+)\((.+)\)/) ?? [];
     if (everyBaseLv && range) {
       const [min, max = 999] = range.split('-').map(Number);
       const everyNum = Number(everyBaseLv);

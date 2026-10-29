@@ -1,0 +1,15 @@
+{
+  "type": "patch",
+  "logs": [
+    "Carta Dollocaris Monocular corrigida: abaixo do refino +12 a carta reduz em 25% o dano mágico de propriedade Sombrio, Sagrado, Fantasma e Neutro, como diz a descrição.",
+    "Penalidades que faltavam adicionadas: Carta Fanático das Trevas (-30% de dano contra Fogo e Sagrado), Carta Aquila (-30% de resistência a todas as propriedades) e Carta Gemaring (reduções a cada 10 de atributo base até o 50)."
+  ],
+  "logs_es": [
+    "Carta Dollocaris Ojoúnico corregida: por debajo del refinamiento +12 la carta reduce en 25% el daño mágico de propiedad Sombra, Sagrado, Fantasma y Neutral, como dice la descripción.",
+    "Se añadieron penalizaciones que faltaban: Carta fanáticos del mal (-30% de daño contra Fuego y Sagrado), Carta Aquila (-30% de resistencia a todas las propiedades) y Carta Eggring Grande (reducciones por cada 10 de atributo base hasta 50)."
+  ],
+  "logs_en": [
+    "One Eye Dollocaris Card fixed: below +12 refine the card lowers Dark, Holy, Ghost and Neutral magic damage by 25%, as its description says.",
+    "Missing penalties added: Evil Fanatics Card (-30% damage against Fire and Holy), Aquila Card (-30% resistance to all elements) and Big Eggring Card (reductions for every 10 base stat points up to 50)."
+  ]
+}

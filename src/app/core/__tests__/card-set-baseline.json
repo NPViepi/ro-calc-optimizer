@@ -3012,14 +3012,22 @@
  "27265": {
   "scenarios": {
    "alone": {
+    "p_element_fire": -30,
+    "p_element_holy": -30,
     "p_element_dark": 30,
     "p_element_undead": 30,
+    "m_element_fire": -30,
+    "m_element_holy": -30,
     "m_element_dark": 30,
     "m_element_undead": 30
    },
    "with:27264": {
+    "p_element_fire": -30,
+    "p_element_holy": -30,
     "p_element_dark": 45,
     "p_element_undead": 45,
+    "m_element_fire": -30,
+    "m_element_holy": -30,
     "m_element_dark": 45,
     "m_element_undead": 45,
     "subele_dark": 15,

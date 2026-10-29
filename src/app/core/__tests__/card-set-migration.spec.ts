@@ -41,6 +41,10 @@ import { CARDS_WITH_A_SET, classOf, lineUpsFor, scenarioKey, setClausesOf } from
  * ten Issgard cards that had never declared it. 300361, 300362 and 300381 have a set, so
  * the baseline was regenerated to add their `spCostPercent` — a display-only stat gained,
  * nothing the migration dropped.
+ *
+ * 27265 (Fanático das Trevas) gained its printed "-30% contra Fogo e Sagrado" in an audit
+ * of card penalties the records had dropped (card-penalties.spec.ts); the baseline was
+ * regenerated to add those four keys, and its set clauses are unchanged.
  */
 
 const BASELINE = 'src/app/core/__tests__/card-set-baseline.json';
