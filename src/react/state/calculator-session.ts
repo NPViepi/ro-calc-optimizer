@@ -781,6 +781,7 @@ await ((_event?: unknown) => {
     this.allSubs.push(this.layoutService.customItemCreate.subscribe((request) =>
       this.customStudio?.openCreate(request.kind, { slot: request.slot, compare: request.compare })));
     this.allSubs.push(this.layoutService.customItemEdit.subscribe((id) => this.openEditCustomItem(id)));
+    // The same guard as the character band's own Salvar / Link buttons.
 
     const isCalcSubs = listenDebounced(this.isCalculatingEvent, 100, value => { ((_event?: unknown) => {
       this.isCalculating = false;

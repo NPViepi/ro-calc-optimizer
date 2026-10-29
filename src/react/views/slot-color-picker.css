@@ -57,11 +57,18 @@
   font-style: italic;
   color: var(--picker-muted);
 }
-:is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__row:hover,
 :is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__row:focus-visible{
   background: var(--picker-hover);
   outline: none;
 }
+@media (hover: hover){:is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__row:hover{
+  background: var(--picker-hover);
+  outline: none;
+}}
+@media (hover: none){:is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__row:active{
+  background: var(--picker-hover);
+  outline: none;
+}}
 :is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__row--selected .cpicker__label{
   font-weight: 700;
 }
@@ -95,11 +102,18 @@
   font-size: 12px;
   cursor: pointer;
 }
-:is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__rename:hover,
 :is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__rename:focus-visible{
   color: var(--picker-text);
   outline: none;
 }
+@media (hover: hover){:is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__rename:hover{
+  color: var(--picker-text);
+  outline: none;
+}}
+@media (hover: none){:is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__rename:active{
+  color: var(--picker-text);
+  outline: none;
+}}
 :is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__edit{
   display: flex;
   align-items: center;

@@ -47,12 +47,6 @@
   flex: 60 1 0;
 }
 
-@media (max-width: 991px) {
-  .hud-cards {
-    flex-direction: column;
-  }
-}
-
 /* Each column is a app-ui-card. Tighten the default card padding and make
    both cards stretch to equal height regardless of content length. */
 ::ng-deep app-battle-hud .hud-card.ui-card,
@@ -701,11 +695,6 @@
   cursor: pointer;
 }
 
-.hud-hero .clickable:hover {
-  text-decoration: underline;
-  text-decoration-style: dotted;
-}
-
 .hud-hero .pcol.sim .pnum {
   color: var(--yellow-200);
 }
@@ -1188,22 +1177,6 @@
 
 /* Below ~420px of container the band stacks completely — the PVP tab and any narrow
    embed (see the handoff's "Tela estreita" mock). */
-@container (max-width: 420px) {
-  .hud-card-col--monster ::ng-deep .ui-card-content {
-    display: block;
-  }
-
-  .hud-card-col--monster .hud-monster-info {
-    width: auto;
-  }
-
-  .hud-band-right {
-    border-left: none;
-    padding-left: 0;
-    margin-top: 8px;
-  }
-}
-
 /* --- Rotation panel -------------------------------------------------------- */
 
 /* Rotação on the left at a fixed width, DPS + timeline taking the rest. Collapses
@@ -1323,10 +1296,6 @@
   cursor: pointer;
 }
 
-.hud-help:hover {
-  background: var(--highlight-bg);
-}
-
 .hud-warn-chip.ui-button,
 .hud-invalid-chip {
   /* A flex item at auto width stretches to fill the row; both chips are exactly as wide
@@ -1345,12 +1314,6 @@
 .hud-warn-chip.ui-button {
   background: transparent;
   border: 1px solid var(--surface-border);
-  color: var(--yellow-300, #ffe082);
-}
-
-.hud-warn-chip.ui-button:enabled:hover {
-  background: rgba(255, 224, 130, 0.08);
-  border-color: var(--surface-border);
   color: var(--yellow-300, #ffe082);
 }
 
@@ -1540,11 +1503,6 @@
   cursor: pointer;
 }
 
-.hud-hero-strip .clickable:hover {
-  text-decoration: underline;
-  text-decoration-style: dotted;
-}
-
 /* The compared DPS is the emphasised one, so the current reads a touch smaller. */
 /* A gain is green and a loss is red — this used to be green unconditionally, so a
    comparison that lost DPS still read as an improvement. */
@@ -1599,9 +1557,6 @@
 .hud-card-col--monster ::ng-deep .ui-card-content {
   padding: 0;
 }
-
-
-
 
 /* --- Rotação and DPS as two separate cards ---------------------------------
    The skill column's app-ui-card is only a wrapper now: the rotation and the DPS block are
@@ -1680,10 +1635,6 @@
   user-select: none;
 }
 
-.pd-desc-toggle:hover {
-  color: var(--text-color);
-}
-
 .pd-desc-toggle .ui-icon {
   font-size: 10px;
 }
@@ -1728,11 +1679,6 @@
 
 .pd-dmg-val {
   cursor: pointer;
-}
-
-.pd-dmg-val:hover {
-  text-decoration: underline;
-  text-decoration-style: dotted;
 }
 
 .pd-dmg-val:focus-visible {
@@ -1831,11 +1777,6 @@
   cursor: pointer;
 }
 
-.pd-dmg-val:hover {
-  text-decoration: underline;
-  text-decoration-style: dotted;
-}
-
 .pd-dmg-val:focus-visible {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
@@ -1885,4 +1826,58 @@
   background: transparent;
   border: 1px solid var(--surface-border);
   color: var(--text-color);
+}
+
+/* Hover states only for a pointer that hovers; a touch screen gets them while pressed
+   instead of having them stick after a tap. */
+@media (hover: hover) {
+  .hud-hero .clickable:hover{
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+  .hud-help:hover{
+    background: var(--highlight-bg);
+  }
+  .hud-warn-chip.ui-button:enabled:hover{
+    background: rgba(255, 224, 130, 0.08);
+    border-color: var(--surface-border);
+    color: var(--yellow-300, #ffe082);
+  }
+  .hud-hero-strip .clickable:hover{
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+  .pd-desc-toggle:hover{
+    color: var(--text-color);
+  }
+  .pd-dmg-val:hover{
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+}
+
+@media (hover: none) {
+  .hud-hero .clickable:active{
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+  .hud-help:active{
+    background: var(--highlight-bg);
+  }
+  .hud-warn-chip.ui-button:enabled:active{
+    background: rgba(255, 224, 130, 0.08);
+    border-color: var(--surface-border);
+    color: var(--yellow-300, #ffe082);
+  }
+  .hud-hero-strip .clickable:active{
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+  .pd-desc-toggle:active{
+    color: var(--text-color);
+  }
+  .pd-dmg-val:active{
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
 }

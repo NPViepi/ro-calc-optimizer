@@ -20,6 +20,7 @@ const compare = context["compare"]; return <><Render tag="div" props={{"classNam
 "tooltipPosition": "top",
 "aria-label": vm.colorTitle,
 "click": (event: any) => vm.action(() => { const $event = event; vm.onPickColor(colorAnchor) }),
+"activateWithKeys": vm.colorable,
 "className": ["eq-card__color",(!(vm.colorable) ? "eq-card__color--idle" : '')].filter(Boolean).join(' '),
 "tooltip": {text: vm.colorTitle, position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false},
 "reference": (value: any) => { colorAnchor = value; vm["colorAnchor"] = value; }}}><Render tag="span" props={{"className": ["eq-card__color-dot",(!(vm.color) ? "eq-card__color-dot--empty" : '')].filter(Boolean).join(' '),

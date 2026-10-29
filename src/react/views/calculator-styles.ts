@@ -15,3 +15,5 @@ import './help-improve.css';
 import './topbar.css';
 import './elemental-table.css';
 import './ro-calculator.css';
+// Last: the responsive bands adjust the sheets above.
+import './responsive.css';

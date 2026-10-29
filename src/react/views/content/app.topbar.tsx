@@ -1,19 +1,20 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { Render, interpolate, parseStyle, normalizeStyle, identityKey } from '../render';
 import { SelectButton } from '../../ui/select-button';
 import { useTooltip } from '../../ui/tooltip';
 import { Dialog } from '../../ui/dialog';
-import { Button } from '../../ui/primitives';
+import { Button, Icon } from '../../ui/primitives';
 export function Content({vm, services}: {vm: any; services: any}) {
+const [menuOpen, setMenuOpen] = useState(false);
 const previewTooltip = useTooltip({
   text: 'Exibe itens e habilidades ainda não disponíveis no LATAM e permite testar o rebalanceamento. Em Não, oculta as prévias, desativa seus buffs, remove seus ataques da rotação e volta às fórmulas LATAM. Itens já equipados são mantidos. A escolha fica salva neste navegador.',
   position: 'left', showDelay: 300, disabled: !vm.visibleSettings,
 });
-return <><Render tag="div" props={{"className": ["layout-topbar"].filter(Boolean).join(' '),
-"style": normalizeStyle(Object.assign({}, parseStyle("min-width: 1500px")))}}><Render tag="span" props={{"className": ["pr-2"].filter(Boolean).join(' ')}}>{interpolate(["",""], [vm.lastestVersion])}</Render>
+const closeMenu = () => setMenuOpen(false);
+return <><Render tag="div" props={{"className": ["layout-topbar"].filter(Boolean).join(' ')}}><Render tag="span" props={{"className": ["pr-2 topbar-version"].filter(Boolean).join(' ')}}>{interpolate(["",""], [vm.lastestVersion])}</Render>
 <Render tag="button" props={{"aria-label": "Novidades",
 "click": (event: any) => vm.action(() => { const $event = event; vm.showUpdateDialog() }),
-"className": ["ui-button-text ui-button-info"].filter(Boolean).join(' '),
+"className": ["ui-button-text ui-button-info topbar-bell"].filter(Boolean).join(' '),
 "button": true}}>{(() => { const __condition1 = (vm.showUnreadVersion > 0);  return __condition1 ? <><Render tag="app-icon" props={{"severity": "danger",
 "name": "bell",
 "value": interpolate(["",""], [vm.showUnreadVersion]),
@@ -23,23 +24,26 @@ return <><Render tag="div" props={{"className": ["layout-topbar"].filter(Boolean
 "name": "bell",
 "className": ["text-xl"].filter(Boolean).join(' ')}}></Render></> : null; })()}</Render>
 <Render tag="button" props={{"click": (event: any) => vm.action(() => { const $event = event; vm.showReferenceDialog() }),
-"className": ["pl-2 ui-button-text ui-button-info ui-button-raised"].filter(Boolean).join(' '),
+"className": ["pl-2 ui-button-text ui-button-info ui-button-raised topbar-nav"].filter(Boolean).join(' '),
 "button": true}}>{"Referências"}</Render>
 <Render tag="div" props={{"className": ["flex align-items-center gap-2 ml-2"].filter(Boolean).join(' ')}}><Render tag="a" props={{"target": "_blank",
 "rel": "noreferrer noopener",
-"href": vm.issuesReportUrl}}><Render tag="button" props={{"aria-label": "Reportar",
+"href": vm.issuesReportUrl,
+"className": "topbar-nav"}}><Render tag="button" props={{"aria-label": "Reportar",
 "className": ["ui-button-warning ui-button-raised px-2"].filter(Boolean).join(' '),
 "button": true}}><Render tag="app-icon" props={{"name": "comment"}}></Render>
 <Render tag="span" props={{"className": ["pl-1"].filter(Boolean).join(' ')}}>{"Reportar"}</Render></Render></Render>
 <Render tag="a" props={{"target": "_blank",
 "rel": "noreferrer noopener",
-"href": vm.issuesBoardUrl}}><Render tag="button" props={{"aria-label": "Acompanhar",
+"href": vm.issuesBoardUrl,
+"className": "topbar-nav"}}><Render tag="button" props={{"aria-label": "Acompanhar",
 "className": ["ui-button-help ui-button-raised px-2"].filter(Boolean).join(' '),
 "button": true}}><Render tag="app-icon" props={{"name": "list"}}></Render>
 <Render tag="span" props={{"className": ["pl-1"].filter(Boolean).join(' ')}}>{"Acompanhar"}</Render></Render></Render>
 <Render tag="a" props={{"target": "_blank",
 "rel": "noreferrer noopener",
-"href": vm.discordUrl}}><Render tag="button" props={{"aria-label": "Discord",
+"href": vm.discordUrl,
+"className": "topbar-nav"}}><Render tag="button" props={{"aria-label": "Discord",
 "className": ["ui-button-raised px-2"].filter(Boolean).join(' '),
 "style": normalizeStyle(Object.assign({}, parseStyle("background: #5865f2; border-color: #5865f2"))),
 "button": true}}><Render tag="app-icon" props={{"name": "discord"}}></Render>
@@ -47,25 +51,59 @@ return <><Render tag="div" props={{"className": ["layout-topbar"].filter(Boolean
 <Render tag="div" props={{"className": ["topbar-actions flex align-items-center gap-2"].filter(Boolean).join(' ')}}>
 <Render tag="button" props={{"aria-label": "Servidor MCP",
 "click": (event: any) => vm.action(() => { const $event = event; vm.showMcpDialog() }),
-"className": ["ui-button-help ui-button-raised px-2"].filter(Boolean).join(' '),
+"className": ["ui-button-help ui-button-raised px-2 topbar-nav"].filter(Boolean).join(' '),
 "button": true}}><Render tag="app-icon" props={{"aria-hidden": "true",
 "name": "sparkles"}}></Render>
 <Render tag="span" props={{"className": ["pl-1"].filter(Boolean).join(' ')}}>{"MCP"}</Render></Render>
 <Render tag="button" props={{"click": (event: any) => vm.action(() => { const $event = event; vm.openCustomItems() }),
-"className": ["ui-button-success ui-button-raised px-2"].filter(Boolean).join(' '),
+"className": ["ui-button-success ui-button-raised px-2 topbar-nav"].filter(Boolean).join(' '),
 "button": true}}><Render tag="app-icon" props={{"name": "box"}}></Render>
 <Render tag="span" props={{"className": ["pl-1"].filter(Boolean).join(' ')}}>{"Meus itens"}</Render></Render>
 <Render tag="button" props={{"click": (event: any) => vm.action(() => { const $event = event; vm.openItemSearch() }),
-"className": ["ui-button-info ui-button-raised px-2"].filter(Boolean).join(' '),
+"aria-label": "Buscar itens",
+"className": ["ui-button-info ui-button-raised px-2 topbar-search"].filter(Boolean).join(' '),
 "button": true}}><Render tag="app-icon" props={{"name": "search"}}></Render>
-<Render tag="span" props={{"className": ["pl-1"].filter(Boolean).join(' ')}}>{"Buscar itens"}</Render></Render>
+<Render tag="span" props={{"className": ["pl-1 topbar-label"].filter(Boolean).join(' ')}}>{"Buscar itens"}</Render></Render>
+<Button icon="bars" aria-label="Menu" aria-haspopup="dialog" aria-expanded={menuOpen}
+  className="ui-button-secondary ui-button-raised topbar-icon topbar-menu" onClick={() => setMenuOpen(true)} />
 <Button icon="cog" aria-label="Configurações" aria-haspopup="dialog" aria-expanded={vm.visibleSettings}
   className="ui-button-success ui-button-raised topbar-settings" onClick={() => vm.action(() => { vm.visibleSettings = true; })} />
 </Render>
+{/* Everything the compact topbar has no room for, as one list of full-width rows. */}
+<Dialog header="Menu" visible={menuOpen} modal dismissableMask position="right" onVisibleChange={setMenuOpen}>
+  <nav className="topbar-menu-list" aria-label="Menu">
+    <button type="button" className="topbar-menu-row" onClick={() => { closeMenu(); vm.action(() => vm.showUpdateDialog()); }}>
+      <Icon name="bell" aria-hidden="true" /><span>Novidades</span><span className="topbar-menu-meta">{vm.lastestVersion}</span>{vm.showUnreadVersion > 0 && <span className="topbar-menu-badge">{vm.showUnreadVersion}</span>}
+    </button>
+    <button type="button" className="topbar-menu-row" onClick={() => { closeMenu(); vm.action(() => vm.openCustomItems()); }}>
+      <Icon name="box" aria-hidden="true" /><span>Meus itens</span>
+    </button>
+    <button type="button" className="topbar-menu-row" onClick={() => { closeMenu(); vm.action(() => vm.showMcpDialog()); }}>
+      <Icon name="sparkles" aria-hidden="true" /><span>Servidor MCP</span>
+    </button>
+    <button type="button" className="topbar-menu-row" onClick={() => { closeMenu(); vm.action(() => vm.showReferenceDialog()); }}>
+      <Icon name="list" aria-hidden="true" /><span>Referências</span>
+    </button>
+    <a className="topbar-menu-row" href={vm.issuesReportUrl} target="_blank" rel="noreferrer noopener" onClick={closeMenu}>
+      <Icon name="comment" aria-hidden="true" /><span>Reportar</span><Icon name="external-link" aria-hidden="true" className="topbar-menu-external" />
+    </a>
+    <a className="topbar-menu-row" href={vm.issuesBoardUrl} target="_blank" rel="noreferrer noopener" onClick={closeMenu}>
+      <Icon name="list" aria-hidden="true" /><span>Acompanhar</span><Icon name="external-link" aria-hidden="true" className="topbar-menu-external" />
+    </a>
+    <a className="topbar-menu-row" href={vm.discordUrl} target="_blank" rel="noreferrer noopener" onClick={closeMenu}>
+      <Icon name="discord" aria-hidden="true" /><span>Discord</span><Icon name="external-link" aria-hidden="true" className="topbar-menu-external" />
+    </a>
+    <button type="button" className="topbar-menu-row" onClick={() => { closeMenu(); vm.action(() => { vm.visibleSettings = true; }); }}>
+      <Icon name="cog" aria-hidden="true" /><span>Configurações</span>
+    </button>
+  </nav>
+</Dialog>
 <Dialog header="Configurações" visible={vm.visibleSettings} modal dismissableMask position="right"
   onVisibleChange={visible => vm.action(() => { vm.visibleSettings = visible; })}>
-  <div {...previewTooltip.triggerProps} className="flex align-items-center justify-content-between gap-3">
-    <span>Prévias</span>
+  {/* A tap opens the tip from the label only; on Sim / Não it just picks. */}
+  <div {...previewTooltip.triggerProps} className="flex align-items-center justify-content-between gap-3"
+    onClick={event => { if (!(event.target as HTMLElement).closest('[role=group]')) previewTooltip.triggerProps.onClick?.(event); }}>
+    <span className="settings-preview-label" tabIndex={0}>Prévias</span>
     <SelectButton ariaLabel="Mostrar prévias" options={vm.previewOptions} value={vm.showPreviews}
       onChange={value => vm.action(() => vm.setShowPreviews(value))} />
   </div>
@@ -110,6 +148,7 @@ const i = __index4; return <Fragment key={identityKey(__entry4)}><Render tag="di
 <Render tag="ul" props={{"className": ["mt-0"].filter(Boolean).join(' ')}}>{(update.logs ?? []).map((__entry7: any, __index7: number, __array7: any[]) => { const log = __entry7; return <Fragment key={identityKey(__entry7)}><Render tag="li" props={{}}>{interpolate(["",""], [log])}</Render></Fragment>; })}</Render></Render></Fragment>; })}
 <Render tag="div" props={{"className": ["mt-3 text-center"].filter(Boolean).join(' ')}}><Render tag="a" props={{"target": "_blank",
 "rel": "noreferrer noopener",
+"className": ["changelog-original-link"].filter(Boolean).join(' '),
 "href": vm.originalChangelogUrl}}>{"Histórico original (pré-fork) →"}</Render></Render></Render>
 <Render tag="app-ui-dialog" props={{"modal": true,
 "visible": vm.visibleMcp,

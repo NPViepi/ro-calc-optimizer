@@ -157,12 +157,9 @@ test('narrow import retains its layout and item search fits the viewport', async
   await imagesReady(page);
   await expect.soft(page).toHaveScreenshot('import-narrow.png');
   await page.getByRole('dialog').locator('button[aria-label="Fechar"], button.p-dialog-header-close').click();
-  // The fixed toolbar is wider than a phone in the reference app. Open its
-  // offscreen action before resizing, preserving that existing overflow.
-  await page.setViewportSize({ width: 1920, height: 918 });
+  // The phone topbar keeps "Buscar itens" as an icon button beside the version.
   await page.getByRole('button', { name: 'Buscar itens', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
-  await page.setViewportSize({ width: 390, height: 844 });
   await page.mouse.move(0, 0);
   await imagesReady(page);
   await expect.soft(page).toHaveScreenshot('item-search-narrow.png');

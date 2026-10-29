@@ -18,7 +18,8 @@
 .damage-taken-result { display: flex; flex-direction: column; gap: .4rem; margin: 1rem 0; padding: .8rem; background: var(--surface-ground); border-radius: .5rem; font-size: .85rem; }
 .damage-taken-result-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
 .damage-taken-info { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: var(--border-radius); background: transparent; color: var(--text-color-secondary); cursor: pointer; }
-.damage-taken-info:hover { color: var(--primary-color); background: var(--surface-hover); }
+@media (hover: hover){.damage-taken-info:hover{ color: var(--primary-color); background: var(--surface-hover); }}
+@media (hover: none){.damage-taken-info:active{ color: var(--primary-color); background: var(--surface-hover); }}
 .damage-taken-info:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
 .damage-taken-info-panel { width: min(30rem, calc(100vw - 2rem)); }
 .damage-taken-info-panel .damage-taken-note:first-child { margin-top: 0; }

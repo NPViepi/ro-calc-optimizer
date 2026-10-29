@@ -79,19 +79,6 @@
   margin-right: 0.3rem;
 }
 
-.rot-optimize.ui-button:enabled:hover {
-  background: rgba(255, 224, 130, 0.08);
-  border-color: var(--surface-border);
-  color: #ffe082;
-}
-
-/* Limpar throws work away, so it says so on hover. */
-.rot-clear.ui-button:enabled:hover {
-  background: rgba(255, 137, 128, 0.08);
-  border-color: var(--surface-border);
-  color: var(--red-300, #ff8980);
-}
-
 /* Adicionar habilidade is NOT the compact treatment above — the handoff gives it a
    full-size dashed button: gap .4rem, padding .45rem .75rem, .875rem text, 12x12 icon. */
 .rot-add.ui-button {
@@ -116,12 +103,6 @@
 ::ng-deep app-rotation-list .rot-add.ui-button .ui-button-icon-left,
 ::ng-deep .ui-scope-app-rotation-list .rot-add.ui-button .ui-button-icon-left {
   margin-right: 0.4rem;
-}
-
-.rot-add.ui-button:enabled:hover {
-  background: var(--highlight-bg);
-  border-color: var(--surface-border);
-  color: var(--primary-color);
 }
 
 .rot-rows {
@@ -202,10 +183,6 @@
 .rot-icon--btn {
   cursor: pointer;
   border-radius: 3px;
-}
-
-.rot-icon--btn:hover {
-  outline: 1px solid var(--primary-color);
 }
 
 .rot-icon--btn:focus-visible {
@@ -348,10 +325,6 @@
   cursor: pointer;
 }
 
-.rot-dmg-branch:hover {
-  text-decoration: underline;
-}
-
 .rot-dmg-branch:focus-visible {
   outline: 2px solid var(--primary-color);
   outline-offset: 1px;
@@ -365,11 +338,6 @@
   cursor: pointer;
 }
 
-.rot-dmg-val:hover,
-.rot-crit-val.bonus_clickable:hover {
-  text-decoration: underline;
-}
-
 .rot-dmg-val:focus-visible,
 .rot-crit-val:focus-visible {
   outline: 2px solid var(--primary-color);
@@ -381,10 +349,6 @@
   font-weight: 700;
   color: var(--yellow-200, #fde4a5);
   cursor: pointer;
-}
-
-.rot-dmg-sim:hover {
-  text-decoration: underline;
 }
 
 .rot-dmg-sim:focus-visible,
@@ -524,10 +488,6 @@
   color: rgba(255, 255, 255, 0.35);
   cursor: pointer;
   flex-shrink: 0;
-}
-
-.rot-remove:hover {
-  color: var(--red-300, #ff8980);
 }
 
 /* Same 22px band as the step number and the skill icon, so the three read as one row of
@@ -709,7 +669,6 @@
   border: 0;
 }
 
-
 /* Crit state — stated on every row. */
 .rot-crit {
   white-space: nowrap;
@@ -753,8 +712,6 @@
   flex-shrink: 0;
 }
 
-
-
 .rot-head-actions {
   display: flex;
   align-items: center;
@@ -763,3 +720,73 @@
 }
 
 .rot-handle { touch-action: none; user-select: none; }
+
+/* Hover states only for a pointer that hovers; a touch screen gets them while pressed
+   instead of having them stick after a tap. */
+@media (hover: hover) {
+  .rot-optimize.ui-button:enabled:hover{
+    background: rgba(255, 224, 130, 0.08);
+    border-color: var(--surface-border);
+    color: #ffe082;
+  }
+  .rot-clear.ui-button:enabled:hover{
+    background: rgba(255, 137, 128, 0.08);
+    border-color: var(--surface-border);
+    color: var(--red-300, #ff8980);
+  }
+  .rot-add.ui-button:enabled:hover{
+    background: var(--highlight-bg);
+    border-color: var(--surface-border);
+    color: var(--primary-color);
+  }
+  .rot-icon--btn:hover{
+    outline: 1px solid var(--primary-color);
+  }
+  .rot-dmg-branch:hover{
+    text-decoration: underline;
+  }
+  .rot-dmg-val:hover,
+  .rot-crit-val.bonus_clickable:hover{
+    text-decoration: underline;
+  }
+  .rot-dmg-sim:hover{
+    text-decoration: underline;
+  }
+  .rot-remove:hover{
+    color: var(--red-300, #ff8980);
+  }
+}
+
+@media (hover: none) {
+  .rot-optimize.ui-button:enabled:active{
+    background: rgba(255, 224, 130, 0.08);
+    border-color: var(--surface-border);
+    color: #ffe082;
+  }
+  .rot-clear.ui-button:enabled:active{
+    background: rgba(255, 137, 128, 0.08);
+    border-color: var(--surface-border);
+    color: var(--red-300, #ff8980);
+  }
+  .rot-add.ui-button:enabled:active{
+    background: var(--highlight-bg);
+    border-color: var(--surface-border);
+    color: var(--primary-color);
+  }
+  .rot-icon--btn:active{
+    outline: 1px solid var(--primary-color);
+  }
+  .rot-dmg-branch:active{
+    text-decoration: underline;
+  }
+  .rot-dmg-val:active,
+  .rot-crit-val.bonus_clickable:active{
+    text-decoration: underline;
+  }
+  .rot-dmg-sim:active{
+    text-decoration: underline;
+  }
+  .rot-remove:active{
+    color: var(--red-300, #ff8980);
+  }
+}

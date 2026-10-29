@@ -442,9 +442,12 @@
   font-size: 11px;
   text-decoration: none;
 }
-:is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-links a:hover{
+@media (hover: hover){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-links a:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-links a:active{
+  text-decoration: underline;
+}}
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-bonuses{
   padding: 0.75rem;
 }
@@ -478,9 +481,12 @@
   text-decoration: none;
   cursor: pointer;
 }
-:is(app-ro-calculator, .ui-scope-app-ro-calculator) a.skill_link:hover{
+@media (hover: hover){:is(app-ro-calculator, .ui-scope-app-ro-calculator) a.skill_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-ro-calculator, .ui-scope-app-ro-calculator) a.skill_link:active{
+  text-decoration: underline;
+}}
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .summary_stat_atk{
 
   background-color: var(--stat-chip-bg, #121212);
@@ -643,12 +649,6 @@
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .auto-cast-shared-block{
   margin-bottom: 14px;
 }
-@media (max-width: 768px){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .hud-selectors-row{
-    flex-direction: column;
-    gap: 8px;
-  }
-
-}
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .dropdown_monster_group_label{
   background-color: var(--green-900);
   color: white;
@@ -669,9 +669,12 @@
   text-decoration: underline dotted transparent;
   transition: text-decoration-color 0.12s ease;
 }
-:is(app-ro-calculator, .ui-scope-app-ro-calculator) .bonus_clickable:hover{
+@media (hover: hover){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .bonus_clickable:hover{
   text-decoration: underline dotted currentColor;
-}
+}}
+@media (hover: none){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .bonus_clickable:active{
+  text-decoration: underline dotted currentColor;
+}}
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .bonus_breakdown_list{
   list-style: none;
   margin: 0;
@@ -720,9 +723,12 @@
   color: var(--primary-color);
   text-decoration: none;
 }
-:is(app-ro-calculator, .ui-scope-app-ro-calculator) .bonus_breakdown_calc_link:hover{
+@media (hover: hover){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .bonus_breakdown_calc_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .bonus_breakdown_calc_link:active{
+  text-decoration: underline;
+}}
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .bonus_breakdown_calc_link .ui-icon{
   font-size: 0.7rem;
 }
@@ -744,9 +750,12 @@
   display: inline-flex;
   align-items: center;
 }
-:is(app-ro-calculator, .ui-scope-app-ro-calculator) .monster_id_link:hover{
+@media (hover: hover){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .monster_id_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .monster_id_link:active{
+  text-decoration: underline;
+}}
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .img_monster{
 
 
@@ -1061,13 +1070,16 @@
 
 }
  app-ro-calculator .ui-accordion-tab .ui-highlight > button,
- .ui-scope-app-ro-calculator .ui-accordion-tab .ui-highlight > button,
- app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover,
- .ui-scope-app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover{
+ .ui-scope-app-ro-calculator .ui-accordion-tab .ui-highlight > button{
   color: var(--primary-color-text) !important;
   background: var(--primary-color) !important;
 
 }
+@media (hover: hover){ app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover,
+ .ui-scope-app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover{
+  color: var(--primary-color-text);
+  background: var(--primary-color);
+}}
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .job_img{
   width: 25px;
   height: 25px;
@@ -1088,9 +1100,12 @@
   cursor: pointer;
   transition: border-color 0.15s, background-color 0.15s;
 }
-:is(app-ro-calculator, .ui-scope-app-ro-calculator) .replay-dropzone:hover{
+@media (hover: hover){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .replay-dropzone:hover{
   border-color: var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .replay-dropzone:active{
+  border-color: var(--primary-color);
+}}
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .replay-dropzone.dragover{
   border-color: var(--primary-color);
   background-color: var(--surface-100);
@@ -1511,9 +1526,12 @@
   white-space: nowrap;
   cursor: pointer;
 }
-:is(app-ro-calculator, .ui-scope-app-ro-calculator) .stats_compare_toggle:hover:not(:disabled){
+@media (hover: hover){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .stats_compare_toggle:hover:not(:disabled){
   color: #fdd87d;
-}
+}}
+@media (hover: none){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .stats_compare_toggle:active:not(:disabled){
+  color: #fdd87d;
+}}
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .stats_compare_toggle--on{
   padding: 0 6px;
   border-color: rgb(253 216 125 / 55%);
@@ -1676,14 +1694,4 @@
 }
 :is(app-ro-calculator, .ui-scope-app-ro-calculator) .auto-cast-beta-actions .ui-button{
   white-space: nowrap;
-}
-@media (max-width: 1100px){:is(app-ro-calculator, .ui-scope-app-ro-calculator) .auto-cast-beta-alert{
-    align-items: stretch;
-    flex-direction: column;
-  }
-:is(app-ro-calculator, .ui-scope-app-ro-calculator) .auto-cast-beta-actions{
-    flex-wrap: wrap;
-    margin-left: 0;
-  }
-
 }

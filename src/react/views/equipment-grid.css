@@ -48,15 +48,25 @@ app-equipment-grid{
   line-height: 1;
   cursor: pointer;
 }
-:is(app-equipment-grid, .ui-scope-app-equipment-grid) .eq-ribbon__clear:hover,
 :is(app-equipment-grid, .ui-scope-app-equipment-grid) .eq-ribbon__clear:focus-visible{
   background: rgb(253 216 125 / 20%);
   color: #fdd87d;
   outline: none;
 }
+@media (hover: hover){:is(app-equipment-grid, .ui-scope-app-equipment-grid) .eq-ribbon__clear:hover{
+  background: rgb(253 216 125 / 20%);
+  color: #fdd87d;
+  outline: none;
+}}
+@media (hover: none){:is(app-equipment-grid, .ui-scope-app-equipment-grid) .eq-ribbon__clear:active{
+  background: rgb(253 216 125 / 20%);
+  color: #fdd87d;
+  outline: none;
+}}
 :is(app-equipment-grid, .ui-scope-app-equipment-grid) .eq-grid__columns{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  /* A card never asks for more than the column has (a phone is narrower than 480px). */
+  grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
   gap: 16px;
   align-items: start;
 }
