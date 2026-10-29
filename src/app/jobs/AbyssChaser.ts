@@ -273,10 +273,10 @@ export class AbyssChaser extends ShadowChaser {
       name: 'Chain Reaction Shot',
       label: '[V2] Chain Reaction Shot Lv5',
       value: 'Chain Reaction Shot==5',
-      acd: 0.5,
+      acd: 0,
       fct: 1,
       vct: 1,
-      cd: 1.5,
+      cd: 1,
       verifyItemFn: ({ weapon }) => {
         const requires: WeaponTypeName[] = ['bow'];
         if (requires.some(wType => weapon.isType(wType))) return '';
@@ -365,7 +365,7 @@ export class AbyssChaser extends ShadowChaser {
       acd: 0.5,
       fct: 1.5,
       vct: 4,
-      cd: 60,
+      cd: 3,
       isMatk: true,
       element: ElementType.Neutral,
       formula: (input: AtkSkillFormulaInput): number => {

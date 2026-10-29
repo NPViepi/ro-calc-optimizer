@@ -1,0 +1,27 @@
+{
+  "type": "patch",
+  "logs": [
+    "Dados do cliente atualizados: 527 itens novos passam a ser reconhecidos pelo simulador e 112 descrições foram substituídas pelo texto em português do cliente.",
+    "Corrigidos 83 nomes de itens que estavam desatualizados — entre eles as armas do antigo \"Glaciar Sombrio\", agora \"Vil Invernal\", as cartas de Issgard e os encantos \"Flor Invernal\" e \"Cristal Invernal\".",
+    "Os 44 equipamentos que apareciam marcados como Prévia, com nome e descrição em inglês — as peças e armas Invernais de Issgard entre eles —, saíram da prévia: já estão no LATAM e passam a mostrar o texto em português.",
+    "Adicionados 11 trajes visuais que o cliente já trazia e que não podiam ser escolhidos no simulador.",
+    "Conjuração e espera conferidas contra a tabela do cliente em 65 habilidades das classes de 4ª e corrigidas onde divergiam. As maiores mudanças estão na recarga de Punho Labareda, Meteoro Ômega, Círculo Elemental, Mandala das Feras e Firmamento, que caiu de 60 para 2 a 5 segundos, e na das Armadilhas Terrestre, Ardente, Sombria e Zéfira, que caiu de 20 a 30 para 2,5 segundos.",
+    "Cadastrados o custo de SP e as resistências que o novo texto do cliente explicita em doze cartas de Issgard."
+  ],
+  "logs_es": [
+    "Datos del cliente actualizados: el simulador reconoce 527 ítems nuevos y 112 descripciones fueron reemplazadas por el texto del cliente.",
+    "Corregidos 83 nombres de ítems desactualizados — entre ellos las armas \"Vil Invernal\", las cartas de Issgard y los encantos \"Flor Invernal\" y \"Cristal Invernal\".",
+    "Los 44 equipos que aparecían marcados como Vista previa, con nombre y descripción en inglés — entre ellos las piezas y armas Invernales de Issgard —, salieron de la vista previa: ya están en LATAM y muestran el texto localizado.",
+    "Agregados 11 trajes visuales que el cliente ya traía y que no se podían elegir en el simulador.",
+    "Conjuración y espera verificadas contra la tabla del cliente en 65 habilidades de las clases de 4.ª y corregidas donde no coincidían. Los mayores cambios están en la recarga de Lanzallamas Masivo, Impacto Omega del Abismo, Buster Elemental, Círculo de Direcciones y Elementales y Todo en el Cielo, que bajó de 60 a entre 2 y 5 segundos, y en la de las trampas Sólida, de Llamas, de Ceguera Profunda y Veloz, que bajó de 20 a 30 a 2,5 segundos.",
+    "Registrados el costo de SP y las resistencias que el nuevo texto del cliente detalla en doce cartas de Issgard."
+  ],
+  "logs_en": [
+    "Client data refreshed: the simulator now knows 527 new items, and 112 descriptions were replaced with the client's own text.",
+    "Corrected 83 out-of-date item names, among them the Dim Glacier weapons, the Issgard cards and the Ice Flower and Glacier Flower Spell enchants.",
+    "The 44 pieces that were flagged as Preview, with an English name and description — the Issgard winter gear and weapons among them — left the preview: LATAM has shipped them and they now show the localized text.",
+    "Added 11 costumes the client already carried and that could not be picked in the simulator.",
+    "Cast and delay checked against the client table for 65 fourth-class skills and corrected where they disagreed. The biggest changes are the cooldowns of Massive Flame Blaster, Omega Abyss Strike, Elemental Buster, Circle of Directions and Elementals and All in the Sky, down from 60 to between 2 and 5 seconds, and those of Solid Trap, Flame Trap, Trap of Darkness and Swift Trap, down from 20-30 to 2.5 seconds.",
+    "Registered the SP cost and the resistances the client's new text spells out on twelve Issgard cards."
+  ]
+}

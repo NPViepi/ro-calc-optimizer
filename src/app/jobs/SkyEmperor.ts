@@ -440,10 +440,10 @@ export class SkyEmperor extends StarEmperor {
       // separately — see SkyEmperor.firmamento.spec.ts and SkyEmperor.moon-states.spec.ts.
       // The ATK-per-level table still comes from the client alone: the three external
       // sources disagree with each other, and with LATAM, on it.
-      acd: 0.5,
+      acd: 0,
       fct: 1,
       vct: 0,
-      cd: 60,
+      cd: 2,
       isMelee: true,
       // 3 FULL hits against DemiHuman/Demon — not one packet split for display the way
       // the sibling skills use `hit`. The recording only solves as 3 × the whole damage,

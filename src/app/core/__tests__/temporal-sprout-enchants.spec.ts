@@ -43,9 +43,15 @@ const SLOT_3 = [
   'HP máx. +5%', 'SP máx. +5%', 'Músculo 2', 'Intelecto 2', 'Pedra de Encantamento 2', 'Anti-Atraso 2',
 ];
 
-/** Slot 2 — "Talento +N" is all six talentos; the other four are named outright. */
+/**
+ * Slot 2 — "Talento +N" is all six talentos; the other four are named outright.
+ *
+ * 311088 is the T.CRÍT +1 enchant — its own description still reads "T.CRÍT +1." — but the
+ * client table of 28/10/2026 labels it "Flor Invernal (FOR)", which is 311092's name. The
+ * mislabel is upstream in the client and latam-items.json mirrors the client as it is.
+ */
 const SLOT_2 = [
-  'POD +1', 'STA +1', 'SAB +1', 'FEI +1', 'CON +1', 'CRV +1', 'T.CRÍT +1', 'C.Mais +1', 'P.ATQ +1', 'S.ATQM +1',
+  'POD +1', 'STA +1', 'SAB +1', 'FEI +1', 'CON +1', 'CRV +1', 'Flor Invernal (FOR)', 'C.Mais +1', 'P.ATQ +1', 'S.ATQM +1',
   'POD +2', 'STA +2', 'SAB +2', 'FEI +2', 'CON +2', 'CRV +2', 'T.CRÍT +2', 'C.Mais +2', 'P.ATQ +2', 'S.ATQM +2',
 ];
 
