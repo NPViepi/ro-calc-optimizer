@@ -1009,11 +1009,6 @@ app-elemental-table .elemental-scroll-hint {
   .ui-checkbox-label {
     min-width: var(--touch-target);
   }
-  /* A field the keyboard types into reads in 16px text: iOS zooms the page in on focus
-     of anything smaller, and only a pinch brings it back. */
-  :is(input, textarea).ui-inputtext {
-    font-size: 16px;
-  }
   /* 44px paginator buttons sit edge to edge, without the bar's side padding, so a row
      of seven (three page links on touch) fits a list from ~310px wide (a 390px phone);
      a narrower list wraps them onto a second row. */
@@ -1121,11 +1116,10 @@ app-elemental-table .elemental-scroll-hint {
     --item-search-filter-rows: 14.75rem;
   }
 
-  /* Item picker: a finger-sized filter field, in 16px text so iOS does not zoom in on
-     focus, and breadcrumbs (the only way back up the bonus tree) as real targets. */
+  /* Item picker: a finger-sized filter field, and breadcrumbs (the only way back up the
+     bonus tree) as real targets. */
   :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__input {
     height: var(--touch-target);
-    font-size: 16px;
   }
   :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__row--create {
     min-height: var(--touch-icon);
