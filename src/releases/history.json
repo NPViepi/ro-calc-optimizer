@@ -1,5 +1,13 @@
 [
   {
+    "v": "0.1.192-beta",
+    "date": "29-10-2026",
+    "logs": [
+      "Carta Dollocaris Monocular corrigida: abaixo do refino +12 a carta reduz em 25% o dano mágico de propriedade Sombrio, Sagrado, Fantasma e Neutro, como diz a descrição.",
+      "Penalidades que faltavam adicionadas: Carta Fanático das Trevas (-30% de dano contra Fogo e Sagrado), Carta Aquila (-30% de resistência a todas as propriedades) e Carta Gemaring (reduções a cada 10 de atributo base até o 50)."
+    ]
+  },
+  {
     "v": "0.1.191-beta",
     "date": "29-10-2026",
     "logs": [
