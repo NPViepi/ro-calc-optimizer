@@ -4,6 +4,8 @@ import { ItemTypeEnum } from 'src/app/constants/item-type.enum';
 import { ItemModel } from 'src/app/models/item.model';
 import { EquipmentGridComponent } from '../../../../../react/controllers/equipment-grid';
 import { SlotListBag } from './slot-list-bag.model';
+import { translate } from 'src/app/core/i18n';
+import { DEFAULT_CATALOG } from 'src/app/i18n';
 
 /**
  * Quem vê as duas linhas que disputam a mão vazia: o escudo e a arma da mão esquerda.
@@ -37,7 +39,8 @@ function makeGrid(input: {
   shieldShown?: boolean; compareShield?: boolean; leftWeaponShown?: boolean; compareLeftWeapon?: boolean;
 }) {
   // Sem o serviço de layout, como nos outros specs da grade: ele só alimenta a busca de itens.
-  const grid = new EquipmentGridComponent({ hintPending: false, labels: {} } as any, undefined as any);
+  const grid = new EquipmentGridComponent({ hintPending: false, labels: {} } as any,
+    (key, params) => translate(DEFAULT_CATALOG, key, params));
 
   grid.items = ITEMS;
   grid.mapEnchant = new Map();

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { AllowedCompareItemTypes } from 'src/app/app-config';
 import { AllowLeftWeaponMapper, ItemTypeEnum, ItemTypeId } from 'src/app/constants';
-import { itemSlotLabelPtBr } from 'src/app/constants/item-slot-i18n';
+import { itemSlotLabelKey } from 'src/app/constants/item-slot-i18n';
+import { DEFAULT_CATALOG } from 'src/app/i18n';
 import { ClassIDEnum, getClassDropdownList, GuillotineCross } from 'src/app/jobs';
 import { ItemModel } from 'src/app/models/item.model';
 import { MainModel } from 'src/app/models/main.model';
@@ -78,7 +79,7 @@ function solve(calc: Calculator) {
 describe('off-hand weapon as a comparable slot', () => {
   it('is offered in the "comparar slot" picker, with a pt-BR label', () => {
     expect([...AllowedCompareItemTypes]).toContain('leftWeapon');
-    expect(itemSlotLabelPtBr('leftWeapon')).toBe('Arma Esq.');
+    expect(DEFAULT_CATALOG[itemSlotLabelKey('leftWeapon')]).toBe('Arma Esq.');
   });
 
   it('there is something to compare: a different off-hand weapon moves the numbers', () => {

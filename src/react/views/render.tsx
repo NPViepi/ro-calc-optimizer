@@ -1,5 +1,6 @@
 import { Children, Fragment, ReactNode, createContext, createElement, isValidElement, useCallback, useContext, useState, useSyncExternalStore } from 'react';
 import { useServices } from '../services/application';
+import { useText } from '../state/use-text';
 import { missingIcon } from '../services/assets';
 import { Accordion } from '../ui/accordion';
 import { Block } from '../ui/block';
@@ -60,6 +61,7 @@ interface RenderContext { services: ReturnType<typeof useServices>; rowSelection
 // tab stop so its tip opens from the keyboard and by touch, not only under a mouse.
 const FOCUSABLE_TAGS = new Set(['button', 'a', 'input', 'select', 'textarea']);
 function InteractiveRender({ input, context }: { input: RenderProps; context: RenderContext }) {
+  const t = useText();
   const { tooltip: options, reorderIndex, reorderDisabled, reordered } = input.props;
   // A click that `activateWithKeys: false` marks as dormant (the row is not clickable
   // right now) is no action, so a tap is free to open the tip.
@@ -78,7 +80,7 @@ function InteractiveRender({ input, context }: { input: RenderProps; context: Re
   // opens the same description without that action; CSS shows it only without hover.
   const describes = informative && (ownAction || insideOption) && String(options?.className ?? '').includes('item_desc_tooltip');
   return <>{renderElement(input, context, { ...triggerProps, ...focusProps }, reorder)}
-    {describes && <button type="button" className={`tip-info ${ownAction ? 'tip-info--action' : ''}`} aria-label="Ver descrição"
+    {describes && <button type="button" className={`tip-info ${ownAction ? 'tip-info--action' : ''}`} aria-label={t('ui.viewDescription')}
       onClick={event => { event.preventDefault(); event.stopPropagation(); openFor(event.currentTarget.previousElementSibling as HTMLElement | null); }}>ⓘ</button>}
     {tooltip}</>;
 }

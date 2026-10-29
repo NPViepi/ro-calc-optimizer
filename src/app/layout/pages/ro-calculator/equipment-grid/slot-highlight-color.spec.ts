@@ -5,6 +5,8 @@ import { SLOT_COLOR_BY_ID } from 'src/app/core/slot-colors';
 import { ItemModel } from 'src/app/models/item.model';
 import { EquipmentGridComponent } from '../../../../../react/controllers/equipment-grid';
 import { SlotListBag } from './slot-list-bag.model';
+import { DEFAULT_CATALOG } from 'src/app/i18n';
+import { translate } from 'src/app/core/i18n';
 
 /**
  * The highlight a player puts on an equipment card to say which pieces are the build
@@ -24,7 +26,7 @@ const lists = () =>
 const colorPicker = () => ({ hintPending: true, labels: {} }) as any;
 
 function makeGrid(model: Record<string, any>, picker = colorPicker()) {
-  const grid = new EquipmentGridComponent(picker);
+  const grid = new EquipmentGridComponent(picker, (key) => translate(DEFAULT_CATALOG, key));
 
   grid.items = { 1: item(1), 2: item(2) };
   grid.mapEnchant = new Map(Object.values(grid.items).map((entry) => [entry.aegisName, entry]));

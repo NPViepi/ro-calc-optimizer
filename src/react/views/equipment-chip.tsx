@@ -5,6 +5,7 @@ import { itemDescPopoverHtml } from '../../app/utils/pretty-item-desc';
 import { DescriptionStore } from '../services/data-client';
 import { iconUrl, missingIcon } from '../services/assets';
 import { useTooltip } from '../ui/tooltip';
+import { useText } from '../state/use-text';
 import './equipment-chip.css';
 
 export interface EquipmentChipProps {
@@ -13,20 +14,21 @@ export interface EquipmentChipProps {
   onPick: (anchor: HTMLElement) => void; onEdit?: (id: number) => void; onClear?: () => void;
 }
 export function EquipmentChip({ view, items, descriptions, compare = false, customIcon, onPick, onEdit, onClear }: EquipmentChipProps) {
+  const t = useText();
   useSyncExternalStore(descriptions.subscribe, descriptions.getSnapshot);
   const description = view.descId && items ? itemDescPopoverHtml(items[view.descId], descriptions.get(view.descId)) : '';
   // A tap on the chip opens the picker, so none of these tips opens by tap. The item
   // description, the one tip that holds information, has its own info button instead.
   const rich = useTooltip({ text: description, escape: false, className: 'item_desc_tooltip', position: 'top', showDelay: 350, tap: false });
   const plain = useTooltip({ text: view.descId ? '' : view.text, position: 'top', showDelay: 350, tap: false });
-  const previewNote = 'Prévia: item ainda não lançado no LATAM — nome e descrição em inglês, do kRO/iRO (divine-pride).';
+  const previewNote = t('eq.preReleaseTooltip');
   const preview = useTooltip({ text: previewNote, position: 'top', showDelay: 300, tap: false });
   // What the info button opens: the description, led by the preview note that a mouse
-  // reads from the "Prévia" tag's own tip.
+  // reads from the preview tag's own tip.
   const info = useTooltip({ text: view.preRelease && description ? `<p>${previewNote}</p>${description}` : description,
     escape: false, className: 'item_desc_tooltip', position: 'top', tap: false });
-  const clear = useTooltip({ text: 'Remover', position: 'top', showDelay: 300, tap: false });
-  const edit = useTooltip({ text: 'Item customizado. Clique para editar.', position: 'top', showDelay: 300, tap: false });
+  const clear = useTooltip({ text: t('eq.remove'), position: 'top', showDelay: 300, tap: false });
+  const edit = useTooltip({ text: t('eq.customTooltip'), position: 'top', showDelay: 300, tap: false });
   const picker = useRef<HTMLButtonElement>(null);
   return createElement('app-equipment-chip', null, <>
     <span className="eq-chip__picker"><button {...rich.triggerProps} ref={picker} type="button"
@@ -34,17 +36,17 @@ export function EquipmentChip({ view, items, descriptions, compare = false, cust
       aria-description={view.preRelease ? previewNote : undefined} onClick={event => onPick(event.currentTarget)}>
       {view.icon && <img className="eq-chip__icon" src={iconUrl(view.icon, 'item', customIcon)} alt="" loading="lazy" {...missingIcon} />}
       <span {...plain.triggerProps} className="eq-chip__text">{view.text}</span>
-      {view.preRelease && <span {...preview.triggerProps} className="pre_release_tag">Prévia</span>}
+      {view.preRelease && <span {...preview.triggerProps} className="pre_release_tag">{t('eq.preReleaseTag')}</span>}
     </button>
-      {view.filled && view.chip.clearable !== false && <button {...clear.triggerProps} type="button" className="eq-chip__clear" aria-label={`Remover ${view.text}`} onClick={onClear}>✕</button>}
-      {description && <button type="button" className="tip-info tip-info--action" aria-label={`Ver descrição: ${view.text}`}
+      {view.filled && view.chip.clearable !== false && <button {...clear.triggerProps} type="button" className="eq-chip__clear" aria-label={t('eq.removeNamed', { name: view.text })} onClick={onClear}>✕</button>}
+      {description && <button type="button" className="tip-info tip-info--action" aria-label={t('eq.viewDescription', { name: view.text })}
         onClick={event => {
           // The tap that opens the sheet must not reach the sheet's outside-click listener.
           event.preventDefault(); event.stopPropagation(); info.openFor(picker.current);
         }}>ⓘ</button>}
     </span>
     {view.descId && items?.[view.descId]?.custom && <button {...edit.triggerProps} type="button" className={`eq-chip__custom ui-tag ${view.primary ? 'eq-chip__custom--primary' : ''}`}
-      aria-label={`Editar item customizado: ${view.text}`} onClick={() => onEdit?.(view.descId!)}>Customizado</button>}
+      aria-label={t('eq.customEdit', { name: view.text })} onClick={() => onEdit?.(view.descId!)}>{t('eq.custom')}</button>}
     {rich.tooltip}{info.tooltip}{plain.tooltip}{view.preRelease && preview.tooltip}{clear.tooltip}{edit.tooltip}
   </>);
 }

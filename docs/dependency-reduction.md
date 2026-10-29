@@ -74,6 +74,60 @@ The new builder enforces initial bundle limits and component stylesheet limits.
 Three existing oversized component styles have explicit, bounded allowances in
 `tools/web-budgets.json`; all other styles use the previous default limits.
 
+### The `totalBaseline` ratchet and the translation catalogs
+
+`totalBaseline` counts the emitted JS and CSS, but the translation catalogs are
+mutually exclusive: `loadCatalog` fetches the one chunk for the chosen language and
+no reader downloads another. Counting all of them would charge every future language
+against a baseline measured before any of them existed, so the total carries the
+largest catalog chunk and leaves the rest out. A catalog that doubled in size is
+still caught; a fourth language is not charged twice.
+
+The baseline moved from 3,550,422 to 3,610,840 when the interface became
+trilingual. The 60 KB is what every reader loads regardless of language: the pt-BR
+catalog, which is bundled on purpose so the first paint never shows raw keys (see
+`DEFAULT_LOCALE`), plus `translate`/`fill` and the key strings themselves. The
+alternative catalogs are not in that figure.
+
+That also put the startup bundle past its *warning* threshold — 2,340,069 against a
+2,300,000 warning and a 2,400,000 error. The warning is left in place rather than
+raised: it is reporting a real cost, and the next startup-sized addition should have
+to answer for it.
+
+The baseline moved again, from 3,610,840 to 3,718,493, when the responsive layer
+landed. Half of the 107 KB is one file counted twice: `responsive.css` is emitted at
+26,135 bytes into both `main`'s CSS bundle and a shared CSS chunk, and the total adds
+up every emitted file. The rest is the JS of the touch affordances and the compact
+layouts, with the catalog keys they needed.
+
+Startup then stood at 2,396,283 — 3,717 bytes under the *error* threshold, the point
+where the production build throws and CI fails. Only one copy of `responsive.css`
+counts there, but it counts for every reader on the first paint.
+
+The item text and the first-run language dialog took 4,307 of those bytes: baseline
+3,718,493 to 3,722,800, startup to 2,399,442. The dialog and its sheet are most of it,
+and they are startup work by definition — a new visitor is asked before anything else
+renders. The per-language item names and descriptions cost the bundle almost nothing,
+because they are fetched JSON (`items-name-<locale>`, `items-desc-<locale>`) and the
+descriptions replace the Portuguese file rather than joining it; only the client code
+that picks between them is here.
+
+A note on that baseline: CI measures 3,722,800 where this machine measures 3,722,295 —
+same commit, 505 bytes apart, almost all of it in the largest vendor chunk. Ruled out:
+chunk drift around the catalog exclusion (each catalog chunk holds exactly one input, so
+nothing shared rides out with it), line endings (the bundle is minified), and a stale
+install (`node_modules/.modules.yaml` and `pnpm-lock.yaml` are in step, and the lockfile
+has not moved since October 2nd). It is a Linux/Windows difference in the emitted vendor
+code that has not been pinned down; before this change the two agreed, so it is worth
+re-checking if the gap grows. The baseline tracks CI, because CI is the gate — a local
+build now passes with 505 bytes of slack instead of exactly at the line.
+
+That left 558 bytes of headroom, which is not headroom. `initialError` goes to
+2,420,000 — the first time it has moved — buying back about 20 KB. It is a guard rail
+on the first paint, so the next change to spend it should say what it bought, exactly
+as this paragraph does; the ceiling is not the budget, and each raise makes the real
+cost of the next one harder to see.
+
 The final simplify pass removed the unused portal view argument, redundant
 virtual-list end state and a duplicate filesystem probe. It also consolidated
 imports and removed stale CDK comments without changing interaction contracts.

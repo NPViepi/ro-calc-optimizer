@@ -6,10 +6,15 @@ import { buildChipRows } from 'src/app/core/equipment-chips';
 import { ItemModel } from 'src/app/models/item.model';
 import { EquipmentGridComponent } from '../../../../../react/controllers/equipment-grid';
 import { EquipmentSlotCardComponent } from '../../../../../react/controllers/equipment-slot-card';
+import { DEFAULT_CATALOG, TextKey } from 'src/app/i18n';
+import { TextParams, translate } from 'src/app/core/i18n';
+
+/** The card titles its picker through a translator; pt-BR is the source catalog. */
+const text = (key: TextKey, params?: TextParams) => translate(DEFAULT_CATALOG, key, params);
 
 // Tracker card SZDOZ1byiLnJZmPBdxV6: every occupied costume position accepts its own stone.
 function setup(key: Slot, locations: string[]) {
-  const grid = new EquipmentGridComponent({ hintPending: false } as any);
+  const grid = new EquipmentGridComponent({ hintPending: false } as any, text);
   grid.items = { 1: { id: 1, name: 'Visual', aegisName: 'Visual', slots: 0, script: {}, locations,
     itemSubTypeId: key === Slot.costumeUpper ? ItemSubTypeId.CostumeUpper : key === Slot.costumeLower ? ItemSubTypeId.CostumeLower : ItemSubTypeId.CostumeMiddle } as ItemModel };
   grid.model = { [key]: 1, costumeEnchantUpper: 11, costumeEnchantMiddle: 22, costumeEnchantLower: 33, rawOptionTxts: [] };
@@ -33,7 +38,7 @@ describe('costume position stones', () => {
   ] as const)('offers each position on %s with %j', (key, locations, fields, values) => {
     const { grid, slot, chips } = setup(key, [...locations]);
     expect(chips().map((chip) => chip.field)).toEqual(fields);
-    const card = new EquipmentSlotCardComponent({} as any, {} as any, {} as any, {} as any);
+    const card = new EquipmentSlotCardComponent({} as any, {} as any, {} as any, {} as any, text);
     Object.assign(card, { descriptor: slot(), lists: grid.lists, model: grid.model, derivation: grid.derivations[key], items: grid.items });
     chips().forEach((chip, index) => {
       const request = (card as any).pickerRequest(chip, {} as HTMLElement, false);

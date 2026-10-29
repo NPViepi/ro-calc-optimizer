@@ -14,6 +14,10 @@
 export const DATA_KEYS = [
   'itemsCore',
   'itemsDesc',
+  'itemNamesEs',
+  'itemNamesEn',
+  'itemsDescEs',
+  'itemsDescEn',
   'skillDescriptions',
   'monsters',
   'hpsp',

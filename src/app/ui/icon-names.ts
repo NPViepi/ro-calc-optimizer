@@ -30,6 +30,7 @@ export const ICON_NAMES = [
   "file",
   "file-o",
   "folder-open",
+  "globe",
   "heart",
   "heart-fill",
   "home",

@@ -14,12 +14,13 @@
  */
 import { SLOTS_BY_KEY } from '../app-config/equipment-slots';
 import { ItemTypeEnum } from '../constants/item-type.enum';
+import { TextKey, Translate } from '../i18n';
 
 export interface SlotColor {
   /** Short and stable: this is what a share token carries. */
   id: string;
-  /** The palette's own pt-BR name, shown until the player renames it locally. */
-  label: string;
+  /** Catalog key for the palette's own name, shown until the player renames it locally. */
+  labelKey: TextKey;
   /** The swatch dot, at full strength. */
   hex: string;
   /**
@@ -42,11 +43,11 @@ export interface SlotColor {
  * them. `slot-colors.spec.ts` holds the line if a sixth colour is ever added.
  */
 export const SLOT_COLORS: readonly SlotColor[] = [
-  { id: 'azul', label: 'Azul', hex: '#64b5f6', rgb: '100 181 246' },
-  { id: 'violeta', label: 'Violeta', hex: '#b39ddb', rgb: '179 157 219' },
-  { id: 'rosa', label: 'Rosa', hex: '#f48fb1', rgb: '244 143 177' },
-  { id: 'turquesa', label: 'Turquesa', hex: '#4dd0e1', rgb: '77 208 225' },
-  { id: 'cinza', label: 'Cinza', hex: '#b0bec5', rgb: '176 190 197' },
+  { id: 'azul', labelKey: 'slotColor.azul', hex: '#64b5f6', rgb: '100 181 246' },
+  { id: 'violeta', labelKey: 'slotColor.violeta', hex: '#b39ddb', rgb: '179 157 219' },
+  { id: 'rosa', labelKey: 'slotColor.rosa', hex: '#f48fb1', rgb: '244 143 177' },
+  { id: 'turquesa', labelKey: 'slotColor.turquesa', hex: '#4dd0e1', rgb: '77 208 225' },
+  { id: 'cinza', labelKey: 'slotColor.cinza', hex: '#b0bec5', rgb: '176 190 197' },
 ];
 
 export const SLOT_COLOR_BY_ID: ReadonlyMap<string, SlotColor> = new Map(SLOT_COLORS.map((color) => [color.id, color]));
@@ -97,6 +98,6 @@ export function sanitizeSlotColorLabels(raw: unknown): SlotColorLabels {
 }
 
 /** What to call a colour here and now: the player's name for it, else the palette's. */
-export function slotColorLabel(color: SlotColor, labels: SlotColorLabels | null | undefined): string {
-  return labels?.[color.id] || color.label;
+export function slotColorLabel(color: SlotColor, labels: SlotColorLabels | null | undefined, text: Translate): string {
+  return labels?.[color.id] || text(color.labelKey);
 }

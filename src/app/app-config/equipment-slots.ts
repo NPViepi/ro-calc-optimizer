@@ -1,7 +1,8 @@
 import { AllowedCompareItemTypes } from './allowed-compare-item-types';
 import { ItemOptionNumber } from '../constants/item-option-number.enum';
-import { ItemSlotLabelPtBr } from '../constants/item-slot-i18n';
+import { itemSlotLabelKey } from '../constants/item-slot-i18n';
 import { ItemTypeEnum } from '../constants/item-type.enum';
+import { TextKey, TextRef } from '../i18n';
 
 /**
  * The equipment picker, as data.
@@ -62,7 +63,7 @@ export type SlotClassFilter = 'none' | 'gear' | 'weapon' | 'headGear';
 export interface SubItemSlot {
   key: ItemTypeEnum;
   /** Chip placeholder, e.g. "Encant. Topo". */
-  label: string;
+  label: TextRef;
   /** Name of the RoCalculatorComponent field holding the option list. */
   itemListKey: string;
   comparable: boolean;
@@ -71,8 +72,8 @@ export interface SubItemSlot {
 export interface EquipmentSlotDescriptor {
   /** Model field holding the item id. Also the name the update buses speak. */
   key: ItemTypeEnum;
-  /** pt-BR card heading. */
-  label: string;
+  /** Catalog key for the card heading. */
+  labelKey: TextKey;
   group: SlotGroup;
   /** Name of the RoCalculatorComponent field holding the item list. */
   itemListKey: string;
@@ -108,7 +109,6 @@ export interface EquipmentSlotDescriptor {
   subItemSlots?: SubItemSlot[];
 }
 
-const labelOf = (key: ItemTypeEnum) => ItemSlotLabelPtBr[key] ?? key;
 const canCompare = (key: ItemTypeEnum) => (AllowedCompareItemTypes as readonly string[]).includes(key);
 
 /** weapon / leftWeapon: 4 cards, all four enchant positions. */
@@ -119,7 +119,7 @@ const weaponLike = (
   visibility: SlotVisibility,
 ): EquipmentSlotDescriptor => ({
   key,
-  label: labelOf(key),
+  labelKey: itemSlotLabelKey(key),
   group: 'equip',
   itemListKey,
   cardListKey: 'weaponCardList',
@@ -144,7 +144,7 @@ const gearLike = (
   extra: Partial<EquipmentSlotDescriptor> = {},
 ): EquipmentSlotDescriptor => ({
   key,
-  label: labelOf(key),
+  labelKey: itemSlotLabelKey(key),
   group: 'equip',
   itemListKey,
   cardListKey,
@@ -163,7 +163,7 @@ const gearLike = (
 /** Shadow gear: no cards, no grade, enchant positions 2-3 only, two option slots. */
 const shadowLike = (key: ItemTypeEnum, itemListKey: string, optionIndexes: ItemOptionNumber[]): EquipmentSlotDescriptor => ({
   key,
-  label: labelOf(key),
+  labelKey: itemSlotLabelKey(key),
   group: 'shadow',
   itemListKey,
   cardFields: [],
@@ -185,7 +185,7 @@ const costumeLike = (
   headSlot?: true,
 ): EquipmentSlotDescriptor => ({
   key,
-  label: labelOf(key),
+  labelKey: itemSlotLabelKey(key),
   group: 'costume',
   itemListKey,
   cardFields: [],
@@ -201,7 +201,7 @@ const costumeLike = (
   ...(headSlot ? { headSlot } : {}),
 });
 
-const costumeEnchant = (key: ItemTypeEnum, label: string, itemListKey: string): SubItemSlot => ({
+const costumeEnchant = (key: ItemTypeEnum, label: TextRef, itemListKey: string): SubItemSlot => ({
   key,
   label,
   itemListKey,
@@ -264,25 +264,25 @@ export const EQUIPMENT_SLOTS: readonly EquipmentSlotDescriptor[] = [
   costumeLike(
     ItemTypeEnum.costumeUpper,
     'costumeUpperList',
-    [costumeEnchant(ItemTypeEnum.costumeEnchantUpper, 'Encant. Topo', 'costumeEnhUpperList')],
+    [costumeEnchant(ItemTypeEnum.costumeEnchantUpper, { key: 'chip.enchantUpper' }, 'costumeEnhUpperList')],
     true,
   ),
   costumeLike(
     ItemTypeEnum.costumeMiddle,
     'costumeMiddleList',
-    [costumeEnchant(ItemTypeEnum.costumeEnchantMiddle, 'Encant. Meio', 'costumeEnhMiddleList')],
+    [costumeEnchant(ItemTypeEnum.costumeEnchantMiddle, { key: 'chip.enchantMiddle' }, 'costumeEnhMiddleList')],
     true,
   ),
   costumeLike(
     ItemTypeEnum.costumeLower,
     'costumeLowerList',
-    [costumeEnchant(ItemTypeEnum.costumeEnchantLower, 'Encant. Baixo', 'costumeEnhLowerList')],
+    [costumeEnchant(ItemTypeEnum.costumeEnchantLower, { key: 'chip.enchantLower' }, 'costumeEnhLowerList')],
     true,
   ),
   costumeLike(ItemTypeEnum.costumeGarment, 'costumeGarmentList', [
-    costumeEnchant(ItemTypeEnum.costumeEnchantGarment, 'Encant. 1', 'costumeEnhGarmentList'),
-    costumeEnchant(ItemTypeEnum.costumeEnchantGarment2, 'Encant. 2', 'costumeEnhGarment2List'),
-    costumeEnchant(ItemTypeEnum.costumeEnchantGarment4, 'Encant. 4', 'costumeEnhGarment4List'),
+    costumeEnchant(ItemTypeEnum.costumeEnchantGarment, { key: 'chip.enchantNumber', params: { number: 1 } }, 'costumeEnhGarmentList'),
+    costumeEnchant(ItemTypeEnum.costumeEnchantGarment2, { key: 'chip.enchantNumber', params: { number: 2 } }, 'costumeEnhGarment2List'),
+    costumeEnchant(ItemTypeEnum.costumeEnchantGarment4, { key: 'chip.enchantNumber', params: { number: 4 } }, 'costumeEnhGarment4List'),
   ]),
 
   shadowLike(ItemTypeEnum.shadowWeapon, 'shadowWeaponList', [ItemOptionNumber.SD_Wp_1, ItemOptionNumber.SD_Wp_2]),
@@ -294,7 +294,7 @@ export const EQUIPMENT_SLOTS: readonly EquipmentSlotDescriptor[] = [
 
   {
     key: ItemTypeEnum.pet,
-    label: labelOf(ItemTypeEnum.pet),
+    labelKey: itemSlotLabelKey(ItemTypeEnum.pet),
     // The pet is not worn, but it is one more bonus source chosen a slot at a time, and a
     // heading of its own for a single card was more furniture than signal.
     group: 'equip',
@@ -323,10 +323,10 @@ export const SLOTS_BY_KEY: ReadonlyMap<ItemTypeEnum, EquipmentSlotDescriptor> = 
  * added to `SlotGroup` but missing from the grid's column list rendered no cards and
  * raised nothing.
  */
-export const SLOT_GROUPS: readonly { key: SlotGroup; label: string; column: number }[] = [
-  { key: 'equip', label: 'Equipamento', column: 0 },
-  { key: 'costume', label: 'Visuais', column: 1 },
-  { key: 'shadow', label: 'Equipamentos Sombrios', column: 1 },
+export const SLOT_GROUPS: readonly { key: SlotGroup; labelKey: TextKey; column: number }[] = [
+  { key: 'equip', labelKey: 'slotGroup.equip', column: 0 },
+  { key: 'costume', labelKey: 'slotGroup.costume', column: 1 },
+  { key: 'shadow', labelKey: 'slotGroup.shadow', column: 1 },
 ];
 
 /** How many columns the cards are laid out in. */

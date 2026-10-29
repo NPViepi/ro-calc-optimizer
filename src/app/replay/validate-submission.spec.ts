@@ -70,7 +70,8 @@ describe('validateReplaySubmission', () => {
     const result = validateReplaySubmission(loadReplayFixture('sn-buffs-potion.rrf'), items);
 
     expect(result).toMatchObject({ ok: false, blocker: 'wrong-map' });
-    expect(result.message).toContain('wolfvill');
+    expect(result.text?.key).toBe('hi.rejectWrongMap');
+    expect(result.text?.params?.['map']).toContain('wolfvill');
   });
 
   /** Every other fixture is already a training-field recording — the rule is what the
@@ -105,7 +106,7 @@ describe('checkReplay', () => {
     const result = checkReplay(makeReplay({ learnedSkills: new Map() }), items);
 
     expect(result).toMatchObject({ ok: false, blocker: 'no-skill-tree' });
-    expect(result.message).toContain('Skill');
+    expect(result.text?.key).toBe('hi.rejectNoSkillTree');
   });
 
   it('rejects a class the calculator does not model', () => {
@@ -179,8 +180,7 @@ describe('checkReplay — training field only', () => {
     const result = checkReplay(replay, items);
 
     expect(result).toMatchObject({ ok: false, blocker: 'wrong-map' });
-    expect(result.message).toContain('prontera');
-    expect(result.message).toContain(TRAINING_MAP);
+    expect(result.text).toEqual({ key: 'hi.rejectWrongMap', params: { map: 'prontera', training: TRAINING_MAP } });
   });
 
   it('accepts the training field behind an instance prefix', () => {

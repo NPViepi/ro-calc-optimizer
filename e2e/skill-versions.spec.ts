@@ -1,4 +1,21 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+
+/**
+ * An equipment piece the catalog still flags `preRelease`, resolved from the data rather
+ * than named here. The flag is dropped from an id as soon as LATAM ships it (see
+ * `preRelease` in item.model.ts), which is exactly what retired the name this test used
+ * to hard-code -- the pt-BR overlay took over and the preview filter stopped hiding it.
+ * It has to be an item every class can wear, since the slot lists the search reads are
+ * built for the current class.
+ */
+const PREVIEW_ITEM = (() => {
+  const items: Record<string, { name: string; usableClass?: string[]; preRelease?: boolean }> =
+    JSON.parse(readFileSync('src/assets/demo/data/item.json', 'utf8'));
+  const hit = Object.values(items).find((item) => item.preRelease && (item.usableClass || []).includes('all'));
+  if (!hit) throw new Error('item.json flags no class-agnostic pre-release equipment: the preview filter cannot be exercised');
+  return hit.name.replace(/\s*\[\d+\]$/, '');
+})();
 
 for (const version of ['rebalance-2022-06', 'rebalance-2026-02'] as const) test('formula selectors synchronize and persist: ' + version, async ({ page }) => {
   const errors: string[] = [];
@@ -181,9 +198,9 @@ test('preview switch filters both skill generations and item search and restores
   const search = async (present: boolean) => {
     await page.getByRole('button', { name: 'Buscar itens', exact: true }).click();
     const dialog = page.getByRole('dialog').filter({ has: page.getByPlaceholder('Nome do item') });
-    await dialog.getByPlaceholder('Nome do item').fill('Issgard Warrior Crown');
+    await dialog.getByPlaceholder('Nome do item').fill(PREVIEW_ITEM);
     await dialog.getByRole('button', { name: 'Buscar', exact: true }).click();
-    await expect(dialog.locator('.item-search-result-row').filter({ hasText: 'Issgard Warrior Crown' })).toHaveCount(present ? 1 : 0);
+    await expect(dialog.locator('.item-search-result-row').filter({ hasText: PREVIEW_ITEM })).toHaveCount(present ? 1 : 0);
     await dialog.getByRole('button', { name: 'Fechar', exact: true }).click();
   };
   await search(true);

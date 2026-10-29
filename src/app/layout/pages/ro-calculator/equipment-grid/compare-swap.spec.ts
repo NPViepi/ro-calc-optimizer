@@ -4,6 +4,8 @@ import { ItemTypeEnum } from 'src/app/constants/item-type.enum';
 import { ItemModel } from 'src/app/models/item.model';
 import { EquipmentGridComponent, SelectGradeEvent, SelectItemEvent } from '../../../../../react/controllers/equipment-grid';
 import { SlotListBag } from './slot-list-bag.model';
+import { DEFAULT_CATALOG } from 'src/app/i18n';
+import { translate } from 'src/app/core/i18n';
 
 /**
  * The ⇅ on a compared slot: it exchanges the alternative with what the build wears, so the
@@ -32,7 +34,7 @@ interface Emissions {
 }
 
 function makeGrid(model: Record<string, any>, model2: Record<string, any>, compareItemNames: string[]) {
-  const grid = new EquipmentGridComponent({ hintPending: false } as any);
+  const grid = new EquipmentGridComponent({ hintPending: false } as any, (key) => translate(DEFAULT_CATALOG, key));
 
   grid.items = { 1: item(1), 2: item(2), 3: item(3), 4: item(4), 5: item(5), 6: item(6) };
   // Known enchants, so an enchant the item's own table does not list is rescued on

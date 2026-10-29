@@ -1,4 +1,5 @@
 import { ReactNode, createElement } from 'react';
+import { useText } from '../state/use-text';
 import { ConnectedPosition } from './layers';
 import { Portal } from './portal';
 import { alignPopover } from './popover-position';
@@ -18,6 +19,7 @@ export interface PopoverProps {
   containerRef?: (element: HTMLDivElement | null) => void;
 }
 export function Popover({ anchor, onClose, className = '', ariaLabel, centered = false, children, containerRef }: PopoverProps) {
+  const t = useText();
   if (!anchor) return null;
   // A phone has no room for a panel beside its anchor: it opens as a bottom sheet.
   const sheet = viewportBand() === 'phone';
@@ -34,7 +36,7 @@ export function Popover({ anchor, onClose, className = '', ariaLabel, centered =
       {/* A sheet can fill the screen and leave no outside to tap, so it gets a header that
           keeps its close button in reach while the content scrolls under it. */}
       {sheet && <div className="ui-overlaypanel-header">
-        <button type="button" className="ui-overlaypanel-close" aria-label="Fechar" onClick={onClose}>✕</button>
+        <button type="button" className="ui-overlaypanel-close" aria-label={t('ui.dialog.close')} onClick={onClose}>✕</button>
       </div>}
       <div className="ui-overlaypanel-content">{children}</div>
     </div>

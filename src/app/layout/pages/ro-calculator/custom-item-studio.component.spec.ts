@@ -7,10 +7,15 @@ import { ItemPicker as ItemPickerService } from '../../../../react/services/pick
 import { createMainModel } from 'src/app/utils/create-main-model';
 import { Mechanic } from 'src/app/jobs';
 import { CUSTOM_ITEM_MIN_ID, validateCustomItems } from 'src/app/core/custom-items';
+import { DEFAULT_CATALOG, TextKey } from 'src/app/i18n';
+import { TextParams, translate } from 'src/app/core/i18n';
+
+/** The studio names its chips through a translator; pt-BR is the source catalog. */
+const text = (key: TextKey, params?: TextParams) => translate(DEFAULT_CATALOG, key, params);
 
 function studio() {
   const picker = { open: vi.fn().mockReturnValue(Promise.resolve({ committed: true, value: 'atk:10' })), close: vi.fn() };
-  const component = new CustomItemStudioComponent({ items: [] } as unknown as CustomItemLibraryService, picker as unknown as ItemPickerService);
+  const component = new CustomItemStudioComponent({ items: [] } as unknown as CustomItemLibraryService, picker as unknown as ItemPickerService, text);
   component.openCreate();
   return { component, picker };
 }

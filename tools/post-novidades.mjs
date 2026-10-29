@@ -39,22 +39,38 @@ function readVersion() {
 function readChangelogEntry(version) {
   const history = JSON.parse(readFileSync(resolve(ROOT, 'src/releases/history.json'), 'utf8'));
   const entry = history.find(entry => entry.v === version);
-  return entry ? { version, date: entry.date, logs: entry.logs } : null;
+  return entry ? { version, date: entry.date, logs: entry.logs, logs_es: entry.logs_es, logs_en: entry.logs_en } : null;
 }
 
-function buildEmbed({ version, date, logs }) {
+// One embed per language, in the order the app lists them. A release published
+// before the notes became trilingual carries only pt-BR and posts a single embed,
+// so old announcements and reposts look exactly as they did.
+const LANGUAGES = [
+  { key: 'logs', label: null, published: 'Publicado em' },
+  { key: 'logs_es', label: 'Español', published: 'Publicado el' },
+  { key: 'logs_en', label: 'English', published: 'Published on' },
+];
+
+function buildEmbed({ version, date, logs, label, published }) {
   let description = logs.map((l) => `• ${l}`).join('\n\n');
   if (description.length > DISCORD_DESC_LIMIT) {
     description = description.slice(0, DISCORD_DESC_LIMIT - 1) + '…';
   }
+  const host = SITE_URL.replace('https://', '');
   return {
-    title: `${PROJECT_NAME} — v${version}`,
+    title: label ? `${PROJECT_NAME} — v${version} (${label})` : `${PROJECT_NAME} — v${version}`,
     url: SITE_URL,
     description,
     color: EMBED_COLOR,
-    footer: { text: date ? `Publicado em ${date} • ${SITE_URL.replace('https://', '')}` : SITE_URL.replace('https://', '') },
+    footer: { text: date ? `${published} ${date} • ${host}` : host },
     timestamp: new Date().toISOString(),
   };
+}
+
+function buildEmbeds(entry) {
+  return LANGUAGES
+    .filter(language => Array.isArray(entry[language.key]) && entry[language.key].length)
+    .map(language => buildEmbed({ ...entry, logs: entry[language.key], label: language.label, published: language.published }));
 }
 
 async function main() {
@@ -65,8 +81,7 @@ async function main() {
     throw new Error(`Missing release notes for ${version}`);
   }
 
-  const embed = buildEmbed(entry);
-  const payload = { embeds: [embed], nonce: version, enforce_nonce: true };
+  const payload = { embeds: buildEmbeds(entry), nonce: version, enforce_nonce: true };
 
   if (dryRun) {
     console.log(JSON.stringify(payload, null, 2));

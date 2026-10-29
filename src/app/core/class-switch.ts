@@ -4,6 +4,7 @@ import { ItemTypeEnum } from '../constants/item-type.enum';
 import { DEFAULT_PET_LOYALTY } from '../constants/pet-loyalty';
 import { MAIN_STAT_KEYS, TRAIT_KEYS } from '../constants/trait-keys';
 import { WeaponTypeName, WeaponTypeNameMapBySubTypeId } from '../constants/weapon-type-mapper';
+import { TextKey } from '../i18n';
 import { CharacterBase } from '../jobs/_character-base.abstract';
 import { ClassName } from '../jobs/_class-name';
 import { ItemModel } from '../models/item.model';
@@ -70,8 +71,8 @@ export type ClassSwitchLossReason =
 
 export interface ClassSwitchLoss {
   key: ItemTypeEnum;
-  /** pt-BR slot heading, straight from the descriptor. */
-  slotLabel: string;
+  /** Catalog key for the slot heading, straight from the descriptor. */
+  slotLabelKey: TextKey;
   itemId: number;
   /** pt-BR item name, or the bare id when the record is missing. */
   itemName: string;
@@ -111,7 +112,7 @@ export function findClassSwitchLosses({ model, items, nextClass }: ClassSwitchIn
     if (!itemId) continue;
 
     const item = items?.[itemId];
-    const row = { key: slot.key, slotLabel: slot.label, itemId, itemName: item?.name ?? String(itemId) };
+    const row = { key: slot.key, slotLabelKey: slot.labelKey, itemId, itemName: item?.name ?? String(itemId) };
 
     if (slot.key === ItemTypeEnum.leftWeapon && !canWieldOffHandWeapon) {
       losses.push({ ...row, reason: 'offHand' });

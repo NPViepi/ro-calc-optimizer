@@ -5,6 +5,7 @@ import { moveItemInArray } from '../ui/reorder';
 import { BASIC_ATTACK_VALUE, MAX_ROTATION_LENGTH } from '../../app/core/rotation';
 import { buildRotationPickerOptions, elementTagClass as elementTagClassFn, RotationPickerOption } from '../../app/layout/pages/ro-calculator/battle-hud/battle-hud.logic';
 import { DamageRange, RotationEntryView } from '../../app/layout/pages/ro-calculator/battle-hud/rotation-view';
+import { Translate } from '../../app/i18n';
 
 /** Which of a row's three damage readings was clicked: the crit-weighted mean, or one of
  *  the two outcomes it averages. */
@@ -62,36 +63,34 @@ export class RotationListComponent extends ViewState {
   readonly basicAttackIcon = BASIC_ATTACK_ICON;
   readonly maxLength = MAX_ROTATION_LENGTH;
 
+  constructor(private readonly text: Translate) { super(); }
+
   /** Hover note for a roll's tag. Each says what the roll *is* and, where it matters, what
    *  it is not: "sem crít." is a roll the build takes most of the time, not a floor. */
   rangeTagTooltip(range: DamageRange): string {
-    if (range.kind === 'nocri') return 'O golpe quando não sai crítico — varia entre o mínimo e o máximo.';
-    if (range.kind === 'cri') return 'O golpe quando sai crítico — acontece na taxa de crítico mostrada ao lado.';
+    if (range.kind === 'nocri') return this.text('rot.tipNoCri');
+    if (range.kind === 'cri') return this.text('rot.tipCri');
 
-    return 'O golpe desta habilidade, que varia entre o mínimo e o máximo.';
+    return this.text('rot.tipFlat');
   }
 
   /** Hover note for the "média" tag. A crit row needs the warning — the rate is on screen
    *  right beside the figure and reads as something still to apply; a plain min–max row only
    *  needs saying what the number is. */
   meanTagTooltip(entry: RotationEntryView): string {
-    return entry.damageRanges.length > 1
-      ? 'A taxa de crítico já está embutida neste número: ele é a média entre o dano sem crítico e o dano crítico, pesada por essa taxa. Não multiplique pelo crítico de novo.'
-      : 'Média entre o dano mínimo e o máximo — é o valor usado na rotação e no DPS.';
+    return this.text(entry.damageRanges.length > 1 ? 'rot.tipMeanCrit' : 'rot.tipMean');
   }
 
   /** A row's figure is explained by whatever it is: the average where there is a roll to
    *  average, the formula itself where the damage never varies. */
   damageTooltip(entry: RotationEntryView): string {
-    return entry.hasDamageSpread ? 'Ver como o dano médio é calculado' : 'Ver a fórmula do dano';
+    return this.text(entry.hasDamageSpread ? 'rot.tipDamageMean' : 'rot.tipDamageFlat');
   }
 
   /** The compared build's figure sits directly under the current one, and since the arrow
    *  between them went away only its colour says which is which. The tooltip says it too. */
   compareDamageTooltip(entry: RotationEntryView): string {
-    const how = entry.hasDamageSpread ? 'ver como o dano médio é calculado' : 'ver a fórmula do dano';
-
-    return `Dano da comparação — ${how}`;
+    return this.text(entry.hasDamageSpread ? 'rot.tipCompareMean' : 'rot.tipCompareFlat');
   }
 
   /** A one-skill rotation is all of the damage by definition, so its "100,0%" states the
@@ -120,7 +119,7 @@ export class RotationListComponent extends ViewState {
   get skillOptions(): RotationPickerOption[] {
     if (this.skillOptionsFor !== this.atkSkills) {
       this.skillOptionsFor = this.atkSkills;
-      this.skillOptionsCache = buildRotationPickerOptions(BASIC_ATTACK_VALUE, this.atkSkills);
+      this.skillOptionsCache = buildRotationPickerOptions(BASIC_ATTACK_VALUE, this.atkSkills, this.text);
     }
     return this.skillOptionsCache;
   }
@@ -129,7 +128,7 @@ export class RotationListComponent extends ViewState {
     const pct = entry.contributionPercent.toFixed(1).replace('.', ',');
     const total = Math.round(this.damagePerCycle).toLocaleString('pt-BR');
 
-    return `Contribuição desta habilidade no dano total da rotação — ${pct}% dos ${total} por ciclo`;
+    return this.text('rot.tipContribution', { pct, total });
   }
 
   /** Marks options already in the rotation, so the picker can flag a repeat. */
@@ -162,7 +161,11 @@ export class RotationListComponent extends ViewState {
     moveItemInArray(next, index, target);
     const stacks = this.entries.map((entry) => entry.stackCount);
     moveItemInArray(stacks, index, target);
-    this.moveAnnouncement = `${this.entries[index]?.name ?? 'Habilidade'} movida para a posição ${target + 1} de ${next.length}`;
+    this.moveAnnouncement = this.text('rot.movedAnnouncement', {
+      name: this.entries[index]?.name ?? this.text('rot.skillPlaceholder'),
+      position: target + 1,
+      total: next.length,
+    });
     this.rotationChange.emit({ rotation: next, stacks });
   }
 

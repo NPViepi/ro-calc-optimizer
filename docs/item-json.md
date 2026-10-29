@@ -447,6 +447,18 @@ Quando o parceiro tem reedição, liste todas as gerações no mesmo grupo `||`:
 "melee": ["3", "EQUIP_ID[310328||1000378&&310329||1000379]===6"]
 ```
 
+### O `name` depende do idioma; o `enName`, não
+
+Desde que os nomes de item passaram a seguir o idioma escolhido, `name` é o nome **na
+língua de quem está lendo**: o espanhol e o inglês vêm das tabelas do próprio cliente
+(`latam-items-es.json` / `latam-items-en.json`) e entram como uma camada sobre o
+`items-core`. O casamento por nome continua lendo `enName ?? name`, e a camada **fixa**
+em `enName` o nome que o registro mostrava antes de ser traduzido — justamente para que
+uma cláusula por nome case igual nos três idiomas.
+
+Na prática isso reforça o aviso abaixo: uma cláusula `EQUIP[<nome>]` só não quebra em
+espanhol porque esse `enName` é preservado à mão. Prefira o id.
+
 > ⚠️ `EQUIP[<nome>]` é **legado** e não deve entrar em registro novo (§ tabela de
 > condições). A família de Pedras de Encantar Visual (subtipos 71‑76) foi migrada por
 > inteiro — 159 registros, 330 cláusulas — e `item-script-keys.spec.ts` trava tanto esse

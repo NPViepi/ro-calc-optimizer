@@ -4,6 +4,7 @@ import { VirtualListHandle as VirtualListComponent } from '../ui/virtual-list';
 import { hoverless } from '../ui/viewport';
 import { DescriptionStore as ItemDescriptionStore } from '../services/data-client';
 import { buildFilterIndex, filterOptions, searchOptionLeaves } from 'src/app/core/picker-filter';
+import { Translate } from 'src/app/i18n';
 import { DropdownModel } from 'src/app/models/dropdown.model';
 import { ItemModel } from 'src/app/models/item.model';
 import { OptionTreeNode, PickerRequest, PickerResult } from '../../app/layout/pages/ro-calculator/item-picker/item-picker.model';
@@ -74,6 +75,7 @@ export class ItemPickerOverlayComponent extends ViewState {
   constructor(
 private readonly host: { nativeElement: HTMLElement },
     public readonly itemDescriptions: ItemDescriptionStore,
+    private readonly text: Translate,
     /** Opened as a bottom sheet (item-picker.tsx decides when it opens). */
     private readonly sheet = false,
   ) { super();}
@@ -320,8 +322,8 @@ private readonly host: { nativeElement: HTMLElement },
     if (!custom.length) return matches;
     const official = matches.filter((row) => !request.items?.[Number(row.value)]?.custom);
     return [
-      { label: 'Meus itens', value: null, section: true }, ...custom,
-      ...(official.length ? [{ label: 'Banco de itens', value: null, section: true }, ...official] : []),
+      { label: this.text('picker.myItems'), value: null, section: true }, ...custom,
+      ...(official.length ? [{ label: this.text('picker.itemBank'), value: null, section: true }, ...official] : []),
     ];
   }
 

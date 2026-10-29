@@ -50,7 +50,16 @@ export async function buildWeb({ production = true, outputDirectory = defaultOut
   });
   copyWebAssets(root, output);
   const entries = Object.entries(result.metafile.outputs);
-  const totalBytes = entries.filter(([name]) => /\.(js|css)$/.test(name)).reduce((sum, [, meta]) => sum + meta.bytes, 0);
+  // The translation catalogs are mutually exclusive: `loadCatalog` fetches the one chunk
+  // for the chosen language and no reader ever downloads another. Counting all of them
+  // against the ratchet would charge every future language to the same baseline, so the
+  // total carries the largest of them and leaves the rest out — a Spanish catalog that
+  // doubled would still be caught, a fourth language would not be charged twice.
+  const code = entries.filter(([name]) => /\.(js|css)$/.test(name));
+  const isAltCatalog = ([, meta]) => Object.keys(meta.inputs || {}).some(input => /src[\/]app[\/]i18n[\/](?!pt-br|index)[a-z-]+\.ts$/.test(input));
+  const altCatalogs = code.filter(isAltCatalog);
+  const totalBytes = code.filter(entry => !isAltCatalog(entry)).reduce((sum, [, meta]) => sum + meta.bytes, 0)
+    + Math.max(0, ...altCatalogs.map(([, meta]) => meta.bytes));
   if (production && totalBytes > budgets.totalBaseline) throw new Error(`Web JS/CSS regressed against the Angular baseline: ${totalBytes} > ${budgets.totalBaseline}`);
   if (Object.keys(result.metafile.inputs).some(name => /node_modules.*(?:@angular|rxjs|zone\.js|tslib)/.test(name))) throw new Error('Removed framework dependency entered the browser bundle');
   const main = entries.find(([, meta]) => meta.entryPoint?.endsWith('/src/main.ts') || meta.entryPoint === 'src/main.ts');

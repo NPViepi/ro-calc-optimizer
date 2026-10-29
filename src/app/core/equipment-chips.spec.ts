@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SLOTS_BY_KEY } from '../app-config/equipment-slots';
+import { DEFAULT_CATALOG } from '../i18n';
+import { translate } from './i18n';
 import { ItemTypeEnum } from '../constants/item-type.enum';
 import { DropdownModel } from '../models/dropdown.model';
 import { buildChipRows, Chip, ChipContext } from './equipment-chips';
@@ -21,6 +23,8 @@ const rows = (key: ItemTypeEnum, model: Record<string, any>, der: SlotDerivation
 
 const kinds = (row: Chip[]) => row.map((c) => c.kind);
 const fields = (row: Chip[]) => row.map((c) => c.field);
+/** A chip names itself with a catalog key; pt-BR is what the assertions are written in. */
+const placeholders = (row: Chip[]) => row.map((c) => translate(DEFAULT_CATALOG, c.placeholder.key, c.placeholder.params));
 
 describe('buildChipRows', () => {
   it('shows only the item chip while the slot is empty', () => {
@@ -72,12 +76,12 @@ describe('buildChipRows', () => {
     const out = rows(ItemTypeEnum.armor, { armor: 1 }, derivation({ enchantLists: [null, [], opts(3), opts(1)] }));
     expect(fields(out[1])).toEqual(['armorEnchant2', 'armorEnchant3']);
     expect(out[1].map((c) => c.index)).toEqual([2, 3]);
-    expect(out[1].map((c) => c.placeholder)).toEqual(['Encant. 3', 'Encant. 4']);
+    expect(placeholders(out[1])).toEqual(['Encant. 3', 'Encant. 4']);
   });
 
   it('numbers a single card socket without an index', () => {
-    expect(rows(ItemTypeEnum.shield, { shield: 1 }, derivation({ cardSlots: 1 }))[1][0].placeholder).toBe('Carta');
-    expect(rows(ItemTypeEnum.weapon, { weapon: 1 }, derivation({ cardSlots: 2 }))[1].map((c) => c.placeholder)).toEqual(['Carta 1', 'Carta 2']);
+    expect(placeholders(rows(ItemTypeEnum.shield, { shield: 1 }, derivation({ cardSlots: 1 }))[1])).toEqual(['Carta']);
+    expect(placeholders(rows(ItemTypeEnum.weapon, { weapon: 1 }, derivation({ cardSlots: 2 }))[1])).toEqual(['Carta 1', 'Carta 2']);
   });
 
   it('gives the pet its loyalty chip and nothing else', () => {

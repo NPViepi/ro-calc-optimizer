@@ -12,6 +12,10 @@ export default defineConfig({
   outputDir: 'test-results',
   use: {
     baseURL,
+    // Every spec reads the Portuguese interface, so the suite opens as a reader who has
+    // already answered the first-run language dialog. Without this the dialog's backdrop
+    // and focus trap sit over the app in all of them.
+    storageState: { cookies: [], origins: [{ origin: new URL(baseURL).origin, localStorage: [{ name: 'ro-locale', value: 'pt-BR' }] }] },
     channel: process.env['PLAYWRIGHT_CHANNEL'] || (process.platform === 'win32' ? 'chrome' : undefined),
     viewport: { width: 1920, height: 918 },
     locale: 'pt-BR',

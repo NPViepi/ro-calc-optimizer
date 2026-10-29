@@ -1,6 +1,7 @@
 import { ASPD_CAP, engineHitsPerSec, hitsPerSecCurve, MAX_HITS_PER_SEC } from '../../../../utils/aspd-hits-per-sec';
 import { formatNumber, formatRate } from '../../../../utils/format-number';
 import { ASPD_LANDMARKS, AspdLandmark, gainFromAspd } from './aspd-curve.logic';
+import { Translate } from '../../../../i18n';
 interface Point {
   x: number;
   y: number;
@@ -43,7 +44,9 @@ export class AspdCurveView {
   /** The compared build's VelAtq, or null when not comparing — plotted as a second marker. */
   aspd2?: number | null;
 
-  constructor(aspd: number, aspd2?: number | null) { this.aspd = aspd; this.aspd2 = aspd2; this.update(); }
+  constructor(aspd: number, aspd2: number | null | undefined, private readonly text: Translate) {
+    this.aspd = aspd; this.aspd2 = aspd2; this.update();
+  }
 
   /** SVG user units. The viewBox is fixed; the element scales to the dialog width. */
   private static readonly W = 620;
@@ -158,17 +161,18 @@ export class AspdCurveView {
   }
 
   private buildCaption(aspd: number): void {
-    this.summaryText = `Vel.Atq ${aspd} → ${formatRate(engineHitsPerSec(aspd))} golpes/s.`;
+    this.summaryText = this.text('aspd.summary', { aspd, hits: formatRate(engineHitsPerSec(aspd)) });
 
     const gain = gainFromAspd(aspd);
     if (!gain) {
-      this.gainText = `No teto de Vel.Atq (${ASPD_CAP}), o máximo de ${formatRate(MAX_HITS_PER_SEC)} golpes/s.`;
+      this.gainText = this.text('aspd.atCap', { cap: ASPD_CAP, hits: formatRate(MAX_HITS_PER_SEC) });
       return;
     }
     // `gain.plus`, not the requested amount: near the cap the increase gets truncated,
     // and promising "+10" for what is really +9 would misprice the last stretch.
-    this.gainText =
-      `+${gain.plus} de Vel.Atq (chegar a ${gain.aspd}) levaria a ${formatRate(gain.hits)} golpes/s — ` +
-      `+${formatRate(gain.delta)}/s, ou +${formatNumber(gain.percent, 0, 1)}% de golpes.`;
+    this.gainText = this.text('aspd.gain', {
+      plus: gain.plus, aspd: gain.aspd, hits: formatRate(gain.hits),
+      delta: formatRate(gain.delta), percent: formatNumber(gain.percent, 0, 1),
+    });
   }
 }

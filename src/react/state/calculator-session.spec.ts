@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CalculatorSession } from './calculator-session';
+import { CalculatorSession, localizeItemNames } from './calculator-session';
 import { CalculatorData, CalculatorLayout, ItemShop, SlotColorPreferences } from '../services/calculator-services';
 import { DataClient } from '../services/data-client';
 import { CustomItems } from '../services/custom-items';
@@ -12,9 +12,15 @@ import { ClassName } from '../../app/jobs/_class-name';
 import { Shinkiro } from '../../app/jobs/Shinkiro';
 import { Shiranui } from '../../app/jobs/Shiranui';
 import { ItemTypeEnum } from '../../app/constants/item-type.enum';
+import { translate } from '../../app/core/i18n';
+import { LocalePreferences } from '../services/locale';
+import { DEFAULT_CATALOG } from '../../app/i18n';
 
-function makeSession(overrides: Partial<Record<DataKey, Promise<unknown>>> = {}) {
+// `storedLocale` is seeded before the store is built, because that is when a returning
+// reader's choice is read — a test that set it afterwards would always boot Portuguese.
+function makeSession(overrides: Partial<Record<DataKey, Promise<unknown>>> = {}, storedLocale?: string) {
   const values = new Map<string, string>();
+  if (storedLocale) values.set('ro-locale', storedLocale);
   const storage = { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => { values.set(key, value); }, removeItem: (key: string) => { values.delete(key); } };
   vi.stubGlobal('localStorage', storage);
   vi.stubGlobal('window', { location: new URL('https://calc.test/#/') });
@@ -24,16 +30,68 @@ function makeSession(overrides: Partial<Record<DataKey, Promise<unknown>>> = {})
   vi.stubGlobal('requestAnimationFrame', (callback: () => void) => setTimeout(callback, 0));
   const artifacts: Partial<Record<DataKey, Promise<unknown>>> = {};
   const manifest = JSON.parse(readFileSync('src/assets/data-manifest.json', 'utf8')) as DataManifest;
-  for (const key of ['itemsCore', 'monsters', 'hpsp', 'classes', 'itemViews', 'itemsDesc', 'skillDescriptions'] as const) {
+  for (const key of ['itemsCore', 'monsters', 'hpsp', 'classes', 'itemViews', 'itemsDesc', 'skillDescriptions',
+    'itemNamesEn', 'itemsDescEn'] as const) {
     artifacts[key] = Promise.resolve(JSON.parse(readFileSync(join('src', manifestPath(manifest, key)), 'utf8')));
   }
   Object.assign(artifacts, overrides);
   const data = new DataClient({ inFlight: artifacts });
   const layout = new CalculatorLayout(storage);
+  // The real store, so a test that switches language exercises the same subscription
+  // the app does; its only outside effect is `<html lang>`, which is stubbed away.
+  const locale = new LocalePreferences(storage, { setDocumentLanguage: () => undefined });
   const session = new CalculatorSession(new CalculatorData(data), new Messages(), new Confirmations(), new ItemShop(),
-    data.descriptions, new SlotColorPreferences(), layout, new CustomItems(storage));
-  return { session, storage, data, layout };
+    data.descriptions, new SlotColorPreferences(), layout, new CustomItems(storage),
+    (key, params) => translate(DEFAULT_CATALOG, key, params), locale);
+  return { session, storage, data, layout, locale };
 }
+describe('localizeItemNames', () => {
+  const core = {
+    1101: { id: 1101, name: 'Espada', enName: 'Sword' },
+    1102: { id: 1102, name: 'Katana' },
+  } as never;
+
+  it('returns the very same map when there is nothing to lay over it', () => {
+    expect(localizeItemNames(core, {})).toBe(core);
+  });
+
+  it('takes the name from the overlay', () => {
+    const out = localizeItemNames(core, { 1101: 'Sword' });
+    expect(out[1101].name).toBe('Sword');
+  });
+
+  it('keeps the name the set scripts match on when an item had none of its own', () => {
+    // `matchName` reads `enName ?? name`, so an item whose two languages agreed carried
+    // no enName at all. Renaming `name` without pinning it there would unmatch every
+    // combo that names this item as a partner.
+    const out = localizeItemNames(core, { 1102: 'Katana ES' });
+    expect(out[1102]).toMatchObject({ name: 'Katana ES', enName: 'Katana' });
+  });
+
+  it('leaves an item the client spells the same way untouched', () => {
+    const out = localizeItemNames(core, { 1102: 'Katana' });
+    expect(out[1102]).toBe(core[1102]);
+  });
+
+  it('ignores an overlay key the item table does not have', () => {
+    expect(() => localizeItemNames(core, { 9999: 'Ghost' })).not.toThrow();
+    expect(localizeItemNames(core, { 9999: 'Ghost' })[9999]).toBeUndefined();
+  });
+
+  it('does not touch the map it was given', () => {
+    localizeItemNames(core, { 1101: 'Sword', 1102: 'Katana ES' });
+    expect(core[1101].name).toBe('Espada');
+    expect(core[1102]).not.toHaveProperty('enName');
+  });
+
+  it('translates from the same starting point every time, never from the last language', () => {
+    const spanish = localizeItemNames(core, { 1102: 'Katana ES' });
+    const english = localizeItemNames(core, { 1102: 'Katana EN' });
+    expect(spanish[1102]).toMatchObject({ name: 'Katana ES', enName: 'Katana' });
+    expect(english[1102]).toMatchObject({ name: 'Katana EN', enName: 'Katana' });
+  });
+});
+
 describe('plain calculator session', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
@@ -374,5 +432,60 @@ describe('plain calculator session', () => {
     expect(rendered.at(-1)).toEqual({ url: outcome === 'success' ? shortUrl : longUrl, shortening: false });
     stop();
     session.dispose();
+  });
+});
+
+describe('item text follows the chosen language', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+
+  // 28254 is 'Retalhadora Ilusional' in Portuguese and 'Illusion Butcher' in English —
+  // a weapon whose two names share nothing, so a stale overlay cannot pass for a fresh one.
+  const ILLUSION_BUTCHER = 28254;
+
+  it('opens in Portuguese when that is what was chosen', async () => {
+    const { session } = makeSession();
+    session.start();
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(session.items[ILLUSION_BUTCHER].name).toBe('Retalhadora Ilusional');
+  });
+
+  it('opens already in English for a reader who chose it', async () => {
+    const { session, locale } = makeSession({}, 'en');
+    // The entry awaits this before it renders anything, so the calculator never starts
+    // against a language that is about to change (see mountApplication).
+    await locale.ready;
+    session.start();
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(session.items[ILLUSION_BUTCHER].name).toBe('Illusion Butcher');
+  });
+
+  it('relabels the master map when the language changes', async () => {
+    const { session, locale } = makeSession();
+    session.start();
+    await vi.advanceTimersByTimeAsync(1500);
+    await locale.select('en');
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(session.items[ILLUSION_BUTCHER].name).toBe('Illusion Butcher');
+  });
+
+  it('keeps the name the set scripts match on through a switch', async () => {
+    const { session, locale } = makeSession();
+    session.start();
+    await vi.advanceTimersByTimeAsync(1500);
+    const before = session.items[ILLUSION_BUTCHER].enName ?? session.items[ILLUSION_BUTCHER].name;
+    await locale.select('en');
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(session.items[ILLUSION_BUTCHER].enName).toBe(before);
+  });
+
+  it('reconciles a language chosen while the calculator was still booting', async () => {
+    // What the first-run dialog does: it is answered over a calculator that is already
+    // loading, so the names fetched at the start of initData are the wrong ones.
+    const { session, locale } = makeSession();
+    session.start();
+    void locale.select('en');
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(session.items[ILLUSION_BUTCHER].name).toBe('Illusion Butcher');
   });
 });

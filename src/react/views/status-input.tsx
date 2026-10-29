@@ -2,6 +2,7 @@ import { createElement } from 'react';
 import { Select } from '../ui/select';
 import { keyActivate } from '../ui/key-activate';
 import { useTooltip } from '../ui/tooltip';
+import { useText } from '../state/use-text';
 import { hoverless } from '../ui/viewport';
 import './status-input.css';
 
@@ -15,11 +16,12 @@ const signed = (value: number) => value < 0 ? String(value) : `+${value}`;
 export function StatusInput({ label, dropdownList, value, onChange, extraValue = 0, showExtra = true,
   badgeSeverity = 'info', disabled = false, extraClickable = true, compareExtraValue = null,
   otherValue = null, otherLabel = '', onExtraClick, onCompareExtraClick }: StatusInputProps) {
+  const t = useText();
   const otherText = otherValue == null || otherValue === (Number(value) || 0) ? null : String(otherValue);
   const delta = compareExtraValue != null && compareExtraValue !== extraValue;
   const clickable = !!extraValue && extraClickable;
-  const captionTip = useTooltip({ text: otherText ? `${label} - ${otherLabel}: ${otherText}` : '', position: 'top', showDelay: 300 });
-  const deltaTip = useTooltip({ text: `${label} - Comparação`, position: 'top', showDelay: 300, tap: false });
+  const captionTip = useTooltip({ text: otherText ? t('calc.statOther', { stat: label, side: otherLabel, value: otherText }) : '', position: 'top', showDelay: 300 });
+  const deltaTip = useTooltip({ text: t('calc.statCompare', { stat: label }), position: 'top', showDelay: 300, tap: false });
   return createElement('app-status-input', null, <div className="status_input">
     <div className="joined_field">
       {/* With the other build's value the label holds a tip: it takes focus, and on touch a

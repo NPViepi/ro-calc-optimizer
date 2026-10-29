@@ -1,6 +1,8 @@
 import { Fragment } from 'react';
 import { Render, displayPipe, interpolate, parseStyle, normalizeStyle, identityKey } from '../render';
+import { useText } from '../../state/use-text';
 export function Content({vm, services}: {vm: any; services: any}) {
+const t = useText();
 return <>{(() => { const body = (context: any) => { const rows = context["rows"];
 const entry = context["entry"];
 const compare = context["compare"]; return <><Render tag="div" props={{"className": ["eq-card__body"].filter(Boolean).join(' ')}}><Render tag="span" props={{"tooltipPosition": "top",
@@ -25,11 +27,11 @@ const compare = context["compare"]; return <><Render tag="div" props={{"classNam
 "tooltip": {text: vm.colorTitle, position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false},
 "reference": (value: any) => { colorAnchor = value; vm["colorAnchor"] = value; }}}><Render tag="span" props={{"className": ["eq-card__color-dot",(!(vm.color) ? "eq-card__color-dot--empty" : '')].filter(Boolean).join(' '),
 "style": normalizeStyle(Object.assign({}, {["background"]: vm.color?.hex}))}}></Render></Render>
-{(() => { const __condition4 = ((vm.colorHint && vm.colorable) && !(vm.hintDismissed));  return __condition4 ? <><Render tag="span" props={{"className": ["eq-card__color-hint"].filter(Boolean).join(' ')}}>{"Marque este slot com uma cor"}</Render></> : null; })()}
-<Render tag="span" props={{"className": ["eq-card__label"].filter(Boolean).join(' ')}}>{interpolate(["",""], [vm.descriptor.label])}</Render>
+{(() => { const __condition4 = ((vm.colorHint && vm.colorable) && !(vm.hintDismissed));  return __condition4 ? <><Render tag="span" props={{"className": ["eq-card__color-hint"].filter(Boolean).join(' ')}}>{t('eq.colorHint')}</Render></> : null; })()}
+<Render tag="span" props={{"className": ["eq-card__label"].filter(Boolean).join(' ')}}>{t(vm.descriptor.labelKey)}</Render>
 {(() => { const __condition5 = vm.item?.preRelease;  return __condition5 ? <><Render tag="span" props={{"tooltipPosition": "top",
 "className": ["pre_release_tag"].filter(Boolean).join(' '),
-"tooltip": {text: "Prévia: item ainda não lançado no LATAM — nome e descrição em inglês, do kRO/iRO (divine-pride).", position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{"Prévia"}</Render></> : null; })()}
+"tooltip": {text: t('eq.preReleaseTooltip'), position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{t('eq.preReleaseTag')}</Render></> : null; })()}
 <Render tag="span" props={{"className": ["eq-card__spacer"].filter(Boolean).join(' ')}}></Render>
 {(() => { const __condition6 = vm.comparable;  return __condition6 ? <><Render tag="button" props={{"type": "button",
 "tooltipPosition": "top",
@@ -39,27 +41,27 @@ const compare = context["compare"]; return <><Render tag="div" props={{"classNam
 "tooltip": {text: vm.compareTitle, position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{(() => { const __condition7 = vm.occupiedBy;  return __condition7 ? <><Render tag="app-icon" props={{"name": "lock",
 "style": normalizeStyle(Object.assign({}, parseStyle("font-size: 11px")))}}></Render></> : null; })()}
 {(() => { const __condition8 = !(vm.occupiedBy);  return __condition8 ? <><Render tag="span" props={{"aria-hidden": "true"}}>{"⇄"}</Render></> : null; })()}
-{interpolate([" "," "], [(vm.comparingHere ? "Comparando" : "Comparar")])}</Render></> : null; })()}
+{interpolate([" "," "], [(vm.comparingHere ? t('eq.comparing') : t('eq.compare'))])}</Render></> : null; })()}
 {(() => { const __condition9 = vm.hasContent;  return __condition9 ? <><Render tag="button" props={{"type": "button",
-"aria-label": "Limpar slot",
+"aria-label": t('eq.clearSlot'),
 "tooltipPosition": "top",
 "click": (event: any) => vm.action(() => { const $event = event; vm.clearSlot.emit() }),
 "className": ["eq-card__clear"].filter(Boolean).join(' '),
-"tooltip": {text: "Limpar slot", position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{" ✕ "}</Render></> : null; })()}</>; })()}</Render>
-{(() => { const __condition10 = vm.occupiedBy;  return __condition10 ? <><Render tag="div" props={{"className": ["eq-card__occupied"].filter(Boolean).join(' ')}}>{interpolate([""," (ocupado)"], [vm.occupiedBy])}</Render></> : null; })()}
+"tooltip": {text: t('eq.clearSlot'), position: "top", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{" ✕ "}</Render></> : null; })()}</>; })()}</Render>
+{(() => { const __condition10 = vm.occupiedBy;  return __condition10 ? <><Render tag="div" props={{"className": ["eq-card__occupied"].filter(Boolean).join(' ')}}>{t('eq.occupied', { item: vm.occupiedBy })}</Render></> : null; })()}
 {(() => { const __condition11 = !(vm.occupiedBy);  return __condition11 ? <><>{vm.mainBlockedNote ? <Render tag="div" props={{"className": ["eq-card__occupied"].filter(Boolean).join(' ')}}>{vm.mainBlockedNote}</Render> : body({"rows": vm.mainRows,"entry": vm.item,"compare": false})}
 {(() => { const __condition12 = vm.compareRows.length;  return __condition12 ? <><Render tag="div" props={{"className": ["eq-card__compare-row"].filter(Boolean).join(' ')}}><Render tag="div" props={{"className": ["eq-card__compare-actions"].filter(Boolean).join(' ')}}>{(() => { const __condition13 = vm.canSwap;  return __condition13 ? <><Render tag="button" props={{"type": "button",
-"aria-label": "Inverter: trocar este item pelo comparado",
+"aria-label": t('eq.swap'),
 "tooltipPosition": "left",
 "click": (event: any) => vm.action(() => { const $event = event; vm.swapCompare.emit() }),
 "className": ["eq-card__clear eq-card__clear--compare"].filter(Boolean).join(' '),
-"tooltip": {text: "Inverter: o item comparado passa a ser o da build, e o da build passa a ser o comparado", position: "left", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{" ⇅ "}</Render></> : null; })()}
+"tooltip": {text: t('eq.swapTooltip'), position: "left", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{" ⇅ "}</Render></> : null; })()}
 {(() => { const __condition14 = vm.hasCompareContent;  return __condition14 ? <><Render tag="button" props={{"type": "button",
-"aria-label": "Limpar a comparação deste slot",
+"aria-label": t('eq.clearSlotCompare'),
 "tooltipPosition": "left",
 "click": (event: any) => vm.action(() => { const $event = event; vm.clearCompare.emit() }),
 "className": ["eq-card__clear eq-card__clear--compare"].filter(Boolean).join(' '),
-"tooltip": {text: "Limpar a comparação deste slot", position: "left", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{" ✕ "}</Render></> : null; })()}</Render>
+"tooltip": {text: t('eq.clearSlotCompare'), position: "left", className: '', showDelay: 300, hideDelay: 0, escape: true, disabled: false}}}>{" ✕ "}</Render></> : null; })()}</Render>
 {body({"rows": vm.compareRows,"entry": vm.compareItem,"compare": true})}</Render></> : null; })()}</></> : null; })()}</Render>
 </>; })()}</>;
 }

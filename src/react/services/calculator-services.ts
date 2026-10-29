@@ -1,4 +1,5 @@
 import { Store } from '../state/store';
+import { Locale } from '../../app/core/i18n';
 import { PreviewPreferences } from './preview-preferences';
 import { StorageLike } from '../../app/core/calc-storage';
 import type { ItemSearchOpenRequest, ItemSearchEquipTarget } from '../../app/core/item-search-equipment';
@@ -17,7 +18,8 @@ export class CalculatorData {
   getHpSpTable<T>(): Promise<T> { return this.client.load('hpsp'); }
   getLatamClasses(): Promise<number[]> { return this.client.load('classes'); }
   getItemViews(): Promise<Record<string, [number, number]>> { return this.client.load('itemViews'); }
-  getItemDescriptions(): Promise<void> { return this.client.loadDescriptions(); }
+  getItemDescriptions(locale: Locale): Promise<void> { return this.client.loadDescriptions(locale); }
+  getItemNames(locale: Locale): Promise<Record<string, string>> { return this.client.loadItemNames(locale); }
   getSkillDescriptions(): Promise<void> { return this.client.loadSkillDescriptions(); }
 }
 export class CalculatorLayout {

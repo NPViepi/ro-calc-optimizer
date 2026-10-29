@@ -3,6 +3,7 @@ import { ConnectedPosition } from './layers';
 import { Portal } from './portal';
 import { sanitizeHtml } from './sanitize-html';
 import { HoverLifetime } from './hover-lifetime';
+import { useText } from '../state/use-text';
 import { hoverless, viewportBand } from './viewport';
 
 const POSITIONS: Record<string, ConnectedPosition> = {
@@ -32,6 +33,7 @@ export interface TooltipOptions {
 /** Adds no DOM wrapper, preserving the feature's native element and CSS geometry. */
 export function useTooltip({ text, position = 'right', className = '', showDelay = 0, hideDelay = 0,
   escape = true, disabled = false, describedBy, tap = true }: TooltipOptions) {
+  const t = useText();
   const id = `ui-tooltip-${useId()}`;
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [sheet, setSheet] = useState(false);
@@ -104,7 +106,7 @@ export function useTooltip({ text, position = 'right', className = '', showDelay
     ? <Portal anchor={null} origin={anchor} position="bottom" panelClass={`ui-tooltip ui-tooltip-sheet ${className}`} role="tooltip" id={id} lock={false}
       onDismiss={hide} onOutside={hide}>
       {createElement('app-ui-tooltip-content', null, <>
-        <button type="button" className="ui-tooltip-sheet-close" aria-label="Fechar descrição" onClick={hide}>✕</button>
+        <button type="button" className="ui-tooltip-sheet-close" aria-label={t('ui.closeDescription')} onClick={hide}>✕</button>
         {content}
       </>)}
     </Portal>

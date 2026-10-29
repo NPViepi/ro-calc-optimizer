@@ -1,7 +1,8 @@
 import { ViewState } from '../state/view-state';
 import { Events } from '../services/events';
 import type { SkillFormulaVersion } from '../../app/skills/skill-formula-version';
-import { itemSlotLabelPtBr } from '../../app/constants/item-slot-i18n';
+import { itemSlotLabelKey } from '../../app/constants/item-slot-i18n';
+import { Translate } from '../../app/i18n';
 import { DropdownModel } from '../../app/models/dropdown.model';
 import { dmgTypeLabel as dmgTypeLabelUtil, skillDescHtml } from '../../app/utils';
 import { RotationCycle } from '../../app/core/rotation-schedule';
@@ -119,10 +120,12 @@ export class BattleHudComponent extends ViewState {
    reductionRowClick = new Events<ReductionRow>();
    incomingReductionClick = new Events<IncomingDamageStep>();
 
-  // Display-only pt-BR for the skill damage type (see dmgTypeLabelUtil;
+  constructor(private readonly text: Translate) { super(); }
+
+  // Display-only label for the skill damage type (see dmgTypeLabelUtil;
   // the raw value still drives the [hidden] logic elsewhere, e.g. Magical-only chips).
   dmgTypeLabel(type: string): string {
-    return dmgTypeLabelUtil(type);
+    return dmgTypeLabelUtil(type, this.text);
   }
 
   // Elements without a `property_*` rule in styles.css (Neutral is the only one —
@@ -423,8 +426,8 @@ export class BattleHudComponent extends ViewState {
    *  printed a plural for a single thing. */
   get killCountLabel(): string {
     const one = this.rotationView?.cyclesToKill === 1;
-    if (this.isSingleEntryRotation) return one ? 'uso' : 'usos';
-    return one ? 'ciclo' : 'ciclos';
+    if (this.isSingleEntryRotation) return this.text(one ? 'hud.use' : 'hud.uses');
+    return this.text(one ? 'hud.cycle' : 'hud.cycles');
   }
 
   /**
@@ -496,11 +499,11 @@ export class BattleHudComponent extends ViewState {
     return !!this.dmg?.isAutoSpell;
   }
 
-  // pt-BR item-slot labels for the compare ribbon, e.g. ['boot'] -> 'Bota' — same
-  // util the compare-slot picker uses (ro-calculator.component.ts line ~341).
+  // Item-slot labels for the compare ribbon, e.g. ['boot'] -> 'Botas' — same util the
+  // compare-slot picker uses (ro-calculator.component.ts line ~341).
   get compareRibbonText(): string {
-    const slots = (this.compareItemNames || []).map((v) => itemSlotLabelPtBr(v));
-    return (this.compareStats ? ['Nível e atributos', ...slots] : slots).join(', ');
+    const slots = (this.compareItemNames || []).map((v) => this.text(itemSlotLabelKey(v)));
+    return (this.compareStats ? [this.text('eq.compareRibbonLevels'), ...slots] : slots).join(', ');
   }
 
   // --- Hero (DPS / damage per use) -------------------------------------------
@@ -637,7 +640,7 @@ export class BattleHudComponent extends ViewState {
 
   /** The popover explains two different averages, so it says which one it is showing. */
   get meanPanelTitle(): string {
-    return this.isCritWeighted ? 'Como a média por crítico é calculada' : 'Como o dano médio é calculado';
+    return this.text(this.isCritWeighted ? 'pop.howCriMean' : 'pop.howMean');
   }
 
   // True when the attack speed caps the achieved Hab./s below what the cast timings
@@ -826,7 +829,7 @@ export class BattleHudComponent extends ViewState {
       dps: this.heroPrimaryCurrent || 0,
       sumDex2Int1: this.calcSkill?.sumDex2Int1 || 0,
       aspdHitsPerSec: this.aspdCeiling(this.calcSkill, this.totalSummary?.calc?.hitPerSecs),
-    });
+    }, this.text);
   }
 }
 

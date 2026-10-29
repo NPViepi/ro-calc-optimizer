@@ -5,6 +5,15 @@ import { DescriptionStore } from '../services/data-client';
 import { Content } from '../views/content/auto-cast-hud';
 import { AutoCastSimulation } from '../../app/core/auto-cast';
 import { createMainModel } from '../../app/utils';
+import { DEFAULT_CATALOG } from '../../app/i18n';
+import { translate } from '../../app/core/i18n';
+
+// The view reads its text through a hook; called as a plain function here, it needs the
+// catalog handed to it directly. pt-BR is the source, so the assertions stay in pt-BR.
+vi.mock('../state/use-text', () => ({
+  useText: () => (key: string, params?: Record<string, string | number>) => translate(DEFAULT_CATALOG, key, params),
+  useRichText: () => (key: string, params?: Record<string, string | number>) => translate(DEFAULT_CATALOG, key, params),
+}));
 
 // Inspect the real view's element tree and run its ref callbacks without a browser.
 vi.mock('../views/render', async () => ({
@@ -23,7 +32,7 @@ function references(tree: ReactNode): any[] {
 }
 
 function hud() {
-  const vm = new AutoCastHudComponent(new DescriptionStore());
+  const vm = new AutoCastHudComponent(new DescriptionStore(), (key, params) => translate(DEFAULT_CATALOG, key, params));
   vm.model = createMainModel();
   vm.summary = { dmg: { basicMinDamage: 100, basicMaxDamage: 100 } };
   vm.simulation = {

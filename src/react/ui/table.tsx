@@ -1,4 +1,6 @@
 import { CSSProperties, HTMLAttributes, KeyboardEvent, ReactNode, createElement, useState } from 'react';
+import { fill } from '../../app/core/i18n';
+import { useText } from '../state/use-text';
 import { Icon } from './primitives';
 import { tablePage, sameRow } from './table-values';
 
@@ -26,8 +28,9 @@ export interface TableProps<T> {
 }
 export function Table<T>({ value, header, renderRow, emptyMessage, loading = false, className = '', tableStyle,
   paginator = false, rows = 10, first, totalRecords, pageLinks = 5, showCurrentPageReport = false,
-  currentPageReportTemplate = '{currentPage} de {totalPages}', selection, dataKey, onFirstChange,
+  currentPageReportTemplate, selection, dataKey, onFirstChange,
   onSelectionChange, onRowSelected, onRowUnselected }: TableProps<T>) {
+  const t = useText();
   const [localFirst, setLocalFirst] = useState(0);
   const [localSelection, setLocalSelection] = useState<T | null>(null);
   const chosen = selection === undefined ? localSelection : selection;
@@ -35,7 +38,7 @@ export function Table<T>({ value, header, renderRow, emptyMessage, loading = fal
   const { size, pageCount, page, start, displayed, pages } = tablePage(value, rows, first ?? localFirst, paginator, total, pageLinks);
   const fields: Record<string, number> = { totalRecords: total, currentPage: page + 1, totalPages: pageCount,
     first: total ? start + 1 : 0, last: Math.min(total, start + size), rows: size };
-  const report = currentPageReportTemplate.replace(/\{(\w+)\}/g, (match, key) => fields[key] == null ? match : String(fields[key]));
+  const report = () => currentPageReportTemplate ? fill(currentPageReportTemplate, fields) : t('ui.table.currentPageReport', fields);
   const go = (next: number) => {
     const offset = Math.max(0, Math.min(pageCount - 1, next)) * size;
     setLocalFirst(offset); onFirstChange?.(offset);
@@ -61,15 +64,15 @@ export function Table<T>({ value, header, renderRow, emptyMessage, loading = fal
       <thead className="ui-datatable-thead">{header}</thead>
       <tbody className="ui-datatable-tbody">{displayed.map((row, index) => renderRow(row, start + index, rowProps(row)))}{!displayed.length && emptyMessage}</tbody>
     </table></div>
-    {loading && <div className="ui-datatable-loading-overlay"><Icon name="spinner" label="Carregando" /></div>}
-    {paginator && <nav className="ui-paginator ui-component" aria-label="Paginação">
-      {showCurrentPageReport && <span className="ui-paginator-current">{report}</span>}
-      <button type="button" className="ui-paginator-first ui-paginator-element ui-link" disabled={page === 0} aria-label="Primeira página" onClick={() => go(0)}><Icon name="angle-double-left" /></button>
-      <button type="button" className="ui-paginator-prev ui-paginator-element ui-link" disabled={page === 0} aria-label="Página anterior" onClick={() => go(page - 1)}><Icon name="chevron-left" /></button>
+    {loading && <div className="ui-datatable-loading-overlay"><Icon name="spinner" label={t('ui.loading')} /></div>}
+    {paginator && <nav className="ui-paginator ui-component" aria-label={t('ui.table.pagination')}>
+      {showCurrentPageReport && <span className="ui-paginator-current">{report()}</span>}
+      <button type="button" className="ui-paginator-first ui-paginator-element ui-link" disabled={page === 0} aria-label={t('ui.table.firstPage')} onClick={() => go(0)}><Icon name="angle-double-left" /></button>
+      <button type="button" className="ui-paginator-prev ui-paginator-element ui-link" disabled={page === 0} aria-label={t('ui.table.previousPage')} onClick={() => go(page - 1)}><Icon name="chevron-left" /></button>
       <span className="ui-paginator-pages">{pages.map(number => <button key={number} type="button" className={`ui-paginator-page ui-paginator-element ui-link ${page === number ? 'ui-highlight' : ''}`}
-        aria-current={page === number ? 'page' : undefined} aria-label={`Página ${number + 1}`} onClick={() => go(number)}>{number + 1}</button>)}</span>
-      <button type="button" className="ui-paginator-next ui-paginator-element ui-link" disabled={page >= pageCount - 1} aria-label="Próxima página" onClick={() => go(page + 1)}><Icon name="chevron-right" /></button>
-      <button type="button" className="ui-paginator-last ui-paginator-element ui-link" disabled={page >= pageCount - 1} aria-label="Última página" onClick={() => go(pageCount - 1)}><Icon name="angle-double-right" /></button>
+        aria-current={page === number ? 'page' : undefined} aria-label={t('ui.table.page', { number: number + 1 })} onClick={() => go(number)}>{number + 1}</button>)}</span>
+      <button type="button" className="ui-paginator-next ui-paginator-element ui-link" disabled={page >= pageCount - 1} aria-label={t('ui.table.nextPage')} onClick={() => go(page + 1)}><Icon name="chevron-right" /></button>
+      <button type="button" className="ui-paginator-last ui-paginator-element ui-link" disabled={page >= pageCount - 1} aria-label={t('ui.table.lastPage')} onClick={() => go(pageCount - 1)}><Icon name="angle-double-right" /></button>
     </nav>}
   </div>);
 }

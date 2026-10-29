@@ -1,3 +1,5 @@
+import { translate } from '../core/i18n';
+import { DEFAULT_CATALOG } from '../i18n';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import * as Jobs from '../jobs';
@@ -175,7 +177,7 @@ describe('285 previews in the damage engine', () => {
     expect(result.dmg.skillMinDamage).toBeGreaterThan(0);
     expect(result.calcSkill.timingUnknown).toBe(true);
     expect(result.dmg.skillDps).toBe(0);
-    const view = buildRotationView({ rotation: ['Wraith Dash==3', '__basic'], summaryByValue: new Map([['Wraith Dash==3', result]]), baseSummary: result, atkSkills: job(ClassName.ArchMage).getAtkSkills(), hasSelectedChances: false });
+    const view = buildRotationView({ text: (key, params) => translate(DEFAULT_CATALOG, key, params), rotation: ['Wraith Dash==3', '__basic'], summaryByValue: new Map([['Wraith Dash==3', result]]), baseSummary: result, atkSkills: job(ClassName.ArchMage).getAtkSkills(), hasSelectedChances: false });
     expect(view.timingUnknown).toBe(true);
     expect(view.cycle.sustainedDps).toBe(0);
     expect(view.ttk).toBeNull();

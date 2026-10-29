@@ -84,8 +84,8 @@ describe('findClassSwitchLosses', () => {
     const model = buildWith({ weapon: 100, garment: 200, headUpper: 300 });
 
     expect(lossFor(model, items, new ArchMage())).toEqual([
-      { key: ItemTypeEnum.weapon, slotLabel: 'Arma', itemId: 100, itemName: 'Espada do Cavaleiro', reason: 'class' },
-      { key: ItemTypeEnum.headUpper, slotLabel: 'Topo', itemId: 300, itemName: 'Elmo do Cavaleiro', reason: 'class' },
+      { key: ItemTypeEnum.weapon, slotLabelKey: 'itemSlot.weapon', itemId: 100, itemName: 'Espada do Cavaleiro', reason: 'class' },
+      { key: ItemTypeEnum.headUpper, slotLabelKey: 'itemSlot.headUpper', itemId: 300, itemName: 'Elmo do Cavaleiro', reason: 'class' },
     ]);
   });
 
@@ -111,7 +111,7 @@ describe('findClassSwitchLosses', () => {
     expect(lossFor(model, items, new ShadowCross())).toEqual([]);
     expect(lossFor(model, items, new GuillotineCross())).toEqual([]);
     expect(lossFor(model, items, new ArchMage())).toEqual([
-      { key: ItemTypeEnum.leftWeapon, slotLabel: 'Arma Esq.', itemId: 500, itemName: 'Adaga Curta', reason: 'offHand' },
+      { key: ItemTypeEnum.leftWeapon, slotLabelKey: 'itemSlot.leftWeapon', itemId: 500, itemName: 'Adaga Curta', reason: 'offHand' },
     ]);
   });
 
@@ -211,7 +211,7 @@ describe('applyClassSwitch', () => {
     const model = buildWith({ pet: 800, petLoyalty: PetLoyalty.Baixa });
 
     // The pet list is never class-filtered, so this only happens if a caller asks for it.
-    const switched = applyClassSwitch(model, [{ key: ItemTypeEnum.pet, slotLabel: 'Pet', itemId: 800, itemName: 'Ovo', reason: 'class' }], new ArchMage());
+    const switched = applyClassSwitch(model, [{ key: ItemTypeEnum.pet, slotLabelKey: 'itemSlot.pet', itemId: 800, itemName: 'Ovo', reason: 'class' }], new ArchMage());
 
     expect(switched.pet).toBeUndefined();
     expect(switched.petLoyalty).toBe(DEFAULT_PET_LOYALTY);

@@ -118,10 +118,13 @@ test('the phone menu lists every hidden topbar action as a full-width row', asyn
   await page.setViewportSize({ width: 390, height: 844 });
   await boot(page);
   await page.getByRole('button', { name: 'Menu', exact: true }).click();
-  const rows = page.getByRole('navigation', { name: 'Menu' }).locator('.topbar-menu-row');
-  await expect(rows).toHaveCount(8);
+  const menu = page.getByRole('navigation', { name: 'Menu' });
+  // The language select rides in the same list below desktop, where the top bar is down to
+  // icons -- a control row, not one of the actions the compact bar hides.
+  await expect(menu.locator('.topbar-menu-row--control')).toHaveCount(1);
+  await expect(menu.locator('.topbar-menu-row:not(.topbar-menu-row--control)')).toHaveCount(8);
   let previousBottom = 0;
-  for (const row of await rows.all()) {
+  for (const row of await menu.locator('.topbar-menu-row').all()) {
     const box = (await row.boundingBox())!;
     expect(box.height).toBeGreaterThanOrEqual(44);
     expect(box.y).toBeGreaterThanOrEqual(previousBottom);

@@ -1,4 +1,5 @@
 import { DataKey, DataManifest, manifestPath } from '../../app/core/data-manifest';
+import { Locale } from '../../app/core/i18n';
 import { Store } from '../state/store';
 import { setSkillDescriptions } from '../../app/skills';
 
@@ -18,6 +19,17 @@ export class DescriptionStore extends Store<number> {
   }
 }
 
+/**
+ * The item text that is not Portuguese, per language.
+ *
+ * Portuguese is deliberately absent: its names are already in items-core and its
+ * descriptions in items-desc, so it is the one language that costs no extra request.
+ */
+const LOCALE_ITEM_TEXT: Partial<Record<Locale, { names: DataKey; desc: DataKey }>> = {
+  es: { names: 'itemNamesEs', desc: 'itemsDescEs' },
+  en: { names: 'itemNamesEn', desc: 'itemsDescEn' },
+};
+
 interface BootData {
   manifest?: DataManifest;
   inFlight?: Partial<Record<DataKey, Promise<unknown>>>;
@@ -27,6 +39,8 @@ interface BootData {
 export class DataClient {
   private manifest?: Promise<DataManifest>;
   private descriptionsLoad?: Promise<void>;
+  /** Which language `descriptionsLoad` is for, so a switch starts a new one. */
+  private descriptionsLocale?: Locale;
   private skillDescriptionsLoad?: Promise<void>;
   private readonly pending = new Map<DataKey, Promise<unknown>>();
   constructor(
@@ -55,15 +69,38 @@ export class DataClient {
     }
     return this.pending.get(key) as Promise<T>;
   }
-  /** Descriptions wait for core items before consuming bandwidth. */
-  loadDescriptions(): Promise<void> {
-    if (!this.descriptionsLoad) {
-      const pending = this.load('itemsCore').then(() => this.load<Record<string, string>>('itemsDesc'))
-        .then(descriptions => { this.descriptions.setDescriptions(descriptions); });
-      this.descriptionsLoad = pending;
-      void pending.catch(() => { if (this.descriptionsLoad === pending) this.descriptionsLoad = undefined; });
-    }
-    return this.descriptionsLoad;
+  /**
+   * Descriptions wait for core items before consuming bandwidth.
+   *
+   * Memoised per language rather than once: a reader who switches needs the other
+   * file, and one who switches back needs the store repopulated even though the fetch
+   * itself is still cached by `load`. The guard before publishing is what keeps a
+   * slow response for a language that was since abandoned from overwriting the one
+   * now on screen.
+   */
+  loadDescriptions(locale: Locale): Promise<void> {
+    if (this.descriptionsLocale === locale && this.descriptionsLoad) return this.descriptionsLoad;
+    const key = LOCALE_ITEM_TEXT[locale]?.desc ?? 'itemsDesc';
+    const pending = this.load('itemsCore').then(() => this.load<Record<string, string>>(key))
+      .then(descriptions => { if (this.descriptionsLocale === locale) this.descriptions.setDescriptions(descriptions); });
+    this.descriptionsLocale = locale;
+    this.descriptionsLoad = pending;
+    void pending.catch(() => {
+      if (this.descriptionsLoad === pending) { this.descriptionsLoad = undefined; this.descriptionsLocale = undefined; }
+    });
+    return pending;
+  }
+
+  /**
+   * The item names for `locale`, keyed like items-core, or nothing for Portuguese.
+   *
+   * An empty map is the honest answer for Portuguese and for any name the client spells
+   * the same in both languages: the caller lays this over items-core, so a key that is
+   * not here means the name already in items-core was right.
+   */
+  loadItemNames(locale: Locale): Promise<Record<string, string>> {
+    const key = LOCALE_ITEM_TEXT[locale]?.names;
+    return key ? this.load<Record<string, string>>(key) : Promise.resolve({});
   }
   loadSkillDescriptions(): Promise<void> {
     if (!this.skillDescriptionsLoad) {

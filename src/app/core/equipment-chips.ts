@@ -1,5 +1,6 @@
 import { EquipmentSlotDescriptor } from '../app-config/equipment-slots';
 import { ItemTypeEnum, MainItemWithRelations } from '../constants/item-type.enum';
+import { TextRef } from '../i18n';
 import { SlotDerivation } from './equipment-slot-derivation';
 
 /**
@@ -22,8 +23,8 @@ export interface Chip {
   optionIndex?: number;
   /** Position within its own kind: card socket, enchant position, option number. */
   index: number;
-  /** Shown when the chip is empty. */
-  placeholder: string;
+  /** Shown when the chip is empty — resolved wherever the chip is drawn. */
+  placeholder: TextRef;
   /** The item chip, drawn larger than the rest. */
   primary?: boolean;
   /**
@@ -66,14 +67,16 @@ export function slotOwnFields(slot: EquipmentSlotDescriptor): string[] {
   ];
 }
 
-const cardPlaceholder = (slot: EquipmentSlotDescriptor, index: number) =>
-  slot.cardFields.length > 1 ? `Carta ${index + 1}` : 'Carta';
+const cardPlaceholder = (slot: EquipmentSlotDescriptor, index: number): TextRef =>
+  slot.cardFields.length > 1 ? { key: 'chip.cardNumber', params: { number: index + 1 } } : { key: 'chip.card' };
 
 /**
  * Enchant chips keep the position number the old dropdowns showed ("Encantamento 2" for
  * the first one an armour offers), so a build people know still reads the same.
  */
-const enchantPlaceholder = (index: number) => `Encant. ${index + 1}`;
+const enchantPlaceholder = (index: number): TextRef => ({ key: 'chip.enchantNumber', params: { number: index + 1 } });
+
+const optionPlaceholder = (index: number): TextRef => ({ key: 'chip.optionNumber', params: { number: index + 1 } });
 
 export function buildChipRows(
   descriptor: EquipmentSlotDescriptor,
@@ -92,7 +95,7 @@ export function buildChipRows(
   const row2: Chip[] = [];
   const row3: Chip[] = [];
 
-  const chip = (kind: ChipKind, field: string | undefined, index: number, placeholder: string, slotKey = descriptor.key): Chip => ({
+  const chip = (kind: ChipKind, field: string | undefined, index: number, placeholder: TextRef, slotKey = descriptor.key): Chip => ({
     kind,
     slotKey,
     field,
@@ -101,24 +104,24 @@ export function buildChipRows(
   });
 
   if (showsOwnItem) {
-    if (hasItem && derivation.refineList.length) row1.push(chip('refine', `${descriptor.key}Refine`, 0, '+ 0'));
-    if (hasItem && derivation.gradeList.length) row1.push(chip('grade', `${descriptor.key}Grade`, 0, 'Grau'));
+    if (hasItem && derivation.refineList.length) row1.push(chip('refine', `${descriptor.key}Refine`, 0, { key: 'chip.refine' }));
+    if (hasItem && derivation.gradeList.length) row1.push(chip('grade', `${descriptor.key}Grade`, 0, { key: 'chip.grade' }));
 
-    row1.push({ ...chip('item', descriptor.key, 0, descriptor.label), primary: true });
+    row1.push({ ...chip('item', descriptor.key, 0, { key: descriptor.labelKey }), primary: true });
 
     if (hasItem) {
-      if (descriptor.loyalty) row1.push({ ...chip('loyalty', 'petLoyalty', 0, 'Lealdade'), clearable: false });
+      if (descriptor.loyalty) row1.push({ ...chip('loyalty', 'petLoyalty', 0, { key: 'chip.loyalty' }), clearable: false });
       // The converter and the ammo belong to the weapon being compared, not to the build:
       // "this bow with a Fire converter vs without" is the same kind of question every
       // other chip answers. The compare pass carries both across by hand, the way it
       // already does the pet's loyalty tier.
-      if (descriptor.converter) row1.push(chip('converter', 'propertyAtk', 0, 'Conversor'));
-      if (descriptor.ammo && ctx.showAmmo) row1.push(chip('ammo', ItemTypeEnum.ammo, 0, 'Munição'));
+      if (descriptor.converter) row1.push(chip('converter', 'propertyAtk', 0, { key: 'chip.converter' }));
+      if (descriptor.ammo && ctx.showAmmo) row1.push(chip('ammo', ItemTypeEnum.ammo, 0, { key: 'chip.ammo' }));
 
       if (derivation.custom) {
-        for (let index = 0; index < derivation.custom.cards; index++) row2.push({ ...chip('card', undefined, index, `Carta ${index + 1}`), custom: true });
-        for (let index = 0; index < derivation.custom.enchants; index++) row2.push({ ...chip('enchant', undefined, index, `Encant. ${index + 1}`), custom: true });
-        for (let index = 0; index < derivation.custom.bas; index++) row3.push({ ...chip('option', undefined, index, `Bônus ${index + 1}`), custom: true });
+        for (let index = 0; index < derivation.custom.cards; index++) row2.push({ ...chip('card', undefined, index, { key: 'chip.cardNumber', params: { number: index + 1 } }), custom: true });
+        for (let index = 0; index < derivation.custom.enchants; index++) row2.push({ ...chip('enchant', undefined, index, enchantPlaceholder(index)), custom: true });
+        for (let index = 0; index < derivation.custom.bas; index++) row3.push({ ...chip('option', undefined, index, optionPlaceholder(index)), custom: true });
       } else {
       descriptor.cardFields.slice(0, derivation.cardSlots).forEach((field, index) => {
         row2.push(chip('card', field, index, cardPlaceholder(descriptor, index)));
@@ -131,7 +134,7 @@ export function buildChipRows(
       });
 
       descriptor.optionIndexes.slice(0, derivation.optionSlots).forEach((optionIndex, index) => {
-        row3.push({ ...chip('option', undefined, index, `Bônus ${index + 1}`), optionIndex });
+        row3.push({ ...chip('option', undefined, index, optionPlaceholder(index)), optionIndex });
       });
       }
     }

@@ -1,7 +1,9 @@
 import { releaseVersions } from '../../releases/summary';
+import { ReleaseEntry } from '../../releases/entry-logs';
 import { ViewState } from '../state/view-state';
 import { Disposable } from '../services/events';
 import { IconName } from 'src/app/ui/icon-names';
+import { TextKey } from '../../app/i18n';
 import { environment } from 'src/environments/environment';
 import { UPDATE_DIALOG_STYLE } from '../../app/layout/dialog-geometry';
 import { CalculatorLayout as LayoutService } from '../services/calculator-services';
@@ -18,7 +20,6 @@ export class AppTopBarComponent extends ViewState {
     this.helpImproveSubscription.unsubscribe();
   }
 
-  visibleInfo: boolean = false;
   visibleReference = false;
   visibleMcp = false;
   visibleSettings = false;
@@ -27,38 +28,19 @@ export class AppTopBarComponent extends ViewState {
   /** Public MCP endpoint. Agents connect here; the browser never calls it. */
   readonly mcpUrl = environment.mcpUrl;
 
-  /** What the server is good at, phrased the way someone would actually ask. */
-  readonly mcpExamples: { icon: IconName; title: string; prompt: string; note: string }[] = [
-    {
-      icon: 'search',
-      title: 'Procurar itens',
-      prompt: 'Quais chapéus dão dano de longa distância para Falcão do Vento?',
-      note: 'Busca por nome (sem se importar com acentos), por bônus, por habilidade ou por slot. Inclui itens que existem no LATAM mas ainda não foram cadastrados aqui — esses vêm marcados.',
-    },
-    {
-      icon: 'bolt',
-      title: 'Calcular dano',
-      prompt: 'Quanto de dano essa build faz em Implosão Tóxica contra o dummy neutro?',
-      note: 'Usa o mesmo motor do simulador, então o número é idêntico ao que você vê na tela.',
-    },
-    {
-      icon: 'sort-amount-up',
-      title: 'Otimizar uma peça',
-      prompt: 'Qual a melhor arma para essa build? Testa as opções e me diz o ganho de DPS.',
-      note: 'Testa vários candidatos e devolve um link que já abre o simulador na comparação atual → simulado.',
-    },
-    {
-      icon: 'link',
-      title: 'Analisar a sua build',
-      prompt: 'Cole aqui o link do simulador — o que dá para melhorar?',
-      note: 'Qualquer link de compartilhamento (inclusive o encurtado) pode ser lido e devolvido com alterações.',
-    },
-    {
-      icon: 'table',
-      title: 'Comparar alvos e builds',
-      prompt: 'Compara o dano dessa build contra Osíris, Bafomé e Doppelganger.',
-      note: 'Também dá para pôr duas ou mais builds lado a lado contra o mesmo alvo.',
-    },
+  /**
+   * What the server is good at, phrased the way someone would actually ask.
+   *
+   * Keys rather than text: the dialog is one of the longest stretches of prose in the
+   * app, and the wording has to follow the language the reader picked. The icon is the
+   * only part of a row that is not text.
+   */
+  readonly mcpExamples: { icon: IconName; title: TextKey; prompt: TextKey; note: TextKey }[] = [
+    { icon: 'search', title: 'mcp.exampleSearch.title', prompt: 'mcp.exampleSearch.prompt', note: 'mcp.exampleSearch.note' },
+    { icon: 'bolt', title: 'mcp.exampleDamage.title', prompt: 'mcp.exampleDamage.prompt', note: 'mcp.exampleDamage.note' },
+    { icon: 'sort-amount-up', title: 'mcp.exampleOptimize.title', prompt: 'mcp.exampleOptimize.prompt', note: 'mcp.exampleOptimize.note' },
+    { icon: 'link', title: 'mcp.exampleAnalyze.title', prompt: 'mcp.exampleAnalyze.prompt', note: 'mcp.exampleAnalyze.note' },
+    { icon: 'table', title: 'mcp.exampleCompare.title', prompt: 'mcp.exampleCompare.prompt', note: 'mcp.exampleCompare.note' },
   ];
 
   // The Google form and spreadsheet are gone: everything became a card on the
@@ -70,20 +52,12 @@ export class AppTopBarComponent extends ViewState {
   readonly originalChangelogUrl =
     'https://github.com/turugrura/tong-calc-ro/blob/ba4312f/src/app/layout/app.topbar.component.ts';
 
-  infos = [
-    'Os dados de itens e habilidades vêm do cliente do RO LATAM; os de monstros, da API pública do RagnaPlace. Os links de itens, monstros e habilidades levam ao divine-pride para consulta.',
-    'Mude o tema pelo botão Config, no centro à direita.',
-    'Os dados salvos ficam no navegador; se você limpar os dados do navegador, eles também serão apagados.',
-    'Condições que dizem "a cada nível de habilidade aprendido" exigem subir o nível no campo "Learn to get bonuses" para receber o bônus; se não houver onde subir, o bônus é contado como Nv MÁX.',
-    'As opções na linha da arma ficam sempre disponíveis e podem ser usadas como "e se" (What if).',
-    'My Magical Element nas opções = aumenta o dano mágico do elemento...',
-    'Os jobs 61-64 e 66-69 recebem bônus imprecisos por falta de dados.',
-    'A aba "Summary" mostra o que foi equipado / quais habilidades foram subidas / todos os cálculos.',
-    'A aba "Equipments Summary" mostra um resumo geral dos bônus dos itens.',
-    'A aba "Item Descriptions" mostra os bônus e a descrição de cada item (para conferir se os bônus estão corretos).',
-  ];
-
-  references: { label: string; link: string; writer: string; date?: string; }[] = [
+  /**
+   * Blog write-ups behind the formulas. `label` is the post's own title and `writer`
+   * its author, so neither is translated; `labelKey` is for the one row that is this
+   * app's own wording rather than someone's post title.
+   */
+  references: { label?: string; labelKey?: TextKey; link: string; writer: string; date?: string; }[] = [
     {
       label: 'Arch Mage (2nd version)',
       writer: 'Sigma the fallen',
@@ -145,14 +119,14 @@ export class AppTopBarComponent extends ViewState {
       link: 'https://sigmathefallen.blogspot.com/2024/07/windhawk-2nd-version.html',
     },
     {
-      label: 'Referências da versão original (pré-fork)',
+      labelKey: 'topbar.originalReferences',
       writer: 'tong-calc-ro',
       link: 'https://github.com/turugrura/tong-calc-ro',
     },
   ];
 
   /** Published release history shared with Discord. */
-  updates: { v: string; date: string; logs: string[]; }[] = [];
+  updates: ReleaseEntry[] = [];
   updatesLoading = false;
   updatesError = false;
   private updatesLoad?: Promise<void>;
@@ -209,10 +183,6 @@ export class AppTopBarComponent extends ViewState {
     this.showUnreadVersion = this.unreadVersion === -1 ? releaseVersions.length + 1 : this.unreadVersion;
   }
 
-  showInfoDialog() {
-    this.visibleInfo = true;
-  }
-
   showMcpDialog() {
     this.mcpUrlCopied = false;
     this.visibleMcp = true;
@@ -236,7 +206,6 @@ export class AppTopBarComponent extends ViewState {
   openCustomItems() { this.layoutService.openCustomItems(); }
 
   get showPreviews(): boolean { return this.layoutService.previews.getSnapshot(); }
-  readonly previewOptions = [{ label: 'Sim', value: true }, { label: 'Não', value: false }];
   setShowPreviews(value: boolean): void {
     if (typeof value === 'boolean') this.layoutService.previews.set(value);
   }

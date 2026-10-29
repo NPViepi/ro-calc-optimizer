@@ -1,3 +1,4 @@
+import { Translate } from 'src/app/i18n';
 // Turns the engine's per-skill solves into everything the rotation panel draws.
 // Pure (no Angular imports), like battle-hud.logic.ts, so it is unit-testable with
 // plain Vitest. It only reshapes numbers the engine already produced — it never
@@ -201,7 +202,7 @@ function effectedDpsInputs(dmg: any, hasSelectedChances: boolean): any {
  * why this panel was already correct while the one-decimal `totalHitPerSec` had the old
  * tab reporting 60s-cooldown skills 122x too high. See docs/combo.md.
  */
-function skillDamagePerUse(dmg: any): DamageReadings {
+function skillDamagePerUse(dmg: any, text: Translate): DamageReadings {
   const steps = buildDpsSteps(dmg);
   if (!steps) return NO_DAMAGE;
 
@@ -210,12 +211,12 @@ function skillDamagePerUse(dmg: any): DamageReadings {
   const rate = dmg?.skillCriRateToMonster ?? 0;
   // skillMin/MaxDamage are already per-use totals — the card divides them by the hit count
   // to get its "cada" line — so these sit on the same scale as the mean.
-  const cri: DamageRange = { kind: 'cri', label: 'crít.', min: dmg?.skillMinDamage ?? 0, max: dmg?.skillMaxDamage ?? 0 };
+  const cri: DamageRange = { kind: 'cri', label: text('rv.rangeCrit'), min: dmg?.skillMinDamage ?? 0, max: dmg?.skillMaxDamage ?? 0 };
 
   if (isCritWeighted(canCrit, rate)) {
     const noCri: DamageRange = {
       kind: 'nocri',
-      label: 'sem crít.',
+      label: text('rv.rangeNoCrit'),
       min: dmg?.skillMinDamageNoCri ?? 0,
       max: dmg?.skillMaxDamageNoCri ?? 0,
     };
@@ -226,12 +227,12 @@ function skillDamagePerUse(dmg: any): DamageReadings {
   // rolls this build never actually takes, and naming them would be a lie.
   if (canCrit && rate >= 100) return { damage, ranges: [cri] };
 
-  return { damage, ranges: [{ ...cri, kind: 'flat', label: 'dano' }] };
+  return { damage, ranges: [{ ...cri, kind: 'flat', label: text('rv.rangeFlat') }] };
 }
 
 /** Per-use damage for ataque básico. `basicDps` is already damage x rate, so dividing by
  *  the rate recovers the damage exactly rather than re-deriving it from min/max/crit. */
-function basicDamagePerUse(summary: any, hasSelectedChances: boolean): DamageReadings {
+function basicDamagePerUse(summary: any, hasSelectedChances: boolean, text: Translate): DamageReadings {
   const dmg = summary?.dmg;
   const rate = summary?.calc?.hitPerSecs || 0;
   if (!dmg || rate <= 0) return NO_DAMAGE;
@@ -240,13 +241,13 @@ function basicDamagePerUse(summary: any, hasSelectedChances: boolean): DamageRea
   const damage = dps / rate;
   // The same two rolls damage-calculator.ts hands calcDmgDps for basicDps, so the pair the
   // row prints is the pair the mean was actually built from.
-  const plain: DamageRange = { kind: 'nocri', label: 'sem crít.', min: dmg.basicMinDamage || 0, max: dmg.basicMaxDamage || 0 };
+  const plain: DamageRange = { kind: 'nocri', label: text('rv.rangeNoCrit'), min: dmg.basicMinDamage || 0, max: dmg.basicMaxDamage || 0 };
 
   if (isCritWeighted((dmg.criRateToMonster ?? 0) > 0, dmg.criRateToMonster)) {
-    return { damage, ranges: [plain, { kind: 'cri', label: 'crít.', min: dmg.criMinDamage || 0, max: dmg.criMaxDamage || 0 }] };
+    return { damage, ranges: [plain, { kind: 'cri', label: text('rv.rangeCrit'), min: dmg.criMinDamage || 0, max: dmg.criMaxDamage || 0 }] };
   }
 
-  return { damage, ranges: [{ ...plain, kind: 'flat', label: 'dano' }] };
+  return { damage, ranges: [{ ...plain, kind: 'flat', label: text('rv.rangeFlat') }] };
 }
 
 /**
@@ -315,6 +316,8 @@ export function computeRotationTimeToKill(hp: number, cycle: RotationCycle): Tim
 }
 
 export function buildRotationView(input: {
+  /** The chosen language's lookup — the only label this builder names itself. */
+  text: Translate;
   rotation: string[];
   /** One solved `getTotalSummary()` per distinct rotation value. */
   summaryByValue: Map<string, any>;
@@ -326,7 +329,7 @@ export function buildRotationView(input: {
   rotationStacks?: number[];
   summaryByIndex?: Map<number, any>;
 }): RotationView {
-  const { rotation, summaryByValue, summaryByIndex, baseSummary, hasSelectedChances, atkSkills, skillStacks, rotationStacks } = input;
+  const { text, rotation, summaryByValue, summaryByIndex, baseSummary, hasSelectedChances, atkSkills, skillStacks, rotationStacks } = input;
 
   const metaFor = (value: string): RotationSkillMeta | undefined =>
     atkSkills?.find((s) => s.value === value || s.values?.includes(value) || s.levelList?.some((l) => l.value === value));
@@ -354,7 +357,7 @@ export function buildRotationView(input: {
     // A utility skill reads 0 from the chain already (see utility-skill-no-damage.spec.ts);
     // saying so here is what lets the row drop the readings rather than print the zeros.
     const noDamage = !basic && (!!requireTxt || !!meta?.isUtility);
-    const readings = noDamage ? NO_DAMAGE : basic ? basicDamagePerUse(summary, hasSelectedChances) : skillDamagePerUse(edmg);
+    const readings = noDamage ? NO_DAMAGE : basic ? basicDamagePerUse(summary, hasSelectedChances, text) : skillDamagePerUse(edmg, text);
 
     const occurrence = seen.get(value) ?? 0;
     seen.set(value, occurrence + 1);
@@ -363,8 +366,8 @@ export function buildRotationView(input: {
       index,
       value,
       isBasic: basic,
-      name: basic ? 'Ataque básico' : meta?.label?.replace(/\s*Nv\d+.*$/, '') || name,
-      levelLabel: basic || !level ? '' : `Nv${level}`,
+      name: basic ? text('skd.basicAttack') : meta?.label?.replace(/\s*Nv\d+.*$/, '') || name,
+      levelLabel: basic || !level ? '' : text('rv.levelChip', { level }),
       icon: meta?.icon,
       levelList: meta?.levelList ?? [],
       stackOptions: stackMax > 0 ? Array.from({ length: stackMax - stackMin + 1 }, (_, n) => ({ label: String(n + stackMin), value: n + stackMin })) : [],
@@ -373,7 +376,7 @@ export function buildRotationView(input: {
       damageRanges: readings.ranges,
       hasDamageSpread: isSpread(readings.ranges),
       contributionPercent: 0,
-      dmgTypeLabel: basic ? dmgTypeLabel('Melee') : dmgTypeLabel(summary?.calcSkill?.dmgType ?? ''),
+      dmgTypeLabel: dmgTypeLabel(basic ? 'Melee' : summary?.calcSkill?.dmgType ?? '', text),
       element: basic ? summary?.propertyAtk ?? '' : summary?.calcSkill?.propertySkill ?? '',
       propertyMultiplier: basic ? 1 : dmg?.skillPropertyMultiplier ?? 1,
       requireTxt,

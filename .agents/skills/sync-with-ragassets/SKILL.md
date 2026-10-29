@@ -121,7 +121,9 @@ Then:
 
 The data files are committed. If the sync changed anything users would notice, add
 one uniquely named `release-notes/<sync-slug>.json` fragment with
-`{"type":"patch","logs":["..."]}`. Preserve user-facing Portuguese wording and
+`{"type":"patch","logs":["..."],"logs_es":["..."],"logs_en":["..."]}`. The notes are
+published in three languages: write `logs` in Portuguese and translate it into
+`logs_es` and `logs_en`, one line each, same order. Preserve user-facing wording and
 credits. Do not bump `package.json` or edit published history; the main workflow
 allocates the next version and announces after deployment. Validate with
 `node tools/release-notes.mjs`. See `docs/releases.md`.

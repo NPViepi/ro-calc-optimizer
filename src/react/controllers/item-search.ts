@@ -9,42 +9,49 @@ import { CalculatorLayout as LayoutService, ItemShop as ItemShopService } from '
 import { SKILL_ID_BY_NAME } from 'src/app/skills';
 import { DescriptionStore as ItemDescriptionStore } from '../services/data-client';
 
-const positions: (DropdownModel & { iconKind: CustomKind })[] = [
-  { value: 'weaponList', label: 'Arma', iconKind: 'weapon' },
-  { value: 'ammoList', label: 'Munição', iconKind: 'ammo' },
-  { value: 'weaponCardList', label: 'Carta de Arma', iconKind: 'card' },
+/**
+ * The equipment positions the type filter offers, in the order they are listed.
+ * Labels are resolved per render from `itemPosition.<value>` in the catalog, so the
+ * list itself carries no text — see `itemPositions`.
+ *
+ * `as const` is load-bearing: it keeps each `value` a literal, so the view's
+ * `itemPosition.${value}` lookup is checked against the catalog's key set.
+ */
+const positions = [
+  { value: 'weaponList', iconKind: 'weapon' },
+  { value: 'ammoList', iconKind: 'ammo' },
+  { value: 'weaponCardList', iconKind: 'card' },
 
-  { value: 'shieldList', label: 'Escudo', iconKind: 'shield' },
-  { value: 'shieldCardList', label: 'Carta de Escudo', iconKind: 'card' },
+  { value: 'shieldList', iconKind: 'shield' },
+  { value: 'shieldCardList', iconKind: 'card' },
 
-  { value: 'headUpperList', label: 'Topo', iconKind: 'headUpper' },
-  { value: 'headMiddleList', label: 'Meio', iconKind: 'headMiddle' },
-  { value: 'headLowerList', label: 'Baixo', iconKind: 'headLower' },
-  { value: 'headCardList', label: 'Carta de Cabeça', iconKind: 'card' },
+  { value: 'headUpperList', iconKind: 'headUpper' },
+  { value: 'headMiddleList', iconKind: 'headMiddle' },
+  { value: 'headLowerList', iconKind: 'headLower' },
+  { value: 'headCardList', iconKind: 'card' },
 
-  { value: 'enchants', label: 'Pedra de Encantamento', iconKind: 'enchant' },
+  { value: 'enchants', iconKind: 'enchant' },
 
-  { value: 'armorList', label: 'Armadura', iconKind: 'armor' },
-  { value: 'armorCardList', label: 'Carta de Armadura', iconKind: 'card' },
-  { value: 'garmentList', label: 'Capa', iconKind: 'garment' },
-  { value: 'garmentCardList', label: 'Carta de Capa', iconKind: 'card' },
-  { value: 'bootList', label: 'Botas', iconKind: 'boot' },
-  { value: 'bootCardList', label: 'Carta de Botas', iconKind: 'card' },
-  { value: 'accList', label: 'Acessório', iconKind: 'accessory' },
-  { value: 'accCardList', label: 'Carta de Acessório', iconKind: 'card' },
+  { value: 'armorList', iconKind: 'armor' },
+  { value: 'armorCardList', iconKind: 'card' },
+  { value: 'garmentList', iconKind: 'garment' },
+  { value: 'garmentCardList', iconKind: 'card' },
+  { value: 'bootList', iconKind: 'boot' },
+  { value: 'bootCardList', iconKind: 'card' },
+  { value: 'accList', iconKind: 'accessory' },
+  { value: 'accCardList', iconKind: 'card' },
 
-  { value: 'petList', label: 'Pet', iconKind: 'pet' },
+  { value: 'petList', iconKind: 'pet' },
 
-  { value: 'costumeList', label: 'Visual', iconKind: 'costumeUpper' },
+  { value: 'costumeList', iconKind: 'costumeUpper' },
 
-  { value: 'shadowWeaponList', label: 'Arma Sombria', iconKind: 'shadowWeapon' },
-  { value: 'shadowArmorList', label: 'Armadura Sombria', iconKind: 'shadowArmor' },
-  { value: 'shadowShieldList', label: 'Escudo Sombrio', iconKind: 'shadowShield' },
-  { value: 'shadowBootList', label: 'Botas Sombrias', iconKind: 'shadowBoot' },
-  { value: 'shadowEarringList', label: 'Brinco Sombrio', iconKind: 'shadowEarring' },
-  { value: 'shadowPendantList', label: 'Pingente Sombrio', iconKind: 'shadowPendant' },
-];
-
+  { value: 'shadowWeaponList', iconKind: 'shadowWeapon' },
+  { value: 'shadowArmorList', iconKind: 'shadowArmor' },
+  { value: 'shadowShieldList', iconKind: 'shadowShield' },
+  { value: 'shadowBootList', iconKind: 'shadowBoot' },
+  { value: 'shadowEarringList', iconKind: 'shadowEarring' },
+  { value: 'shadowPendantList', iconKind: 'shadowPendant' },
+] as const satisfies readonly { value: string; iconKind: CustomKind }[];
 
 export class ItemSearchComponent extends ViewState {
   items: Record<number, ItemModel> = {};
@@ -70,9 +77,8 @@ export class ItemSearchComponent extends ViewState {
   ) { super(); }
 
   isShowSearchDialog = false;
-  readonly itemPositionOptions = positions;
+  readonly itemPositions = positions;
   readonly bonusNameList = ITEM_SEARCH_BONUS_OPTIONS;
-  readonly yesNoOptions = [{ label: 'Sim', value: true }, { label: 'Não', value: false }];
   searchName = '';
   selectedItemPositions: string[] = [];
   selectedOffensiveSkills: string[] = [];
