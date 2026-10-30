@@ -443,6 +443,15 @@ export const METALIC_SOUND: AtkSkillModel = {
   finalDmgFormula: (input) => input.damage * 2,
 };
 
+/** The two 4th-class arrow-magic skills below (5357 and 5356) share this pair: the
+ * element comes from the equipped arrow, and the skill needs a whip or an instrument
+ * plus one arrow to consume. */
+const ammoElement: AtkSkillModel['getElement'] = (_skillValue, input) => input?.ammoElement || ElementType.Neutral;
+const requireInstrumentAndArrow: AtkSkillModel['verifyItemFn'] = ({ weapon, model }) => {
+  if (!weapon.isType('instrument', 'whip')) return 'instrument, whip';
+  return model.ammo ? '' : 'Flecha';
+};
+
 /** Arranjo Musical (TR_SOUNDBLEND, 5357). The LATAM client supplies the
  * level table and says base level and SPL scale the damage. The second-version
  * class reference used by the other Troubadour/Trouvere formulas gives
@@ -458,12 +467,48 @@ export const SOUND_BLEND: AtkSkillModel = {
   vct: 1,
   cd: 0,
   isMatk: true,
-  getElement: (_skillValue, input) => input?.ammoElement || ElementType.Neutral,
-  verifyItemFn: ({ weapon, model }) => {
-    if (!weapon.isType('instrument', 'whip')) return 'instrument, whip';
-    return model.ammo ? '' : 'Flecha';
-  },
+  getElement: ammoElement,
+  verifyItemFn: requireInstrumentAndArrow,
   formula: ({ model, skillLevel, status }) => (skillLevel * 120 + status.totalSpl * 2.5) * (model.level / 100),
+};
+
+/** Fúria Estridente (TR_METALIC_FURY, 5356).
+ *
+ * 900% per level is the client table, and the LATAM skill-rebalance notice of
+ * 29/10/2026 states the pre-patch skill as "4500% 4950%" at Nv5, i.e. the same 900%
+ * per level with a ×1,1 against a target under [Desarranjo Musical]:
+ * https://ro.gnjoyamericas.com/pt/news/notice/446
+ * The SPL term is the wiki's formula, "{Dano + [(FEI ÷ 2) × (Nv. de Presença de
+ * Palco)]} × (Nv. base ÷ 100)": https://browiki.org/wiki/F%C3%BAria_Estridente
+ *
+ * The wiki also tables a further ×1,1 per extra marked target around the main one (up
+ * to 5, 1.350% at Nv1). That is deliberately not modelled here: a stack picker on this
+ * entry would be inherited by the 21/12/2022 version, whose own ratio ignores it. The
+ * 02/06/2022 version already offers it, in `rebalance-2026.ts`.
+ *
+ * Sinfonia Mística does not boost it — the client lists only Arranjo Musical, Disparo
+ * Rítmico and Atirar Rosas, so 5356 is absent from `MysticSymphonyFn`'s bonus. */
+export const METALLIC_FURY: AtkSkillModel = {
+  name: 'Metallic Fury',
+  // Bare name, not "Metallic Fury Lv5": `resolveRebalancedSkill` rebuilds the level list
+  // as `${label} Nv${n}`, so a label carrying a level renders "Fúria Estridente Lv5 Nv1"
+  // in the rebalance versions' picker.
+  label: 'Metallic Fury',
+  value: 'Metallic Fury==5',
+  levelList: allLevels('Metallic Fury', 5),
+  // Timings from the client feed row for 5356.
+  acd: 0.3,
+  fct: 0,
+  vct: 0,
+  cd: 0.3,
+  isMatk: true,
+  getElement: ammoElement,
+  verifyItemFn: requireInstrumentAndArrow,
+  formula: ({ model, skillLevel, status, skills }) => {
+    const marked = skills.isActive('_Debuf_Sonic_Brand') ? 1.1 : 1;
+    const stageManner = status.totalSpl * 0.5 * skills.learnedLevel('Stage Manner');
+    return (skillLevel * 900 * marked + stageManner) * (model.level / 100);
+  },
 };
 
 export const SEVERE_RAINSTORM: AtkSkillModel = {

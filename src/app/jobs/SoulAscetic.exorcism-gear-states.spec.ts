@@ -139,6 +139,8 @@ function sim(t: number, opts: { totem?: boolean; fiveElements?: boolean; db?: an
 
   m.selectedAtkSkill = EXORCISM;
   const calc = new Calculator().setMasterItems(db).setHpSpTable(hpSpTable).setClass(cls);
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  m.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(m);
   new CalculatorController().runChain(calc, {
     monster: monsters[TARGET],

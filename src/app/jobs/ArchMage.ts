@@ -5,6 +5,7 @@ import { EquipmentSummaryModel } from '../models/equipment-summary.model';
 import { AdditionalBonusInput } from '../models/info-for-class.model';
 import { DamageFormulaCalc } from '../models/damage-summary.model';
 import { SKILL_ID_BY_NAME } from '../skills';
+import { isLatamBaseline } from '../skills/skill-formula-version';
 import { SOUL_VULCAN_STRIKE } from '../skills/shared-skills';
 import { addBonus, floor, formatCalcNumber, genSkillList } from '../utils';
 import { Warlock } from './Warlock';
@@ -694,7 +695,7 @@ export class ArchMage extends Warlock {
       1: [['Violent Quake', -50]],
       3: [['All Bloom', 300], ['Violent Quake', 200], ['Destructive Hurricane', 150]],
       5: [['Destructive Hurricane', -20]],
-    } : params.model.skillFormulaVersion === 'rebalance-2022-06' ? {
+    } : isLatamBaseline(params.model.skillFormulaVersion) ? {
       1: [['Violent Quake', -50]],
       3: [['All Bloom', 300], ['Violent Quake', 200], ['Destructive Hurricane', 200]],
       5: [['Destructive Hurricane', 50]],

@@ -5,7 +5,7 @@ import { EquipmentSummaryModel } from '../models/equipment-summary.model';
 import { AdditionalBonusInput } from '../models/info-for-class.model';
 import { addBonus } from '../utils';
 import { Minstrel } from './Minstrel';
-import { SOUND_BLEND } from '../skills/shared-skills';
+import { METALLIC_FURY, SOUND_BLEND } from '../skills/shared-skills';
 import { ActiveSkillModel, AtkSkillFormulaInput, AtkSkillModel, PassiveSkillModel } from './_character-base.abstract';
 import { ClassName } from './_class-name';
 
@@ -166,6 +166,7 @@ export class Troubadour extends Minstrel {
   private readonly classNames4th = [ClassName.Only_4th, ClassName.Troubadour];
   private readonly atkSkillList4th: AtkSkillModel[] = [
     SOUND_BLEND,
+    METALLIC_FURY,
     {
       name: 'Rhythm Shooting',
       label: '[V2] Rhythm Shooting Lv5',

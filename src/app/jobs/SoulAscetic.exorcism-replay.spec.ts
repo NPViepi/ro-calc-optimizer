@@ -142,6 +142,8 @@ function sim(souls: number, totem: boolean) {
   model.rawOptionTxts = rawOpts;
 
   const calc: any = new Calculator().setMasterItems(items).setHpSpTable(hpSpTable).setClass(cls);
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  model.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(model);
   new CalculatorController().runChain(calc, {
     monster: monsters[TARGET], equipAtks, masteryAtks,

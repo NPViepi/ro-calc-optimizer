@@ -52,7 +52,7 @@ describe('285/65 preview coverage', () => {
     }
     for (const { classes, skill } of PREVIEW_285_ATTACKS) for (const name of classes) {
       const cls = job(name);
-      for (const version of ['current', 'rebalance-2022-06', 'rebalance-2026-02'] as const) {
+      for (const version of ['current', 'pre-rebalance', 'rebalance-2026-02'] as const) {
         expect(cls.getAtkSkills(version).find(s => s.value === skill.value)?.preview).toBe(true);
       }
       expect(cls.atkSkills.some(s => s.name === skill.name)).toBe(false);

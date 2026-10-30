@@ -5,6 +5,7 @@ import { RuneKnight } from './RuneKnight';
 import { ActiveSkillModel, AtkSkillFormulaInput, AtkSkillModel, PassiveSkillModel } from './_character-base.abstract';
 import { ClassName } from './_class-name';
 import type { AdditionalBonusInput } from '../models/info-for-class.model';
+import { isLatamBaseline } from '../skills/skill-formula-version';
 
 const jobBonusTable: Record<number, [number, number, number, number, number, number]> = {
   1: [1, 0, 0, 0, 0, 0],
@@ -152,8 +153,11 @@ const TraitBonusTable: Record<number, [number, number, number, number, number, n
   70: [10, 7, 3, 5, 7, 8],
 };
 
-/** Dragonic Breath's base ATQ% per level (irowiki). */
-const DRAGONIC_BREATH_BASE = [400, 700, 1100, 1450, 1800, 2150, 2500, 2850, 3200, 3550];
+/**
+ * Dragonic Breath's base ATQ% per level, from the client's own table (28/10/2026).
+ * irowiki had 700 at Nv2; the client says 750, and every other level agrees.
+ */
+const DRAGONIC_BREATH_BASE = [400, 750, 1100, 1450, 1800, 2150, 2500, 2850, 3200, 3550];
 
 // https://browiki.org/wiki/Espada_Alada — basic melee attacks consume one sword.
 const SERVANT_WEAPON_AUTO_CAST: ClassAutoCastDefinition = {
@@ -289,15 +293,15 @@ export class DragonKnight extends RuneKnight {
         return (skillLevel * 600 + totalPow * 5 + weight * baseWeaponLevel) * (baseLevel / 100);
       },
     },
-    // Dragonic Breath (DK_DRAGONIC_BREATH, 6001) is a preview: a real kRO/iRO Dragon Knight
-    // skill that LATAM has not received yet. It was removed on 17/08/2026 for exactly that
-    // reason — absent from the ragassets skill feed and from bROWiki's Cavaleiro Draconiano
-    // tree — and comes back on request so a build can be priced ahead of the patch. With
-    // no client entry there is no pt-BR name, no description and no icon: the catalog
-    // labels it "(Prévia)" under its English name rather than inventing a translation (the
-    // invented "Sopro Draconiano" was the original bug, card Os9aJKTI1icMvZqAOsup), and the
-    // picker hides the icon that 404s. Everything below is irowiki's
-    // (https://irowiki.org/wiki/Dragonic_Breath) and no recording has checked it.
+    // Dragonic Breath (DK_DRAGONIC_BREATH, 6001) arrived with the 28/10/2026 client, which
+    // ships its pt-BR name ("Baforada Draconiana"), its description and its delay row. It
+    // had been removed on 17/08/2026 because LATAM did not have it and its pt-BR label had
+    // been invented ("Sopro Draconiano", card Os9aJKTI1icMvZqAOsup), then came back on
+    // 14/09/2026 as a preview under its English name. The client's table now confirms the
+    // irowiki transcription at every level but Nv2 (750, not 700) and confirms these four
+    // delay fields exactly. The HP/SP/POW terms are still irowiki's: the client names them
+    // without numbers, and no recording has checked them.
+    // https://irowiki.org/wiki/Dragonic_Breath
     {
       name: 'Dragonic Breath',
       label: 'Dragonic Breath Lv10',
@@ -373,7 +377,7 @@ export class DragonKnight extends RuneKnight {
 
   override setAdditionalBonus(params: AdditionalBonusInput) {
     super.setAdditionalBonus(params);
-    if (params.model.skillFormulaVersion === 'rebalance-2022-06' && this.isSkillActive('Vigor')) {
+    if (isLatamBaseline(params.model.skillFormulaVersion) && this.isSkillActive('Vigor')) {
       // The existing control selects Nv10; the third rebalance raises 200/50 to 250/100.
       params.totalBonus.flatBasicDmg = (params.totalBonus.flatBasicDmg || 0) + 50;
       params.totalBonus.vigorBasicRaceDmg = (params.totalBonus.vigorBasicRaceDmg || 0) + 50;

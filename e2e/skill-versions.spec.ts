@@ -17,7 +17,7 @@ const PREVIEW_ITEM = (() => {
   return hit.name.replace(/\s*\[\d+\]$/, '');
 })();
 
-for (const version of ['rebalance-2022-06', 'rebalance-2026-02'] as const) test('formula selectors synchronize and persist: ' + version, async ({ page }) => {
+for (const version of ['pre-rebalance', 'rebalance-2026-02'] as const) test('formula selectors synchronize and persist: ' + version, async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.addInitScript(() => {
@@ -30,12 +30,12 @@ for (const version of ['rebalance-2022-06', 'rebalance-2026-02'] as const) test(
   const battle = page.getByRole('region',{name:'Batalha',exact:true});
   const selector = battle.getByRole('combobox',{name:'Versão das fórmulas de habilidades'});
   await expect(selector).toHaveValue('current');
-  await expect(selector.locator('option')).toHaveText(['Atual (LATAM)', 'Rebalance - 02/06/2022 - (kRO)', 'Rebalance - 21/12/2022 - (kRO)']);
+  await expect(selector.locator('option')).toHaveText(['Atual (LATAM)', 'Pré-rebalanceamento (até 28/10/2026)', 'Rebalance - 21/12/2022 - (kRO)']);
   const referencesButton = battle.getByRole('button', { name: 'Referências dos rebalanceamentos', exact: true });
   await referencesButton.click();
   const references = page.getByRole('region', { name: 'Referências dos rebalanceamentos', exact: true });
   await expect(references).toContainText('As datas indicam quando cada rebalanceamento chegou ao kRO (servidor coreano).');
-  await expect(references.getByRole('heading')).toHaveText(['Rebalance - 02/06/2022 - (kRO)', 'Rebalance - 21/12/2022 - (kRO)']);
+  await expect(references.getByRole('heading')).toHaveText(['Atual (LATAM) — Rebalance 02/06/2022 (kRO)', 'Rebalance - 21/12/2022 - (kRO)']);
   const sourceUrls = [
     'https://ro.gnjoy.com/news/notice/View.asp?BBSMode=10001&seq=7600&curpage=1',
     'https://www.divine-pride.net/forum/index.php?/topic/3723-kro-jobs-improvement-project/page/13/#comment-11126',

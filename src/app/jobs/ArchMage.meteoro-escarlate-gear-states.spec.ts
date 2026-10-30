@@ -95,6 +95,8 @@ function run(r: any, m: any, opts: { monster: string; skill: string; actives?: R
     .getSkillBonusAndName();
   m.selectedAtkSkill = opts.skill;
   const calc = new Calculator().setMasterItems(items).setHpSpTable(hpSpTable).setClass(cls);
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  m.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(m);
   new CalculatorController().runChain(calc, {
     monster: monsters[opts.monster], equipAtks, masteryAtks, buffEquips: {}, buffMasterys: {}, consumeData: [],

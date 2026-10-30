@@ -105,7 +105,7 @@ describe('Invocação do Abismo autocast', () => {
     expect(miss.dps).toBe(hit.dps);
   });
 
-  it.each<SkillFormulaVersion>(['current', 'rebalance-2022-06', 'rebalance-2026-02'])(
+  it.each<SkillFormulaVersion>(['current', 'pre-rebalance', 'rebalance-2026-02'])(
     'reuses the native magical damage and hit count for %s', version => {
       const { calc, simulate } = prepare(5, 0, version);
       const native = calc.solveAutoCast('From the Abyss==5');

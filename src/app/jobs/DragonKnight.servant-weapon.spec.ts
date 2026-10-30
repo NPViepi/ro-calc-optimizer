@@ -44,7 +44,9 @@ describe('Espada Alada autocast', () => {
     expect(source.source.skillLevel).toBe(level);
     expect(source.source.chance).toBe(chance);
     expect(source.activationsPerSecond).toBeCloseTo(4 * chance / 100);
-    expect(source.summary.baseSkillDamage).toBe((200 + 50 * level + 5 * model.pow) * 2);
+    // The client's table is 900% to 2.500% in steps of 400 (`500 + 400 * Nv`); the
+    // pre-rebalance build read `200 + 50 * Nv`. See skill-ratio-client-table.spec.ts.
+    expect(source.summary.baseSkillDamage).toBe((500 + 400 * level + 5 * model.pow) * 2);
     expect(source.summary.dmgType).toBe('Melee');
     expect(source.canCrit).toBe(true);
     expect(source.criticalRate).toBeGreaterThan(0);

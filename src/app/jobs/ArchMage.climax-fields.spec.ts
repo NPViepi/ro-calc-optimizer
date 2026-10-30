@@ -172,11 +172,13 @@ describe('Potencializar Magia reshapes the three skills level by level', () => {
 
   it.each([
     { climax: 0, bloom: 0, quake: 0, hurricane: 0 },
+    // The rebalance's steps: Nv2 stops penalising Florescer, Nv3 triples the three
+    // bonuses and Nv5 drops Tufão Destrutivo's from 70 to 50.
     { climax: 1, bloom: 0, quake: -50, hurricane: 0 },
-    { climax: 2, bloom: -50, quake: 0, hurricane: 0 },
-    { climax: 3, bloom: 100, quake: 100, hurricane: 100 },
+    { climax: 2, bloom: 0, quake: 0, hurricane: 0 },
+    { climax: 3, bloom: 300, quake: 200, hurricane: 200 },
     { climax: 4, bloom: 0, quake: 0, hurricane: 0 },
-    { climax: 5, bloom: 0, quake: 0, hurricane: 70 },
+    { climax: 5, bloom: 0, quake: 0, hurricane: 50 },
   ])('Nv$climax puts its damage step on the skill-id bonus, where gear adds too', ({ climax, bloom, quake, hurricane }) => {
     const { totalBonus } = simulate({ skill: 'Destructive Hurricane==5', actives: { Climax: climax } });
 
@@ -185,11 +187,12 @@ describe('Potencializar Magia reshapes the three skills level by level', () => {
     expect(totalBonus[SKILL_ID_BY_NAME['Destructive Hurricane']] || 0).toBe(hurricane);
   });
 
-  it('Nv3 roughly doubles Tufão Destrutivo on a bare build', () => {
+  it('Nv3 roughly triples Tufão Destrutivo on a bare build', () => {
     const plain = simulate({ skill: 'Destructive Hurricane==5' }).max;
     const climax = simulate({ skill: 'Destructive Hurricane==5', actives: { Climax: 3 } }).max;
 
-    expect(climax / plain).toBeCloseTo(2, 2);
+    // +200 on the baseline, where the pre-rebalance build gave +100.
+    expect(climax / plain).toBeCloseTo(3, 2);
   });
 });
 

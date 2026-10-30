@@ -39,6 +39,10 @@ const EM_SKILLS_REPLAY = {
 
 function damageOf(base: BuildInput, atkSkill: string, extra: Partial<BuildInput> = {}): number {
   const rb = resolveBuild({ ...base, ...extra, atkSkill }, dataset);
+  // Both recordings predate the 28/10/2026 client, so they measure the pre-rebalance
+  // formulas. `BuildInput` carries no version, so an agent always gets today's numbers;
+  // pinning it here keeps the parity check comparing like with like.
+  (rb.model as any).skillFormulaVersion = 'pre-rebalance';
   const calc = solve(rb, dataset, dataset.monsters[DUMMY_NEUTRAL]);
   const out = projectResult(calc, rb);
   return out['damage'].skill.max;

@@ -223,8 +223,13 @@ describe('Insígnia on the caster, Nv2 and Nv3', () => {
       const cls = new ArchMage();
       cls.setLearnSkills({ activeSkillIds: cls.activeSkills.map(() => 0), passiveSkillIds: cls.passiveSkills.map(() => 0) });
       cls.getSkillBonusAndName();
-      const skill = cls.atkSkills.find((s) => s.name === 'Rock Down') as AtkSkillModel;
-      const ratio = skill.formula({ skillLevel: 5, model: { level: 250 }, status: { totalSpl: 100 } } as any);
+      // The baseline catalog, so the ratio matches what `simulate` actually pays.
+      const skill = cls.getAtkSkills().find((s) => s.name === 'Rock Down') as AtkSkillModel;
+      // The baseline formula reads Potencializar Magia, which `simulate` leaves unlearned.
+      const ratio = skill.formula({
+        skillLevel: 5, model: { level: 250 }, status: { totalSpl: 100 },
+        skills: { activeLevel: () => 0, isActive: () => false, learnedLevel: () => 0 },
+      } as any);
 
       const plain = simulate({ skill: EARTH_SKILL }).max;
       const insignia = simulate({ skill: EARTH_SKILL, buffs }).max;

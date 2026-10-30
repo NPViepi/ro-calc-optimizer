@@ -7,7 +7,7 @@ import { createMainModel } from '../utils/create-main-model';
 import { Inquisitor } from './Inquisitor';
 import { AtkSkillFormulaInput } from './_character-base.abstract';
 
-const versions: SkillFormulaVersion[] = ['current', 'rebalance-2022-06', 'rebalance-2026-02'];
+const versions: SkillFormulaVersion[] = ['current', 'pre-rebalance', 'rebalance-2026-02'];
 const items = JSON.parse(readFileSync('src/assets/demo/data/item.json', 'utf8'));
 const monsters = JSON.parse(readFileSync('src/assets/demo/data/monster.json', 'utf8'));
 const hpSpTable = JSON.parse(readFileSync('src/assets/demo/data/hp_sp_table.json', 'utf8'));
@@ -46,13 +46,13 @@ describe('Fogueira Espiritual across formula versions', () => {
 
   it.each([[0, 1], [5, 1], [6, 2], [10, 2], [15, 3]])('compares the same %i spheres without losing hits when switching rebalance', (spheres, hits) => {
     for (const level of [1, 5]) {
-      const current = solve('current', spheres, level);
-      expect(current.skillTotalHit).toBe(hits);
-      for (const version of versions.slice(1)) {
+      const legacy = solve('pre-rebalance', spheres, level);
+      expect(legacy.skillTotalHit).toBe(hits);
+      for (const version of ['current', 'rebalance-2026-02'] as const) {
         const rebalanced = solve(version, spheres, level);
-        expect(rebalanced.skillTotalHit).toBe(current.skillTotalHit);
-        expect(rebalanced.skillMinDamage).toBeGreaterThan(current.skillMinDamage);
-        expect(rebalanced.skillMaxDamage).toBeGreaterThan(current.skillMaxDamage);
+        expect(rebalanced.skillTotalHit).toBe(legacy.skillTotalHit);
+        expect(rebalanced.skillMinDamage).toBeGreaterThan(legacy.skillMinDamage);
+        expect(rebalanced.skillMaxDamage).toBeGreaterThan(legacy.skillMaxDamage);
       }
     }
   });

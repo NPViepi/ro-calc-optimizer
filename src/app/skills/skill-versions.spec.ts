@@ -53,9 +53,9 @@ describe('February rebalance coverage and isolation', () => {
       }
       // Neither requesting the new catalog nor switching back mutates a legacy object.
       expect(cls.atkSkills).toEqual(oldSkills);
-      const current = cls.getAtkSkills('current');
+      const legacy = cls.getAtkSkills('pre-rebalance');
       for (const old of oldSkills) {
-        const restored = current.find(s => s.value === old.value);
+        const restored = legacy.find(s => s.value === old.value);
         expect(restored.cd).toBe(old.cd);
         expect(restored.totalHit).toBe(old.totalHit);
         if (!['Unlucky Rush','Chain Reaction Shot','Red Flame Cannon','Cold Blooded Cannon','Thundering Cannon','Golden Dragon Cannon'].includes(old.name)) expect(restored.formula).toBe(old.formula);
@@ -186,7 +186,7 @@ describe('275/60 previews, including buffs and recovery', () => {
     const charms = previewBuffsForClass(ClassName.Shinkiro).filter(s => s.name.startsWith('_Preview_Four Colors'));
     expect(charms).toHaveLength(4);
     expect(charms.every(s => s.label.includes('Prévia') && !s.exclusiveGroup)).toBe(true);
-    for(const version of ['current','rebalance-2022-06','rebalance-2026-02'] as const) {
+    for(const version of ['current','pre-rebalance','rebalance-2026-02'] as const) {
       const cannon = cls.getAtkSkills(version).find(s => s.name === 'Red Flame Cannon');
       const off = input(cls,10);
       const on = input(cls,10,{'_Preview_Four Colors Fire':1,'_Preview_Four Colors Water':1});
@@ -198,7 +198,7 @@ describe('275/60 previews, including buffs and recovery', () => {
 
   it('applies Chasing to existing attacks and to the preview hit counts', () => {
     const cls = job(ClassName.AbyssChaser);
-    for(const version of ['current','rebalance-2022-06','rebalance-2026-02'] as const) {
+    for(const version of ['current','pre-rebalance','rebalance-2026-02'] as const) {
       const skill = cls.getAtkSkills(version).find(s => s.name === 'Unlucky Rush');
       expect(skill.formula(input(cls,5,{'_Preview_Chasing':1})) - skill.formula(input(cls,5))).toBe(12500);
     }
@@ -225,7 +225,7 @@ describe('version persistence and the real damage pipeline', () => {
     const monsters = JSON.parse(readFileSync('src/assets/demo/data/monster.json','utf8'));
     const table = JSON.parse(readFileSync('src/assets/demo/data/hp_sp_table.json','utf8'));
     const cls = job(ClassName.ArchMage);
-    function solve(version: 'current'|'rebalance-2026-02', name = 'Soul Vulcan Strike==5') {
+    function solve(version: 'pre-rebalance'|'rebalance-2026-02', name = 'Soul Vulcan Strike==5') {
       const bonuses = cls.getSkillBonusAndName();
       const model = {...createMainModel(),class:cls.classId,level:250,jobLevel:1,int:130,dex:130,spl:100,selectedAtkSkill:name,skillFormulaVersion:version};
       const calc = new Calculator().setMasterItems(items).setHpSpTable(table).setClass(cls);
@@ -233,13 +233,13 @@ describe('version persistence and the real damage pipeline', () => {
       new CalculatorController().runChain(calc,{monster:monsters['21077'],...bonuses,buffEquips:{},buffMasterys:{},consumeData:[],aspdPotion:undefined,extraOptionScripts:[],selectedAtkSkill:name,selectedChances:[],usedHpL:false} as any);
       return {calc,damage:(calc as any).damageSummary};
     }
-    const before = solve('current');
+    const before = solve('pre-rebalance');
     const after = solve('rebalance-2026-02');
     expect(after.damage.baseSkillDamage).toBeGreaterThan(before.damage.baseSkillDamage);
     expect(after.calc.atkSkills.find(s=>s.name==='Frozen Slash').cd).toBe(0.45);
     const autocast = after.calc.solveAutoCast('Soul Vulcan Strike==5',cls.atkSkills.find(s=>s.name==='Soul Vulcan Strike'));
     expect(autocast.baseSkillDamage).toBe(after.damage.baseSkillDamage);
-    expect(solve('current').damage).toEqual(before.damage);
+    expect(solve('pre-rebalance').damage).toEqual(before.damage);
     const astral = solve('rebalance-2026-02','Astral Strike==10').damage;
     expect(astral.skillTotalHit).toBe(1);
     expect(astral.skillMaxDamage2).toBeGreaterThan(astral.skillMaxDamage);

@@ -128,6 +128,32 @@ on the first paint, so the next change to spend it should say what it bought, ex
 as this paragraph does; the ceiling is not the budget, and each raise makes the real
 cost of the next one harder to see.
 
+The LATAM rebalance and Fúria Estridente moved it again, 3,722,800 to 3,723,208. The
+408 bytes, measured per input against `origin/main`:
+
+| input | bytes |
+|---|---|
+| `src/app/skills/shared-skills.ts` | +360 |
+| `src/app/skills/skill-formula-version.ts` | +112 |
+| `src/app/i18n/pt-br.ts` | +85 |
+| `src/app/skills/rebalance-2026.ts` | −166 |
+| the five job files that read the version | −56 |
+| `skill-meta.generated.ts`, `preview-275.ts` | −7 |
+| chunk framing, attributed to no input | +80 |
+
+`shared-skills.ts` carries `METALLIC_FURY` and the two helpers it now shares with
+`SOUND_BLEND`; `skill-formula-version.ts` grew by the third selector option and
+`isLatamBaseline`; the pt-BR catalog grew by `formula.preRebalance` and the reworded
+`formula.rebalance2022`. `rebalance-2026.ts` paid part of it back, because `Astral
+Strike` collapsed to the later bundle's patch and three version comparisons became one
+predicate. The alternative catalogs grew by the same two keys and are not in the figure,
+as above. Startup moved with it, 2,399,481 to 2,399,809 — still 20,191 bytes under
+`initialError`, and the warning stays where the responsive layer left it.
+
+The 505-byte Linux/Windows gap described above is closed: this machine now measures
+3,722,800 on `origin/main` and 3,723,208 on this branch, both exactly what CI reports,
+so the baseline is again a figure either side can reproduce.
+
 The final simplify pass removed the unused portal view argument, redundant
 virtual-list end state and a duplicate filesystem probe. It also consolidated
 imports and removed stale CDK comments without changing interaction contracts.
