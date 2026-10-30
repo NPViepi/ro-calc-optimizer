@@ -11,6 +11,7 @@
  * See that spec for the replay sources and the EXTRA_INT explanation.
  */
 import { describe, expect, it } from 'vitest';
+import { defaultAtkSkill } from 'src/app/core/rotation';
 import { loadDatasetFromDisk } from '../data/dataset.node';
 import { BuildInput, resolveBuild } from './build-input';
 import { projectResult } from './project';
@@ -38,6 +39,10 @@ const EM_SKILLS_REPLAY = {
 
 function damageOf(base: BuildInput, atkSkill: string, extra: Partial<BuildInput> = {}): number {
   const rb = resolveBuild({ ...base, ...extra, atkSkill }, dataset);
+  // Both recordings predate the 28/10/2026 client, so they measure the pre-rebalance
+  // formulas. `BuildInput` carries no version, so an agent always gets today's numbers;
+  // pinning it here keeps the parity check comparing like with like.
+  (rb.model as any).skillFormulaVersion = 'pre-rebalance';
   const calc = solve(rb, dataset, dataset.monsters[DUMMY_NEUTRAL]);
   const out = projectResult(calc, rb);
   return out['damage'].skill.max;
@@ -92,7 +97,7 @@ describe('facade derivation', () => {
 
   it('falls back to the class default when the attack skill is unknown', () => {
     const rb = resolveBuild({ class: 4261, atkSkill: 'Not A Real Skill==9' }, dataset);
-    expect((rb.model as any).selectedAtkSkill).toBe(rb.char.atkSkills[0].value);
+    expect((rb.model as any).selectedAtkSkill).toBe(defaultAtkSkill(rb.char.atkSkills));
   });
 
   it('rejects a class that is not released on LATAM', () => {

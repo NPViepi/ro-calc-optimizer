@@ -11,7 +11,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildItemViews, buildLatamClasses, buildLatamItems, SLOT_BIT } from './sync-latam-db.mjs';
+import { buildItemViews, buildLatamClasses, buildLatamItems, buildLocaleItems, SLOT_BIT } from './sync-latam-db.mjs';
 
 const FIXTURES = join(process.cwd(), 'tools/__fixtures__');
 const readFixture = (file: string) => JSON.parse(readFileSync(join(FIXTURES, file), 'utf8'));
@@ -92,5 +92,38 @@ describe('sync-latam-db: contrato das tabelas /raw', () => {
       const ids = table.map((row: any) => row.id);
       expect(ids).toEqual([...ids].sort((a: number, b: number) => a - b));
     }
+  });
+});
+
+describe('sync-latam-db: latam-items-<locale>.json', () => {
+  const localeItems = buildLocaleItems(rawItems);
+
+  it('keeps the same rows the Portuguese table keeps', () => {
+    // Both run the "no name, no row" rule, which is what lets build-web-data pair them
+    // up by key without deciding all over again which items exist on LATAM.
+    expect(Object.keys(localeItems)).toEqual(Object.keys(latamItems));
+  });
+
+  it('carries the text and nothing else', () => {
+    // Slots and the aegis name are not language. Repeating them would add megabytes to
+    // the repository and give a client update two places to disagree with itself.
+    for (const entry of Object.values(localeItems) as any[]) {
+      expect(Object.keys(entry).sort()).toEqual(
+        entry.description === undefined ? ['name'] : ['description', 'name'],
+      );
+    }
+  });
+
+  it('omits the description rather than writing an empty one', () => {
+    const noDescription = rawItems.filter((it: any) => it.name && !it.description);
+    expect(noDescription.length).toBeGreaterThan(0);
+    for (const it of noDescription) expect(localeItems[it.id]).not.toHaveProperty('description');
+  });
+
+  it('inherits the id order of the /raw table, like the others', () => {
+    // These files are reviewed by diff after every client update; a reordering would
+    // bury the real changes under fourteen thousand fake ones.
+    const ids = rawItems.filter((it: any) => it.name).map((it: any) => String(it.id));
+    expect(Object.keys(localeItems)).toEqual(ids);
   });
 });

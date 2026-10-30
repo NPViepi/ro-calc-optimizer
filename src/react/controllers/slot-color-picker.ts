@@ -2,6 +2,7 @@ import { ViewState } from '../state/view-state';
 import { Events } from '../services/events';
 import { MAX_SLOT_COLOR_LABEL, SLOT_COLORS, SlotColor, SlotColorLabels, slotColorLabel } from 'src/app/core/slot-colors';
 import { SlotColorPickerEvent, SlotColorPickerRequest } from '../../app/layout/pages/ro-calculator/slot-color-picker/slot-color-picker.model';
+import { Translate } from 'src/app/i18n';
 
 /**
  * The slot-highlight palette, as a panel: pick a colour, clear it, or rename one.
@@ -26,7 +27,8 @@ export class SlotColorPickerComponent extends ViewState {
   draft = '';
 
   constructor(
-) { super();}
+    private readonly text: Translate,
+  ) { super();}
 
   init(request: SlotColorPickerRequest, labels: SlotColorLabels): void {
     this.value = request.value ?? null;
@@ -35,7 +37,12 @@ export class SlotColorPickerComponent extends ViewState {
   }
 
   labelOf(color: SlotColor): string {
-    return slotColorLabel(color, this.labels);
+    return slotColorLabel(color, this.labels, this.text);
+  }
+
+  /** The palette's own name, which is what an empty box restores. */
+  defaultLabelOf(color: SlotColor): string {
+    return this.text(color.labelKey);
   }
 
   trackColor = (_: number, color: SlotColor) => color.id;
@@ -66,7 +73,7 @@ export class SlotColorPickerComponent extends ViewState {
 
     const next = { ...this.labels };
     const trimmed = this.draft.trim().slice(0, MAX_SLOT_COLOR_LABEL);
-    if (trimmed && trimmed !== color.label) next[color.id] = trimmed;
+    if (trimmed && trimmed !== this.defaultLabelOf(color)) next[color.id] = trimmed;
     else delete next[color.id];
 
     this.labels = next;

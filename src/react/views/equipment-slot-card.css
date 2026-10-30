@@ -53,10 +53,14 @@ app-equipment-slot-card{
   font: inherit;
   cursor: pointer;
 }
-:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color:hover,
+@media (hover: hover){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color:hover,
 :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__clear:hover{
   border-color: #304562;
-}
+}}
+@media (hover: none){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color:active,
+:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__clear:active{
+  border-color: #304562;
+}}
 :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color{
 
   margin-right: -10px;
@@ -65,13 +69,21 @@ app-equipment-slot-card{
 :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color--idle{
   cursor: not-allowed;
 }
-:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color--idle:hover{
+@media (hover: hover){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color--idle:hover{
   border-color: transparent;
-}
-:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color--idle .eq-card__color-dot--empty,
-:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color--idle:hover .eq-card__color-dot--empty{
+}}
+@media (hover: none){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color--idle:active{
+  border-color: transparent;
+}}
+:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color--idle .eq-card__color-dot--empty{
   border-color: rgb(255 255 255 / 14%);
 }
+@media (hover: hover){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color--idle:hover .eq-card__color-dot--empty{
+  border-color: rgb(255 255 255 / 14%);
+}}
+@media (hover: none){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color--idle:active .eq-card__color-dot--empty{
+  border-color: rgb(255 255 255 / 14%);
+}}
 :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color-dot{
   width: 11px;
   height: 11px;
@@ -81,9 +93,12 @@ app-equipment-slot-card{
   background: transparent;
   border: 1px solid rgb(255 255 255 / 35%);
 }
-:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color:hover .eq-card__color-dot--empty{
+@media (hover: hover){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color:hover .eq-card__color-dot--empty{
   border-color: rgb(255 255 255 / 70%);
-}
+}}
+@media (hover: none){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color:active .eq-card__color-dot--empty{
+  border-color: rgb(255 255 255 / 70%);
+}}
 :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__compare{
   display: inline-flex;
   align-items: center;
@@ -116,9 +131,12 @@ app-equipment-slot-card{
   color: rgb(255 255 255 / 45%);
   font-size: 12px;
 }
-:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__clear:hover{
+@media (hover: hover){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__clear:hover{
   color: rgb(255 255 255 / 85%);
-}
+}}
+@media (hover: none){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__clear:active{
+  color: rgb(255 255 255 / 85%);
+}}
 :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__color-hint{
   position: absolute;
   top: calc(100% + 6px);
@@ -224,7 +242,11 @@ app-equipment-slot-card{
 :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__clear--compare{
   color: rgb(253 216 125 / 55%);
 }
-:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__clear--compare:hover{
+@media (hover: hover){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__clear--compare:hover{
   border-color: rgb(253 216 125 / 45%);
   color: #fdd87d;
-}
+}}
+@media (hover: none){:is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__clear--compare:active{
+  border-color: rgb(253 216 125 / 45%);
+  color: #fdd87d;
+}}

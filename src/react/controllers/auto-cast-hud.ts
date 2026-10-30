@@ -13,12 +13,14 @@ import { ItemModel } from '../../app/models/item.model';
 import { dmgTypeLabel } from '../../app/utils/dmg-type-label';
 import { PopoverHandle as UiPopoverComponent } from '../ui/popover-handle';
 import { SelectHandle as UiSelectComponent } from '../ui/select';
+import { Translate } from '../../app/i18n';
 
 
 export class AutoCastHudComponent extends ViewState {
    skillFormulaVersionChange = new Events<SkillFormulaVersion>();
   constructor(
 public readonly itemDescriptions: ItemDescriptionStore,
+  private readonly text: Translate,
   ) { super();}
 
    simulation: AutoCastSimulation | null = null;
@@ -166,10 +168,10 @@ public readonly itemDescriptions: ItemDescriptionStore,
     const damageRanges = basicAttackDamageRanges(dmg, sim.criticalRate);
     return {
       key: 'basic-attack',
-      name: 'Ataque básico', level: '', isBasic: true, icon: 0,
+      name: this.text('skd.basicAttack'), level: '', isBasic: true, icon: 0,
       meta: [
-        { text: `Acerto efetivo ${sim.effectiveHitRate.toFixed(1).replace('.', ',')}%`, effectiveHit: true },
-        { text: `${sim.basicHitsPerSecond.toFixed(2).replace('.', ',')} golpes/s` },
+        { text: this.text('ac.metaEffectiveHit', { rate: sim.effectiveHitRate.toFixed(1).replace('.', ',') }), effectiveHit: true },
+        { text: this.text('ac.metaHitsPerSec', { value: sim.basicHitsPerSecond.toFixed(2).replace('.', ',') }) },
         { text: `${sim.criticalRate.toFixed(1).replace('.', ',')}%`, critical: true },
       ],
       damageRanges, dps: sim.basicAttackDps,
@@ -178,7 +180,7 @@ public readonly itemDescriptions: ItemDescriptionStore,
       comparisonDps: this.isComparing ? this.simulation2?.basicAttackDps : undefined,
       contribution: sim.totalDps > 0 ? sim.basicAttackDps / sim.totalDps * 100 : 0,
       contribution2: undefined,
-      info: 'Dano direto ponderado por crítico, acerto e Vel.Atq.',
+      info: this.text('ac.basicInfo'),
       expectedDamagePerActivation: sim.basicHitsPerSecond > 0 ? sim.basicAttackDps / sim.basicHitsPerSecond : 0,
       activationsPerSecond: sim.attacksPerSecond,
       summary: this.displayedSummary?.dmg,
@@ -197,7 +199,7 @@ public readonly itemDescriptions: ItemDescriptionStore,
       return [
         { text: source.source.sourceName, origin: true },
         { text: extraHitOutcomes.map((outcome) => `${(outcome.chance * 100).toFixed(0)}%`).join(' + '), chance: true },
-        { text: `${extraHitOutcomeRate(source.triggerAttacksPerSecond, extraHitOutcomes).toFixed(2).replace('.', ',')} golpes extras/s` },
+        { text: this.text('ac.metaExtraHitsPerSec', { value: extraHitOutcomeRate(source.triggerAttacksPerSecond, extraHitOutcomes).toFixed(2).replace('.', ',') }) },
         ...(source.canCrit ? [{ text: `${source.criticalRate.toFixed(1).replace('.', ',')}%`, critical: true, critical2: compared?.criticalRate }] : []),
       ];
     }
@@ -210,9 +212,11 @@ public readonly itemDescriptions: ItemDescriptionStore,
   }
   sourceInfo(source: AutoCastResult): string {
     const limit = source.source.maxActivationsPerSecond;
-    return `${source.source.sourceName}: chance independente por ataque elegível.`
-      + (limit == null ? '' : ` DPS sustentado estimado, limitado a ${limit.toFixed(2).replace('.', ',')} ativações/s `
-        + (source.source.skillId === 5283 ? 'pela recarga de Petitio.' : 'pela reposição do recurso; reserva inicial não incluída.'));
+    return this.text('ac.sourceInfo', { source: source.source.sourceName })
+      + (limit == null
+        ? ''
+        : this.text(source.source.skillId === 5283 ? 'ac.sourceLimitCooldown' : 'ac.sourceLimitResource',
+          { limit: limit.toFixed(2).replace('.', ',') }));
   }
   originTooltip(source: any, descriptionVersion?: number): string {
     void descriptionVersion;
@@ -225,7 +229,7 @@ public readonly itemDescriptions: ItemDescriptionStore,
   contributionTooltip(source: any): string {
     const percent = Number(source?.contribution ?? 0).toFixed(1).replace('.', ',');
     const total = Math.round(this.displayedSimulation?.totalDps ?? 0).toLocaleString('pt-BR');
-    return `Contribuição desta fonte no DPS total — ${percent}% dos ${total} de DPS`;
+    return this.text('ac.tipContribution', { percent, total });
   }
   openDamage(source: any, branch: 'nocri' | 'cri' | 'flat', event: Event, popovers: any, target?: EventTarget | null): void {
     this.activeSource = source;
@@ -286,7 +290,7 @@ public readonly itemDescriptions: ItemDescriptionStore,
         isBasic: source.isBasic,
         // `solveAutoCast()` returns the per-skill damage summary directly, unlike
         // Batalha's full summary where these values live under `calcSkill`.
-        dmgTypeLabel: source.isBasic ? undefined : dmgTypeLabel(summary?.dmgType ?? ''),
+        dmgTypeLabel: source.isBasic ? undefined : dmgTypeLabel(summary?.dmgType ?? '', this.text),
         element: source.isBasic ? undefined : summary?.skillPropertyAtk,
         propertyMultiplier: source.isBasic ? undefined : summary?.skillPropertyMultiplier,
         hasDamageSpread: source.damageRanges?.length > 1,
@@ -300,21 +304,21 @@ public readonly itemDescriptions: ItemDescriptionStore,
     }, anchor);
   }
   private triggerLabel(trigger: string | undefined): string {
-    if (trigger === 'physical-attack') return 'Ataque físico, mesmo se errar';
-    if (trigger === 'melee-physical-attack') return 'Ataque físico corpo a corpo, mesmo se errar';
-    if (trigger === 'magic-attack') return 'Uso de habilidade mágica';
-    if (trigger === 'melee-physical-hit') return 'Ataque físico corpo a corpo que acertar';
-    if (trigger === 'ranged-physical-hit') return 'Ataque físico à distância que acertar';
-    return 'Ataque físico que acertar';
+    if (trigger === 'physical-attack') return this.text('ac.triggerPhysical');
+    if (trigger === 'melee-physical-attack') return this.text('ac.triggerMelee');
+    if (trigger === 'magic-attack') return this.text('ac.triggerMagic');
+    if (trigger === 'melee-physical-hit') return this.text('ac.triggerMeleeHit');
+    if (trigger === 'ranged-physical-hit') return this.text('ac.triggerRangedHit');
+    return this.text('ac.triggerPhysicalHit');
   }
   get activeTriggerLabel(): string {
     return this.triggerLabel(this.activeSource?.result?.source?.trigger);
   }
   get activeTriggerRateLabel(): string {
     const trigger = this.activeSource?.result?.source?.trigger;
-    if (trigger === 'magic-attack') return 'Usos mágicos/s';
-    return trigger === 'physical-attack' || trigger === 'melee-physical-attack'
-      ? 'Ataques/s' : 'Ataques elegíveis/s';
+    if (trigger === 'magic-attack') return this.text('ac.rateMagic');
+    return this.text(trigger === 'physical-attack' || trigger === 'melee-physical-attack'
+      ? 'ac.rateAttacks' : 'ac.rateEligible');
   }
   get basicDpsSteps(): BasicDpsBreakdown | null {
     const sim = this.simulation;

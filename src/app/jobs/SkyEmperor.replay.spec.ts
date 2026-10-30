@@ -139,6 +139,8 @@ function danoDe(
   model.jobSpl = bonus.spl; model.jobCon = bonus.con; model.jobCrt = bonus.crt;
   if (weapon) { model.weapon = weapon; model.weaponRefine = refine; }
   model.selectedAtkSkill = skillValue;
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  model.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(model);
 
   new CalculatorController().runChain(calc, {

@@ -41,12 +41,12 @@ const EXCEPTIONS: Record<string, { fields: Field[]; why: string; }> = {
  * one has to be looked at rather than quietly skipped.
  */
 const NO_CLIENT_ROW = new Set([
+  51, // Esconderijo (Hiding): entrada de rotação sem dano, e o cliente não traz a linha
   214, // Ataque Surpresa (Sightless Mind)
   2239, // Bomba Relógio (Bomb Cluster): no client delay row
   2243, // Investida de Worg (Wug Strike)
   2308, // Toque do Oblívio (Banishing Point)
   2593, // Chute Solar (Blaze Kick)
-  6001, // Dragonic Breath — a preview skill LATAM has not received, so the client has no row
 ]);
 
 const at = (value: number | number[], level: number): number => (Array.isArray(value) ? value[level - 1] : value);

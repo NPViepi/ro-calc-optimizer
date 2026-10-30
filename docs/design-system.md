@@ -110,6 +110,13 @@ outros ambientes, instale Chromium com `pnpm exec playwright install chromium`.
 `PLAYWRIGHT_CHANNEL` permite escolher outro canal. `UI_TEST_URL` aponta para um
 servidor já em execução; sem essa variável o runner inicia o dev server.
 
+No CI a suíte roda em `windows-latest` a cada pull request (`e2e.yml`).
+`pnpm e2e:ci` executa todos os testes com as comparações de imagem desligadas,
+porque as referências carregam o Chrome e as fontes de uma máquina só. A
+comparação de `appearance.spec.ts` roda em seguida apenas como aviso: registra a
+diferença e publica o relatório, sem reprovar a pull request. Conferir uma mudança
+visual segue sendo trabalho local.
+
 `appearance.spec.ts` compara estados reais no mesmo navegador/plataforma. As
 referências partiram do pós-pull (`150eff06`) e foram revistas para incorporar
 os ajustes solicitados de espaçamento da barra superior e foco, após corrigir

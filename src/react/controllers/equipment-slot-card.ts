@@ -6,6 +6,7 @@ import { DescriptionStore as ItemDescriptionStore } from '../services/data-clien
 import { Chip, buildChipRows } from 'src/app/core/equipment-chips';
 import { SlotDerivation } from 'src/app/core/equipment-slot-derivation';
 import { ItemTypeEnum } from 'src/app/constants/item-type.enum';
+import { Translate, resolveText } from 'src/app/i18n';
 import { SlotColor, slotColorLabel } from 'src/app/core/slot-colors';
 import { PetLoyalty } from 'src/app/constants/pet-loyalty';
 import { DropdownModel } from 'src/app/models/dropdown.model';
@@ -46,6 +47,12 @@ export class EquipmentSlotCardComponent extends ViewState {
    compareDerivation!: SlotDerivation;
   /** Name of the multi-slot head gear that already fills this position, if any. */
    occupiedBy: string | null = null;
+  /**
+   * Why the main build has no picker here while the compared one does — the shield row
+   * against a two-handed weapon. Unlike `occupiedBy` it leaves the comparison alone: the
+   * row is on screen precisely so the other build can be given a shield.
+   */
+   mainBlockedNote: string | null = null;
   /** Slot keys currently in the comparison. */
    comparing: ReadonlySet<string> = new Set();
   /** False when the class or the weapon takes no ammo. */
@@ -80,6 +87,7 @@ export class EquipmentSlotCardComponent extends ViewState {
     private readonly colorPicker: SlotColorPreferences,
     private readonly layoutService: LayoutService,
 public readonly itemDescriptions: ItemDescriptionStore,
+    private readonly text: Translate,
   ) { super();}
 
   refreshInputs(): void {
@@ -131,9 +139,11 @@ public readonly itemDescriptions: ItemDescriptionStore,
   }
 
   get colorTitle(): string {
-    if (!this.colorable) return 'Escolha um item para poder destacar este slot';
+    if (!this.colorable) return this.text('eq.colorNeedsItem');
 
-    return this.color ? `Destaque: ${slotColorLabel(this.color, this.colorPicker.labels)}` : 'Destacar este slot com uma cor';
+    return this.color
+      ? this.text('eq.colorCurrent', { color: slotColorLabel(this.color, this.colorPicker.labels, this.text) })
+      : this.text('eq.colorPick');
   }
 
   onPickColor(anchor: HTMLElement): void {
@@ -152,8 +162,8 @@ public readonly itemDescriptions: ItemDescriptionStore,
 
   get compareTitle(): string {
     return this.occupiedBy
-      ? `Comparação indisponível: este espaço está ocupado por ${this.occupiedBy}, que é usado em outro slot. Compare no slot que carrega o item.`
-      : 'Ligar ou desligar a comparação deste slot';
+      ? this.text('eq.compareLocked', { holder: this.occupiedBy })
+      : this.text('eq.compareToggle');
   }
 
   /** See EquipmentGridComponent.trackSlot — the rows are rebuilt on every refresh. */
@@ -210,7 +220,7 @@ public readonly itemDescriptions: ItemDescriptionStore,
       : chip.kind === 'option' ? model?.['rawOptionTxts']?.[chip.optionIndex!] : model?.[chip.field!];
     const empty: ChipView = {
       chip,
-      text: chip.placeholder,
+      text: resolveText(this.text, chip.placeholder),
       filled: false,
       icon: null,
       elementClass: null,
@@ -247,7 +257,7 @@ public readonly itemDescriptions: ItemDescriptionStore,
         return refine > 0 ? { ...empty, text: `+ ${refine}`, filled: true } : empty;
       }
       case 'grade': {
-        const grade = GRADE_LABELS.get(String(raw)) ?? `Grau ${raw}`;
+        const grade = GRADE_LABELS.get(String(raw)) ?? this.text('eq.gradeValue', { grade: String(raw) });
         return { ...empty, text: grade, filled: true };
       }
       case 'loyalty': {
@@ -323,19 +333,21 @@ public readonly itemDescriptions: ItemDescriptionStore,
   private pickerTitle(chip: Chip): string {
     switch (chip.kind) {
       case 'item':
-        return this.descriptor.key === ItemTypeEnum.pet ? 'Selecionar ovo' : `Selecionar ${this.descriptor.label}`;
+        return this.descriptor.key === ItemTypeEnum.pet
+          ? this.text('eq.pickEgg')
+          : this.text('eq.pickItem', { slot: this.text(this.descriptor.labelKey) });
       case 'refine':
-        return 'Refino';
+        return this.text('eq.pickRefine');
       case 'grade':
-        return 'Grau';
+        return this.text('eq.pickGrade');
       case 'loyalty':
-        return 'Lealdade do pet';
+        return this.text('eq.pickLoyalty');
       case 'converter':
-        return 'Conversor de elemento';
+        return this.text('eq.pickConverter');
       case 'ammo':
-        return 'Munição';
+        return this.text('eq.pickAmmo');
       default:
-        return chip.placeholder;
+        return resolveText(this.text, chip.placeholder);
     }
   }
 }

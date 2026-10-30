@@ -194,11 +194,11 @@ export class Windhawk extends Ranger {
   private readonly classNames4th = [ClassName.Only_4th, ClassName.Windhawk];
   private readonly atkSkillList4th: AtkSkillModel[] = [
     ...([
-      { name: 'Solid Trap', element: ElementType.Earth, cd: 20 },
-      { name: 'Flame Trap', element: ElementType.Fire, cd: 30 },
-      { name: 'Deep Blind Trap', element: ElementType.Dark, cd: 30 },
-      { name: 'Swift Trap', element: ElementType.Wind, cd: 30 },
-    ] as const).map(({ name, element, cd }): AtkSkillModel => ({
+      { name: 'Solid Trap', element: ElementType.Earth },
+      { name: 'Flame Trap', element: ElementType.Fire },
+      { name: 'Deep Blind Trap', element: ElementType.Dark },
+      { name: 'Swift Trap', element: ElementType.Wind },
+    ] as const).map(({ name, element }): AtkSkillModel => ({
       name,
       label: `${name} Lv5`,
       labelSuffix: '1 pulso',
@@ -207,7 +207,9 @@ export class Windhawk extends Ranger {
       acd: 0.5,
       fct: 1,
       vct: 1,
-      cd,
+      // The client gives all four traps the same 2,5 s cooldown; the 20/30 s the fork
+      // carried was the field's lifetime, not the recast.
+      cd: 2.5,
       isMelee: true,
       element,
       // One damage pulse. The field's later timed pulses are not part of the rotation.
@@ -219,7 +221,7 @@ export class Windhawk extends Ranger {
       name: 'Crescive Bolt',
       label: '[V3] Crescive Bolt Lv10',
       value: 'Crescive Bolt==10',
-      acd: 0.5,
+      acd: 0.3,
       fct: 1,
       vct: 1,
       cd: 0.15,
@@ -244,7 +246,7 @@ export class Windhawk extends Ranger {
       acd: 0.15,
       fct: 0.5,
       vct: 1,
-      cd: 2,
+      cd: 1.5,
       hit: 5,
       canCri: () => this.isSkillActive('Calamity Gale'),
       // Gale Storm crits apply only half of the crit-damage gear (like Hawk Rush's 0.25).
@@ -369,7 +371,7 @@ export class Windhawk extends Ranger {
         }
       }
 
-      if ((!params.model.skillFormulaVersion || params.model.skillFormulaVersion === 'current') && (skillName === 'Crescive Bolt' || skillName === 'Gale Storm')) {
+      if (params.model.skillFormulaVersion === 'pre-rebalance' && (skillName === 'Crescive Bolt' || skillName === 'Gale Storm')) {
         totalBonus.p_race_fish = (totalBonus.p_race_fish || 0) + 50;
         totalBonus.p_element_water = (totalBonus.p_element_water || 0) + 50;
       }

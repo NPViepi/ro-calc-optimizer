@@ -507,9 +507,12 @@
   text-decoration: none;
 }
 
-.item-description-links a:hover {
+@media (hover: hover){.item-description-links a:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){.item-description-links a:active{
+  text-decoration: underline;
+}}
 
 .item-description-bonuses {
   padding: 0.75rem;
@@ -552,9 +555,12 @@ a.skill_link {
   text-decoration: none;
   cursor: pointer;
 }
-a.skill_link:hover {
+@media (hover: hover){a.skill_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){a.skill_link:active{
+  text-decoration: underline;
+}}
 
 .summary_stat_atk {
   /* background-color: var(--surface-0); */
@@ -753,13 +759,6 @@ a.skill_link:hover {
   margin-bottom: 14px;
 }
 
-@media (max-width: 768px) {
-  .hud-selectors-row {
-    flex-direction: column;
-    gap: 8px;
-  }
-}
-
 .dropdown_monster_group_label {
   background-color: var(--green-900);
   color: white;
@@ -783,9 +782,12 @@ a.skill_link:hover {
   transition: text-decoration-color 0.12s ease;
 }
 
-.bonus_clickable:hover {
+@media (hover: hover){.bonus_clickable:hover{
   text-decoration: underline dotted currentColor;
-}
+}}
+@media (hover: none){.bonus_clickable:active{
+  text-decoration: underline dotted currentColor;
+}}
 
 .bonus_breakdown_list {
   list-style: none;
@@ -854,9 +856,12 @@ a.skill_link:hover {
   text-decoration: none;
 }
 
-.bonus_breakdown_calc_link:hover {
+@media (hover: hover){.bonus_breakdown_calc_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){.bonus_breakdown_calc_link:active{
+  text-decoration: underline;
+}}
 
 .bonus_breakdown_calc_link .ui-icon {
   font-size: 0.7rem;
@@ -885,9 +890,12 @@ a.skill_link:hover {
   align-items: center;
 }
 
-.monster_id_link:hover {
+@media (hover: hover){.monster_id_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){.monster_id_link:active{
+  text-decoration: underline;
+}}
 
 .img_monster {
   /* transparent — ragassets renders the sprite with an alpha background */
@@ -1225,13 +1233,20 @@ a.skill_link:hover {
 }
 
 ::ng-deep app-ro-calculator .ui-accordion-tab .ui-highlight > button,
-::ng-deep .ui-scope-app-ro-calculator .ui-accordion-tab .ui-highlight > button,
-::ng-deep app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover,
-::ng-deep .ui-scope-app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover {
+::ng-deep .ui-scope-app-ro-calculator .ui-accordion-tab .ui-highlight > button {
   color: var(--primary-color-text) !important;
   background: var(--primary-color) !important;
   /* color: white !important;
   background: var(--indigo-800) !important; */
+}
+/* Hover only where a pointer can hover: a tap would leave the header lit. Its specificity
+   already beats the header's own background, so it needs no !important. */
+@media (hover: hover) {
+  ::ng-deep app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover,
+  ::ng-deep .ui-scope-app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover {
+    color: var(--primary-color-text);
+    background: var(--primary-color);
+  }
 }
 
 /* Party-emblem job icons are natively 25x25. The Expanded 4th classes have no
@@ -1259,9 +1274,12 @@ a.skill_link:hover {
   cursor: pointer;
   transition: border-color 0.15s, background-color 0.15s;
 }
-.replay-dropzone:hover {
+@media (hover: hover){.replay-dropzone:hover{
   border-color: var(--primary-color);
-}
+}}
+@media (hover: none){.replay-dropzone:active{
+  border-color: var(--primary-color);
+}}
 .replay-dropzone.dragover {
   border-color: var(--primary-color);
   background-color: var(--surface-100);
@@ -1791,9 +1809,12 @@ a.skill_link:hover {
   white-space: nowrap;
   cursor: pointer;
 }
-.stats_compare_toggle:hover:not(:disabled) {
+@media (hover: hover){.stats_compare_toggle:hover:not(:disabled){
   color: #fdd87d;
-}
+}}
+@media (hover: none){.stats_compare_toggle:active:not(:disabled){
+  color: #fdd87d;
+}}
 .stats_compare_toggle--on {
   padding: 0 6px;
   border-color: rgb(253 216 125 / 55%);
@@ -1968,14 +1989,3 @@ a.skill_link:hover {
   white-space: nowrap;
 }
 
-@media (max-width: 1100px) {
-  .auto-cast-beta-alert {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .auto-cast-beta-actions {
-    flex-wrap: wrap;
-    margin-left: 0;
-  }
-}

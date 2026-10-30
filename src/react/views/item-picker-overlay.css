@@ -102,10 +102,15 @@
   font-style: italic;
   color: var(--picker-muted);
 }
-:is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__row--active,
-:is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__row:hover{
+:is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__row--active{
   background: var(--picker-hover);
 }
+@media (hover: hover){:is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__row:hover{
+  background: var(--picker-hover);
+}}
+@media (hover: none){:is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__row:active{
+  background: var(--picker-hover);
+}}
 :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__row--selected .picker__label{
   font-weight: 700;
 }

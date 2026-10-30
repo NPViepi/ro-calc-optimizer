@@ -630,12 +630,11 @@
   },
   "1341": {
     "id": 1341,
-    "preRelease": true,
     "aegisName": "Destruction_Axe",
     "name": "Destruction Axe [2]",
     "unidName": "Axe",
     "resName": "Sins_Axe",
-    "description": "A one-handed axe said to have been forged by a blacksmith consumed by evil power, crafted for the sole purpose of destroying the world.\n------------------------\nIndestructible in battle.\n------------------------\nATK + 5%, POW + 2.\n------------------------\nIncreases Triple Laser damage by 5%.\n------------------------\nWhen refined to +5 or higher, increases Triple Laser damage by 10%.\n------------------------\nWhen refined to +7 or higher, increases long-range physical damage by 5%.\n------------------------\nWhen refined to +9 or higher, increases Triple Laser damage by 10%.\n------------------------\nWhen refined to +10 or higher, CRI + 10.\n------------------------\nWhen refined to +11 or higher, increases Triple Laser damage by 5%, and critical damage by 20%.\n------------------------\n[Grade Bonus]\n[Grade D] Increases long-range physical damage by 10%.\n[Grade C] Increases physical damage against all size enemies by 10%.\n[Grade B] Increases physical damage against all race enemies by 10%.\n[Grade A] Increases physical damage against all property enemies by 10%.\n------------------------\nType : One-handed Axe\nAttack : 230\nWeight : 440\nWeapon Level : 5\nRequired Level : 215\nClass : Meister",
+    "description": "",
     "slots": 2,
     "itemTypeId": 1,
     "itemSubTypeId": 261,
@@ -909,6 +908,9 @@
     "script": {
       "cri": [
         "10"
+      ],
+      "enable_skill__48": [
+        "5"
       ]
     }
   },
@@ -57953,6 +57955,18 @@
     "compositionPos": 0,
     "cardPrefix": "Evil Fanatic",
     "script": {
+      "p_element_fire": [
+        "-30"
+      ],
+      "p_element_holy": [
+        "-30"
+      ],
+      "m_element_fire": [
+        "-30"
+      ],
+      "m_element_holy": [
+        "-30"
+      ],
       "p_element_dark": [
         "30"
       ],
@@ -80000,6 +80014,9 @@
       ],
       "vct": [
         "11===5"
+      ],
+      "spCostPercent": [
+        "7"
       ]
     }
   },
@@ -80034,6 +80051,9 @@
       ],
       "vct": [
         "11===5"
+      ],
+      "spCostPercent": [
+        "7"
       ]
     }
   },
@@ -80064,6 +80084,9 @@
       ],
       "matkPercent": [
         "EQUIP_ID[300359]===10"
+      ],
+      "spCostPercent": [
+        "7"
       ]
     }
   },
@@ -80094,6 +80117,9 @@
       ],
       "atkPercent": [
         "EQUIP_ID[300360]===10"
+      ],
+      "spCostPercent": [
+        "7"
       ]
     }
   },
@@ -80128,6 +80154,9 @@
       ],
       "vct": [
         "11===5"
+      ],
+      "spCostPercent": [
+        "7"
       ]
     }
   },
@@ -80152,6 +80181,9 @@
     "script": {
       "m_my_element_water": [
         "35"
+      ],
+      "spCostPercent": [
+        "10"
       ]
     }
   },
@@ -80284,6 +80316,9 @@
     "script": {
       "m_my_element_dark": [
         "35"
+      ],
+      "spCostPercent": [
+        "10"
       ]
     }
   },
@@ -80308,6 +80343,9 @@
     "script": {
       "m_my_element_ghost": [
         "35"
+      ],
+      "spCostPercent": [
+        "10"
       ]
     }
   },
@@ -80332,6 +80370,9 @@
     "script": {
       "m_my_element_poison": [
         "35"
+      ],
+      "spCostPercent": [
+        "10"
       ]
     }
   },
@@ -80382,6 +80423,15 @@
         "-30"
       ],
       "res": [
+        "15"
+      ],
+      "subrace_insect": [
+        "15"
+      ],
+      "subsize_s": [
+        "15"
+      ],
+      "subele_earth": [
         "15"
       ]
     }
@@ -80457,20 +80507,27 @@
     "cardPrefix": "Higher Level",
     "script": {
       "m_my_element_holy": [
-        "12===25",
+        "-25",
+        "12===50",
         "ITEM_LV[me==2]===8"
       ],
       "m_my_element_ghost": [
-        "12===25",
+        "-25",
+        "12===50",
         "ITEM_LV[me==2]===8"
       ],
       "m_my_element_neutral": [
-        "12===25",
+        "-25",
+        "12===50",
         "ITEM_LV[me==2]===8"
       ],
       "m_my_element_dark": [
-        "12===25",
+        "-25",
+        "12===50",
         "ITEM_LV[me==2]===8"
+      ],
+      "subele_neutral": [
+        "20"
       ]
     }
   },
@@ -80637,6 +80694,9 @@
       ],
       "atkPercent": [
         "EQUIP_ID[300363]===10"
+      ],
+      "spCostPercent": [
+        "7"
       ]
     }
   },
@@ -80664,6 +80724,9 @@
       ],
       "m_my_element_undead": [
         "100"
+      ],
+      "subele_all": [
+        "-30"
       ]
     }
   },
@@ -90103,6 +90166,9 @@
     "location": null,
     "compositionPos": null,
     "script": {
+      "2029": [
+        "EQUIP_ID[310190||1000223]20"
+      ],
       "criDmg": [
         "15",
         "EQUIP_ID[310191||1000222]15"
@@ -90110,11 +90176,11 @@
       "atkPercent": [
         "EQUIP_ID[310191||1000222]5"
       ],
-      "2029": [
-        "EQUIP_ID[310190||1000223]20"
-      ],
       "acd": [
         "EQUIP_ID[310189||1000224]5"
+      ],
+      "enable_skill__48": [
+        "SKILL_ID[134==10]3"
       ]
     }
   },
@@ -146658,7 +146724,7 @@
     "name": "Issgard Warrior Crown [1]",
     "unidName": "Headgear",
     "resName": "RCC2013챔피온투구",
-    "description": "A crown imbued with the special magic of Ysgard.\nIt is said to be endowed with power specialized for close combat.\n\nPOW + 7, CON + 7.\n\nIncreases melee physical damage by 10%.\n------------------------\nFor every 2 refines, ATK + 3%.\n------------------------\nFor every 3 refines, increases physical damage to all size enemies by 4%.\n------------------------\nWhen refined to +7, reduces Global Cooldown by 8%.\n------------------------\nWhen refined to +9, P.ATK + 10, increases melee physical damage by 10%.\n------------------------\nSet Bonus:\nIssgard Warrior Crown [1]\nGlacier Weapon Series\n\nATK + 5%, ATK + 50,\nFor every 3 refines of the weapon, increases ASPD + 4% and increases melee physical damage by 5%.\n------------------------\n[Grade Bonus]\n[Grade D] P.ATK + 5.\n[Grade C] DEF + 150, MDEF + 30.\n[Grade B] POW + 5, CON + 5.\n[Grade A] RES + 50, MRES + 50.\n------------------------\nType : Headgear\nDefense : 80\nLocation : Upper\nWeight : 30\nArmor Level : 2\nRequired Level : 230\nUsable by : All Jobs",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 512,
@@ -146719,8 +146785,7 @@
       "mres": [
         "GRADE[me==A]===50"
       ]
-    },
-    "preRelease": true
+    }
   },
   "400106": {
     "id": 400106,
@@ -146728,7 +146793,7 @@
     "name": "Issgard Magician Crown [1]",
     "unidName": "Headgear",
     "resName": "RCC2013준우승투구",
-    "description": "A crown imbued with the special magic of Ysgard.\nIt is said to be endowed with power specialized for magical combat.\n\nSPL +7, CON +7.\n\nIncreases all property magic damage by 10%.\n------------------------\nFor every 2 refines, MATK +3%.\n------------------------\nFor every 3 refines, increases magical damage to all size enemies by 4%.\n------------------------\nWhen refined to +7, reduces Global Cooldown by 8%.\n------------------------\nWhen refined to +9, S.MATK +10, increases all property magic damage by 10%.\n------------------------\nSet Bonus:\nIssgard Magician Crown [1]\nGlacier Weapon Series\n\nMATK +5%, MATK +50,\nFor every 3 refines of the weapon, increases ASPD +4% and increases all property magic damage by 5%.\n------------------------\n[Grade Bonus]\n[Grade D] S.MATK +5.\n[Grade C] DEF +150, MDEF +30.\n[Grade B] SPL +5, CON +5.\n[Grade A] RES +50, MRES +50.\n------------------------\nType : Headgear\nDefense : 20\nLocation : Upper\nWeight : 10\nArmor Level : 2\nRequired Level : 230\nUsable by : All Jobs",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 512,
@@ -146789,8 +146854,7 @@
       "mres": [
         "GRADE[me==A]===50"
       ]
-    },
-    "preRelease": true
+    }
   },
   "400107": {
     "id": 400107,
@@ -146798,7 +146862,7 @@
     "name": "Issgard Ranger Crown [1]",
     "unidName": "Headgear",
     "resName": "RCC20133등상투구",
-    "description": "A crown imbued with the special magic of Ysgard.\nIt is said to be endowed with power specialized for ranged combat.\n\nPOW +7, CON +7.\n\nIncreases ranged physical damage by 10%.\n------------------------\nFor every 2 refines, ATK +3%.\n------------------------\nFor every 3 refines, increases physical damage to all size enemies by 4%.\n------------------------\nWhen refined to +7, reduces Global Cooldown by 8%.\n------------------------\nWhen refined to +9, P.ATK +10, increases ranged physical damage by 10%.\n------------------------\nSet Bonus:\nIssgard Ranger Crown [1]\nGlacier Weapon Series\n\nATK +5%, ATK +50,\nFor every 3 refines of the weapon, increases ASPD +4% and increases ranged physical damage by 5%.\n------------------------\n[Grade Bonus]\n[Grade D] P.ATK +5.\n[Grade C] DEF +150, MDEF +30.\n[Grade B] POW +5, CON +5.\n[Grade A] RES +50, MRES +50.\n------------------------\nType : Headgear\nDefense : 50\nLocation : Upper\nWeight : 20\nArmor Level : 2\nRequired Level : 230\nUsable by : All Jobs",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 512,
@@ -146859,8 +146923,7 @@
       "mres": [
         "GRADE[me==A]===50"
       ]
-    },
-    "preRelease": true
+    }
   },
   "400109": {
     "id": 400109,
@@ -166809,12 +166872,11 @@
   },
   "450206": {
     "id": 450206,
-    "preRelease": true,
     "aegisName": "Snowflower_Armor",
     "name": "Snow Flower Armor [1]",
     "unidName": "Wooden Mail",
     "resName": "Snowflower_Armor",
-    "description": "Armor crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nAtk +130.\n------------------------\nAtk +15 per 2 refine rate.\n------------------------\nIf refine rate is 7 or higher, ASPD +15%.\n------------------------\nIf refine rate is 9 or higher, P.Atk +2.\n------------------------\nSet Bonus:\nSnow Flower Armor[1]\nSnow Flower Manteau[1]\n\nAtk +50.\n------------------------\nSet Bonus:\nSnow Flower Armor[1]\nSnow Flower Muffler[1]\n\nreduces global cooldown by 10%.\n------------------------\nClass : Armor\nDefense : 150\nWeight : 80\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 513,
@@ -166847,12 +166909,11 @@
   },
   "450207": {
     "id": 450207,
-    "preRelease": true,
     "aegisName": "Snowflower_Robe",
     "name": "Snow Flower Robe [1]",
     "unidName": "Wooden Mail",
     "resName": "Snowflower_Robe",
-    "description": "Robe crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nMatk +130.\n------------------------\nMatk +15 per 2 refine rate.\n------------------------\nIf refine rate is 7 or higher, reduces variable casting time by 15%.\n------------------------\nIf refine rate is 9 or higher, S.Matk +2.\n------------------------\nSet Bonus:\nSnow Flower Robe[1]\nSnow Flower Manteau[1]\n\nASPD +10%.\n------------------------\nSet Bonus:\nSnow Flower Robe[1]\nSnow Flower Muffler[1]\n\nMatk +50.\n------------------------\nClass : Armor\nDefense : 150\nWeight : 80\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 513,
@@ -172813,12 +172874,11 @@
   },
   "470115": {
     "id": 470115,
-    "preRelease": true,
     "aegisName": "Snowflower_Boots",
     "name": "Snow Flower Boots [1]",
     "unidName": "Shoes",
     "resName": "Snowflower_Boots",
-    "description": "Boots crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nMaxHP +8%, MaxSP + 4%.\n------------------------\nMaxSP +1% per 2 refine rate.\n------------------------\nIf refine rate is 7 or higher, increases melee and long ranged physical damage by 7%.\n------------------------\nIf refine rate is 9 or higher, P.Atk +2.\n------------------------\nSet Bonus:\nSnow Flower Boots[1]\nSnow Flower Armor[1]\n\nAtk +7%.\n------------------------\nSet Bonus:\nSnow Flower Boots[1]\nSnow Flower Robe[1]\n\nASPD +7%.\n------------------------\nClass : Shoes\nDefense : 70\nWeight : 50\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 516,
@@ -172859,12 +172919,11 @@
   },
   "470116": {
     "id": 470116,
-    "preRelease": true,
     "aegisName": "Snowflower_Shoes",
     "name": "Snow Flower Shoes [1]",
     "unidName": "Shoes",
     "resName": "Snowflower_Shoes",
-    "description": "Shoes crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nMaxHP +6%, MaxSP + 6%.\n------------------------\nMaxSP +1% per 2 refine rate.\n------------------------\nIf refine rate is 7 or higher, increases all property magical damage by 7%.\n------------------------\nIf refine rate is 9 or higher, S.Matk +2.\n------------------------\nSet Bonus:\nSnow Flower Shoes[1]\nSnow Flower Armor[1]\n\nreduces variable casting time by 7%.\n------------------------\nSet Bonus:\nSnow Flower Shoes[1]\nSnow Flower Robe[1]\n\nMatk +7%.\n------------------------\nClass : Shoes\nDefense : 70\nWeight : 50\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 516,
@@ -177614,12 +177673,11 @@
   },
   "480159": {
     "id": 480159,
-    "preRelease": true,
     "aegisName": "Snowflower_Manteau",
     "name": "Snow Flower Manteau [1]",
     "unidName": "Hood",
     "resName": "Snowflower_Manteau",
-    "description": "Manteau crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nMaxHP + 2500, MaxSP + 500.\n------------------------\nMaxHP + 200 and MaxSP + 50 per 2 refine rate.\n------------------------\nIf refine rate is 7 or higher, increases attack speed (reduces delay after attack by 7%).\n------------------------\nIf refine rate is 9 or higher, POW +3.\n------------------------\nSet Bonus:\nSnow Flower Manteau[1]\nSnow Flower Boots[1]\n\nincreases critical damage by 15%.\n------------------------\nSet Bonus:\nSnow Flower Manteau[1]\nSnow Flower Shoes[1]\n\nreduces variable casting time by 15%.\n------------------------\nClass : Garment\nDefense : 70\nWeight : 90\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 515,
@@ -177658,12 +177716,11 @@
   },
   "480160": {
     "id": 480160,
-    "preRelease": true,
     "aegisName": "Snowflower_Muffler",
     "name": "Snow Flower Muffler [1]",
     "unidName": "Robe",
     "resName": "Snowflower_Muffler",
-    "description": "Muffler crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nMaxHP + 2000, MaxSP + 1000.\n------------------------\nMaxHP + 150 and MaxSP + 100 per 2 refine rate.\n------------------------\nIf refine rate is 7 or higher, reduces variable casting time by 7%.\n------------------------\nIf refine rate is 9 or higher, SPL +3.\n------------------------\nSet Bonus:\nSnow Flower Muffler[1]\nSnow Flower Boots[1]\n\nincreases long ranged physical damage by 7%.\n------------------------\nSet Bonus:\nSnow Flower Muffler[1]\nSnow Flower Shoes[1]\n\nincreases all property magical damage by 15%.\n------------------------\nClass : Garment\nDefense : 70\nWeight : 90\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 515,
@@ -185327,12 +185384,11 @@
   },
   "490176": {
     "id": 490176,
-    "preRelease": true,
     "aegisName": "Snowflower_Pendant",
     "name": "Snow Flower Pendant [1]",
     "unidName": "Clip",
     "resName": "Snowflower_Pendant",
-    "description": "Pendant crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nAtk +7%, MaxHP +7%.\n------------------------\nClass : Accessory (Right)\nDefense : 0\nWeight : 10\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 510,
@@ -185357,12 +185413,11 @@
   },
   "490177": {
     "id": 490177,
-    "preRelease": true,
     "aegisName": "Snowflower_Ring",
     "name": "Snow Flower Ring [1]",
     "unidName": "Clip",
     "resName": "Snowflower_Ring",
-    "description": "Ring crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nAtk +7%, MaxSP +7%.\n------------------------\nClass : Accessory (Left)\nDefense : 0\nWeight : 10\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 511,
@@ -185387,12 +185442,11 @@
   },
   "490178": {
     "id": 490178,
-    "preRelease": true,
     "aegisName": "Snowflower_Necklace",
     "name": "Snow Flower Necklace [1]",
     "unidName": "Clip",
     "resName": "Snowflower_Necklace",
-    "description": "Necklace crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nMatk +7%, MaxHP +7%.\n------------------------\nClass : Accessory (Right)\nDefense : 0\nWeight : 10\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 510,
@@ -185417,12 +185471,11 @@
   },
   "490179": {
     "id": 490179,
-    "preRelease": true,
     "aegisName": "Snowflower_Earring",
     "name": "Snow Flower Earring [1]",
     "unidName": "Clip",
     "resName": "Snowflower_Earring",
-    "description": "Earring crafted from the ground petals of the snowdrops found in Isgard.\n\nYou can equip it with ice flower magic stones which possess special magical powers, to enhance its abilities.\n------------------------\nMatk +7%, MaxSP +7%.\n------------------------\nClass : Accessory (Left)\nDefense : 0\nWeight : 10\nArmor Level : 2\nRequired Level : 210\nJobs : All",
+    "description": "",
     "slots": 1,
     "itemTypeId": 2,
     "itemSubTypeId": 511,
@@ -196973,12 +197026,11 @@
   },
   "500049": {
     "id": 500049,
-    "preRelease": true,
     "aegisName": "Glacier_Sword",
     "name": "Glacier Sword",
     "unidName": "Sword",
     "resName": "Glacier_Sword",
-    "description": "A sword crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +210\n------------------------\nType : Sword\nAttack : 220\nWeight : 160\nWeapon Level : 5\nRequired Level : 210\nClass : Swordman, Merchant Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 257,
@@ -197001,12 +197053,11 @@
   },
   "500050": {
     "id": 500050,
-    "preRelease": true,
     "aegisName": "Glacier_B_Sword",
     "name": "Glacier Basic Sword",
     "unidName": "Sword",
     "resName": "Glacier_B_Sword",
-    "description": "A sword crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +210\n------------------------\nType : Sword\nAttack : 220\nWeight : 140\nWeapon Level : 5\nRequired Level : 210\nClass : Novice Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 257,
@@ -197386,12 +197437,11 @@
   },
   "500066": {
     "id": 500066,
-    "preRelease": true,
     "aegisName": "Victory_Sword",
     "name": "Victory Sword [2]",
     "unidName": "Bastard Sword",
     "resName": "Fate_Blade_One",
-    "description": "A one-handed sword imbued with the strength of a hero who triumphed in countless battles.\n------------------------\nATK + 5%, POW + 2.\n------------------------\nIncreases Explosive Powder damage by 5%.\n------------------------\nWhen refined to +5 or higher, increases Explosive Powder damage by 10%.\n------------------------\nWhen refined to +7 or higher, increases melee physical damage by 5%.\n------------------------\nWhen refined to +9 or higher, increases Explosive Powder damage by 10%.\n------------------------\nWhen refined to +10 or higher, ASPD + 10%.\n------------------------\nWhen refined to +11 or higher, increases Explosive Powder damage by 5%, and melee physical damage by 15%.\n------------------------\n[Grade Bonus]\n[Grade D] Increases melee physical damage by 10%.\n[Grade C] Increases physical damage against all size enemies by 10%.\n[Grade B] Increases physical damage against all race enemies by 10%.\n[Grade A] Increases physical damage against all property enemies by 10%.\n------------------------\nType : One-handed Sword\nAttack : 210\nWeight : 150\nWeapon Level : 5\nRequired Level : 215\nClass : Biolo",
+    "description": "",
     "slots": 2,
     "itemTypeId": 1,
     "itemSubTypeId": 257,
@@ -199488,12 +199538,11 @@
   },
   "510061": {
     "id": 510061,
-    "preRelease": true,
     "aegisName": "Glacier_R_Knife",
     "name": "Glacier Rogue Knife",
     "unidName": "Knife",
     "resName": "Glacier_R_Knife",
-    "description": "A dagger crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +210\n------------------------\nType : Dagger\nAttack : 210\nWeight : 140\nWeapon Level : 5\nRequired Level : 210\nClass : Shadow Chaser Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 256,
@@ -199515,12 +199564,11 @@
   },
   "510062": {
     "id": 510062,
-    "preRelease": true,
     "aegisName": "Glacier_B_Knife",
     "name": "Glacier Basic Knife",
     "unidName": "Knife",
     "resName": "Glacier_B_Knife",
-    "description": "A dagger crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +210\n------------------------\nType : Dagger\nAttack : 210\nWeight : 120\nWeapon Level : 5\nRequired Level : 210\nClass : Novice Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 256,
@@ -200881,12 +200929,11 @@
   },
   "520017": {
     "id": 520017,
-    "preRelease": true,
     "aegisName": "Glacier_Axe",
     "name": "Glacier Axe",
     "unidName": "Axe",
     "resName": "Glacier_Axe",
-    "description": "A axe crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nIndestructible in battle\n\nMATK +210\n------------------------\nType : One-handed Axe\nAttack : 240\nWeight : 500\nWeapon Level : 5\nRequired Level : 210\nClass : Swordman, Merchant Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 261,
@@ -201621,12 +201668,11 @@
   },
   "530025": {
     "id": 530025,
-    "preRelease": true,
     "aegisName": "Glacier_Spear",
     "name": "Glacier Spear",
     "unidName": "Javelin",
     "resName": "Glacier_Spear",
-    "description": "A spear crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +210\n------------------------\nType : One-handed Spear\nAttack : 220\nWeight : 210\nWeapon Level : 5\nRequired Level : 210\nClass : Swordman Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 259,
@@ -203650,12 +203696,11 @@
   },
   "540049": {
     "id": 540049,
-    "preRelease": true,
     "aegisName": "Glacier_Book",
     "name": "Glacier Book",
     "unidName": "Book",
     "resName": "Glacier_Book",
-    "description": "A book crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nIndestructible in battle\n\nMATK +210\n------------------------\nType : Book\nAttack : 210\nWeight : 120\nWeapon Level : 5\nRequired Level : 210\nClass : Sage, Priest, Taekwon Master Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 271,
@@ -207559,12 +207604,11 @@
   },
   "550069": {
     "id": 550069,
-    "preRelease": true,
     "aegisName": "Glacier_Wand",
     "name": "Glacier Wand",
     "unidName": "Rod",
     "resName": "Glacier_Wand",
-    "description": "A wand crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nIndestructible in battle\n\nMATK +230\n------------------------\nType : One-Handed Staff\nAttack : 150\nWeight : 130\nWeapon Level : 5\nRequired Level : 210\nClass : Novice, Mage, Acolyte, Soul Linker Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 265,
@@ -207589,12 +207633,11 @@
   },
   "550070": {
     "id": 550070,
-    "preRelease": true,
     "aegisName": "Glacier_Foxtail",
     "name": "Glacier Foxtail",
     "unidName": "Rod",
     "resName": "Glacier_Foxtail",
-    "description": "A foxtail crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nIndestructible in battle\n\nMATK +400\n------------------------\nType : One-Handed Staff\nAttack : 400\nWeight : 200\nWeapon Level : 5\nRequired Level : 210\nClass : Summoner (Doram) Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 265,
@@ -210609,12 +210652,11 @@
   },
   "560032": {
     "id": 560032,
-    "preRelease": true,
     "aegisName": "Glacier_Knuckle",
     "name": "Glacier Knuckle",
     "unidName": "Waghnak",
     "resName": "Glacier_Knuckle",
-    "description": "A knuckle crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +220\n------------------------\nType : Knuckle\nAttack : 240\nWeight : 150\nWeapon Level : 5\nRequired Level : 210\nClass : Sura Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 268,
@@ -212034,12 +212076,11 @@
   },
   "570029": {
     "id": 570029,
-    "preRelease": true,
     "aegisName": "Glacier_Violin",
     "name": "Glacier Violin",
     "unidName": "Violin",
     "resName": "Glacier_Violin",
-    "description": "A violin crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +210\n------------------------\nType : Instrument\nAttack : 210\nWeight : 150\nWeapon Level : 5\nRequired Level : 210\nClass : Minstrel Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 269,
@@ -213455,12 +213496,11 @@
   },
   "580030": {
     "id": 580030,
-    "preRelease": true,
     "aegisName": "Glacier_Whip",
     "name": "Glacier Whip",
     "unidName": "Rope",
     "resName": "Glacier_Whip",
-    "description": "A whip crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +210\n------------------------\nType : Whip\nAttack : 210\nWeight : 150\nWeapon Level : 5\nRequired Level : 210\nClass : Wanderer Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 270,
@@ -215126,12 +215166,11 @@
   },
   "590038": {
     "id": 590038,
-    "preRelease": true,
     "aegisName": "Glacier_Mace",
     "name": "Glacier Mace",
     "unidName": "Mace",
     "resName": "Glacier_Mace",
-    "description": "A mace crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nIndestructible in battle\n\nMATK +210\n------------------------\nType : Mace\nAttack : 210\nWeight : 180\nWeapon Level : 5\nRequired Level : 210\nClass : Swordman, Merchant, Acolyte Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 263,
@@ -215155,12 +215194,11 @@
   },
   "590039": {
     "id": 590039,
-    "preRelease": true,
     "aegisName": "Glacier_M_Mace",
     "name": "Glacier Mechanic Mace",
     "unidName": "Mace",
     "resName": "Glacier_M_Mace",
-    "description": "A mace crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nIndestructible in battle\n\nMATK +160\n------------------------\nType : Mace\nAttack : 400\nWeight : 400\nWeapon Level : 5\nRequired Level : 210\nClass : Mechanic Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 263,
@@ -216429,12 +216467,11 @@
   },
   "600027": {
     "id": 600027,
-    "preRelease": true,
     "aegisName": "Glacier_T_Sword",
     "name": "Glacier Two-handed Sword",
     "unidName": "Bastard Sword",
     "resName": "Glacier_T_Sword",
-    "description": "A two-handed sword crafted from ice harvested from the glaciers of Isgard.\nYou can enchanting it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +270\n------------------------\nType : Two-handed Sword\nAttack : 300\nWeight : 400\nWeapon Level : 5\nRequired Level : 210\nClass : Knight Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 258,
@@ -217719,12 +217756,11 @@
   },
   "610037": {
     "id": 610037,
-    "preRelease": true,
     "aegisName": "Glacier_Katar",
     "name": "Glacier Katar",
     "unidName": "Jur",
     "resName": "Glacier_Katar",
-    "description": "A katar crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +220\n------------------------\nType : Katar\nAttack : 240\nWeight : 120\nWeapon Level : 5\nRequired Level : 210\nClass : Guillotine Cross Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 272,
@@ -218709,12 +218745,11 @@
   },
   "620017": {
     "id": 620017,
-    "preRelease": true,
     "aegisName": "Glacier_T_Axe",
     "name": "Glacier Mechanic Axe",
     "unidName": "Axe",
     "resName": "Glacier_T_Axe",
-    "description": "A two-handed axe crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nIndestructible in battle\n\nMATK +180\n------------------------\nType : Two-handed Axe\nAttack : 350\nWeight : 700\nWeapon Level : 5\nRequired Level : 210\nClass : Mechanic Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 262,
@@ -219471,12 +219506,11 @@
   },
   "630018": {
     "id": 630018,
-    "preRelease": true,
     "aegisName": "Glacier_Lance",
     "name": "Glacier Lance",
     "unidName": "Lance",
     "resName": "Glacier_Lance",
-    "description": "A two-handed spear crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +270\n------------------------\nType : Two-handed Spear\nAttack : 300\nWeight : 450\nWeapon Level : 5\nRequired Level : 210\nClass : Knight Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 260,
@@ -220986,12 +221020,11 @@
   },
   "640033": {
     "id": 640033,
-    "preRelease": true,
     "aegisName": "Glacier_Staff",
     "name": "Glacier Staff",
     "unidName": "Rod",
     "resName": "Glacier_Staff",
-    "description": "A two-handed staff crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nIndestructible in battle\n\nMATK +290\n------------------------\nType : Two-handed Staff\nAttack : 150\nWeight : 240\nWeapon Level : 5\nRequired Level : 210\nClass : Mage, Acolyte, Soul Linker Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 266,
@@ -222219,12 +222252,11 @@
   },
   "650025": {
     "id": 650025,
-    "preRelease": true,
     "aegisName": "Glacier_Humma",
     "name": "Glacier Huuma Shuriken",
     "unidName": "Huuma Shuriken",
     "resName": "Glacier_Humma",
-    "description": "A huuma shuriken crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nIndestructible in battle\n\nMATK +370\n------------------------\nType : Huuma Shuriken\nAttack : 400\nWeight : 300\nWeapon Level : 5\nRequired Level : 210\nClass : Ninja Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 278,
@@ -224099,12 +224131,11 @@
   },
   "700052": {
     "id": 700052,
-    "preRelease": true,
     "aegisName": "Glacier_Bow",
     "name": "Glacier Bow",
     "unidName": "Bow",
     "resName": "Glacier_Bow",
-    "description": "A bow crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +220\n------------------------\nType : Bow\nRange : 5\nAttack : 240\nWeight : 150\nWeapon Level : 5\nRequired Level : 210\nClass : Archer, Rogue Classes",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 267,
@@ -225233,12 +225264,11 @@
   },
   "800014": {
     "id": 800014,
-    "preRelease": true,
     "aegisName": "Glacier_Revolver",
     "name": "Glacier Revolver",
     "unidName": "Six Shooter",
     "resName": "Glacier_Revolver",
-    "description": "A revolver crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +230\n------------------------\nType : Pistol\nRange : 7\nAttack : 230\nWeight : 220\nWeapon Level : 5\nRequired Level : 210\nClass : Rebellion Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 273,
@@ -225936,12 +225966,11 @@
   },
   "810010": {
     "id": 810010,
-    "preRelease": true,
     "aegisName": "Glacier_Rifle",
     "name": "Glacier Rifle",
     "unidName": "Rifle",
     "resName": "Glacier_Rifle",
-    "description": "A rifle crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +230\n------------------------\nType : Rifle\nRange : 9\nAttack : 280\nWeight : 260\nWeapon Level : 5\nRequired Level : 210\nClass : Rebellion Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 274,
@@ -226622,12 +226651,11 @@
   },
   "820008": {
     "id": 820008,
-    "preRelease": true,
     "aegisName": "Glacier_Shotgun",
     "name": "Glacier Shotgun",
     "unidName": "Single Shotgun",
     "resName": "Glacier_Shotgun",
-    "description": "A shotgun crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nSplash Attack.\n\nMATK +200.\n------------------------\nType : Shotgun\nRange : 9\nAttack : 300\nWeight : 260\nWeapon Level : 5\nRequired Level : 210\nClass : Rebellion Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 276,
@@ -227330,12 +227358,11 @@
   },
   "830013": {
     "id": 830013,
-    "preRelease": true,
     "aegisName": "Glacier_Gatling",
     "name": "Glacier Gatling",
     "unidName": "Drifter",
     "resName": "Glacier_Gatling",
-    "description": "A gatling gun crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +200\n------------------------\nType : Gatling Gun\nRange : 9\nAttack : 350\nWeight : 350\nWeapon Level : 5\nRequired Level : 210\nClass : Rebellion Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 275,
@@ -227956,12 +227983,11 @@
   },
   "840009": {
     "id": 840009,
-    "preRelease": true,
     "aegisName": "Glacier_Launcher",
     "name": "Glacier Launcher",
     "unidName": "Detroyer",
     "resName": "Glacier_Launcher",
-    "description": "A launcher crafted from ice harvested from the glaciers of Isgard.\nYou can enchant it with Ice Flower Magic Stones for special abilities.\n------------------------\nMATK +200\n------------------------\nType : Grenade Launcher\nRange : 9\nAttack : 300\nWeight : 300\nWeapon Level : 5\nRequired Level : 210\nClass : Rebellion Series",
+    "description": "",
     "slots": 0,
     "itemTypeId": 1,
     "itemSubTypeId": 277,
@@ -228010,12 +228036,11 @@
   },
   "840020": {
     "id": 840020,
-    "preRelease": true,
     "aegisName": "Devil_L_Launcher",
     "name": "Devil Lord Launcher [2]",
     "unidName": "Destroyer",
     "resName": "Sins_Launcher",
-    "description": "A grenade launcher created by a fallen Gun Master using demonic power.\n          \nATK + 5%, CON + 2.\n          \nSpiral Shooting damage + 5%.\n------------------------\nWhen refine level 5 or more, Spiral Shooting damage + 10%.\n------------------------\nWhen refine level 7 or more, Ranged physical damage + 5%.\n------------------------\nWhen refine level 9 or more, Spiral Shooting damage + 10% additional.\n------------------------\nWhen refine level 10 or more, Global Cooldown - 10%.\n------------------------\nWhen refine level 11 or more, Spiral Shooting damage + 5% additional, Ranged physical damage + 15%.\n------------------------\n[Bonus by Grade]\n[Grade D] Ranged physical damage + 10%.\n[Grade C] Physical damage to all size enemies + 10%.\n[Grade B] Physical damage to all race enemies + 10%.\n[Grade A] Physical damage to all property enemies + 10%.\n------------------------\nType : Grenade Launcher\nAttack : 330\nWeight : 250\nWeapon Level : 5\nRequired Level : 215\nClass : Night Watch",
+    "description": "",
     "slots": 2,
     "itemTypeId": 1,
     "itemSubTypeId": 277,
@@ -229228,7 +229253,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "magicHealHp": [
+        "800"
+      ]
+    }
   },
   "300733": {
     "id": 300733,
@@ -232761,6 +232790,9 @@
       ],
       "spRestoreOnKill": [
         "EQUIP_ID[19193]100"
+      ],
+      "enable_skill__48": [
+        "EQUIP_ID[19194]10"
       ]
     }
   },
@@ -234602,7 +234634,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "magicHealSp": [
+        "160"
+      ]
+    }
   },
   "24083": {
     "id": 24083,
@@ -234861,7 +234897,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "enable_skill__48": [
+        "5"
+      ]
+    }
   },
   "24388": {
     "id": 24388,
@@ -236239,7 +236279,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "enable_skill__48": [
+        "3"
+      ]
+    }
   },
   "4084": {
     "id": 4084,
@@ -248561,6 +248605,15 @@
       ],
       "subrace_player_doram": [
         "3"
+      ],
+      "hp": [
+        "50"
+      ],
+      "sp": [
+        "50"
+      ],
+      "enable_skill__48": [
+        "2"
       ]
     }
   },
@@ -254741,6 +254794,9 @@
         "5"
       ],
       "p_race_player_human": [
+        "5"
+      ],
+      "enable_skill__48": [
         "5"
       ]
     }
@@ -268642,6 +268698,9 @@
       ],
       "p_element_all": [
         "11===20"
+      ],
+      "enable_skill__48": [
+        "EQUIP_ID[20847]REFINE[weapon,garment==22]4"
       ]
     }
   },
@@ -326455,7 +326514,11 @@
     "requiredLevel": null,
     "location": null,
     "compositionPos": 65535,
-    "script": {}
+    "script": {
+      "enable_skill__48": [
+        "3"
+      ]
+    }
   },
   "25303": {
     "id": 25303,
@@ -329126,6 +329189,9 @@
       ],
       "acd": [
         "EQUIP_ID[310189||1000224]5"
+      ],
+      "enable_skill__48": [
+        "SKILL_ID[134==10]3"
       ]
     }
   },
@@ -331444,7 +331510,11 @@
     "usableClass": [
       "all"
     ],
-    "script": {}
+    "script": {
+      "enable_skill__48": [
+        "1"
+      ]
+    }
   },
   "4122": {
     "id": 4122,
@@ -339338,22 +339408,28 @@
     ],
     "script": {
       "hp": [
-        "1000"
+        "1000",
+        "vit:10(1-50)----200"
       ],
       "atk": [
-        "25"
+        "25",
+        "str:10(1-50)----5"
       ],
       "matk": [
-        "25"
+        "25",
+        "int:10(1-50)----5"
       ],
       "criDmg": [
-        "10"
+        "10",
+        "luk:10(1-50)----2"
       ],
       "range": [
-        "5"
+        "5",
+        "dex:10(1-50)----1"
       ],
       "aspdPercent": [
-        "10"
+        "10",
+        "agi:10(1-50)----2"
       ]
     }
   },
@@ -363259,12 +363335,11 @@
   },
   "436006": {
     "id": 436006,
-    "preRelease": true,
     "aegisName": "C_Ep19_Rgan",
     "name": "Costume Rgan Disguise Tool",
     "unidName": "Costume Rgan Disguise Tool",
     "resName": "",
-    "description": "A helmet that perfectly embodies the shape of the Rgan.\nIt would have been better if I had implemented an advanced legan...\nWhy are you so low...\n------------------------\nClass : Costume\nDefense : 0\nPosition : Middle Lower\nWeight : 0\nRequired Level : 1\nJobs : All",
+    "description": "",
     "slots": 0,
     "itemTypeId": 9,
     "itemSubTypeId": 521,
@@ -363286,12 +363361,11 @@
   },
   "436007": {
     "id": 436007,
-    "preRelease": true,
     "aegisName": "C_Ep19_Iwin",
     "name": "Costume Irwin Cold Hat",
     "unidName": "Costume Irwin Cold Hat",
     "resName": "",
-    "description": "A hat that perfectly embodies Irwin's appearance which is very warm.\nNo, it's not warm, it's so hot that I feel like I'm suffocating.\n------------------------\nClass : Costume\nDefense : 0\nPosition : Middle Lower\nWeight : 0\nRequired Level : 1\nJobs : All",
+    "description": "",
     "slots": 0,
     "itemTypeId": 9,
     "itemSubTypeId": 521,
@@ -373998,6 +374072,382 @@
     "requiredLevel": null,
     "location": null,
     "compositionPos": 65535,
+    "script": {}
+  },
+  "29529": {
+    "id": 29529,
+    "aegisName": "청록색보석",
+    "name": "S-HPR",
+    "unidName": "S-HPR",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "hpRecovRate": [
+        "20"
+      ]
+    }
+  },
+  "29530": {
+    "id": 29530,
+    "aegisName": "마력석_파랑",
+    "name": "S-SPMax",
+    "unidName": "S-SPMax",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "spPercent": [
+        "5"
+      ],
+      "sp": [
+        "7===100",
+        "9===150"
+      ]
+    }
+  },
+  "29532": {
+    "id": 29532,
+    "aegisName": "파란색보석",
+    "name": "S-SPR",
+    "unidName": "S-SPR",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "spRecovRate": [
+        "20"
+      ]
+    }
+  },
+  "29543": {
+    "id": 29543,
+    "aegisName": "마법석화",
+    "name": "U-Vida",
+    "unidName": "U-Vida",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "hpDrain": [
+        "2"
+      ]
+    }
+  },
+  "29544": {
+    "id": 29544,
+    "aegisName": "마법석풍",
+    "name": "U-Alma",
+    "unidName": "U-Alma",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 11,
+    "itemSubTypeId": 0,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": null,
+    "requiredLevel": null,
+    "location": null,
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {
+      "spDrain": [
+        "1"
+      ]
+    }
+  },
+  "20075": {
+    "id": 20075,
+    "aegisName": "C_Little_Fhat",
+    "name": "[Visual] Chapéu do Doram de Botas",
+    "unidName": "[Visual] Chapéu do Doram de Botas",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 519,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Upper",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "31032": {
+    "id": 31032,
+    "aegisName": "C_Tare_Luwmin",
+    "name": "[Visual] Boneco de Loomin",
+    "unidName": "[Visual] Boneco de Loomin",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 519,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Upper",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "31290": {
+    "id": 31290,
+    "aegisName": "C_Adv_Ang_SchCap",
+    "name": "[Visual] Boné do Bom Aluno",
+    "unidName": "[Visual] Boné do Bom Aluno",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 519,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Upper",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "400172": {
+    "id": 400172,
+    "aegisName": "C_Ati_Atihan_Hat_V",
+    "name": "[Visual] Cocar Ati-Atihan",
+    "unidName": "[Visual] Cocar Ati-Atihan",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 519,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Upper",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "401213": {
+    "id": 401213,
+    "aegisName": "C_Jaow_Pirun",
+    "name": "[Visual] Jaow Pirun",
+    "unidName": "[Visual] Jaow Pirun",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 519,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Upper",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "410121": {
+    "id": 410121,
+    "aegisName": "C_Guardian_Helm",
+    "name": "[Visual] Elmo dos Guardiões",
+    "unidName": "[Visual] Elmo dos Guardiões",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 520,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Middle",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "410576": {
+    "id": 410576,
+    "aegisName": "C_Eye_of_Necromancer",
+    "name": "[Visual] Olho do Necromante",
+    "unidName": "[Visual] Olho do Necromante",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 520,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Middle",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "420743": {
+    "id": 420743,
+    "aegisName": "C_Spirit_Cat_TH",
+    "name": "[Visual] Espíritos Felinos",
+    "unidName": "[Visual] Espíritos Felinos",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 521,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Lower",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "480298": {
+    "id": 480298,
+    "aegisName": "C_MCircle_Wonderland",
+    "name": "[Visual] Aura das Maravilhas",
+    "unidName": "[Visual] Aura das Maravilhas",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 522,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Garment",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "480344": {
+    "id": 480344,
+    "aegisName": "C_HDP_Scythe",
+    "name": "[Visual] Foice da Princesa Mestiça",
+    "unidName": "[Visual] Foice da Princesa Mestiça",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 522,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Garment",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
+    "script": {}
+  },
+  "480725": {
+    "id": 480725,
+    "aegisName": "C_Sixth_Sense_Satan",
+    "name": "[Visual] Sexto Sentido Satânico",
+    "unidName": "[Visual] Sexto Sentido Satânico",
+    "resName": "",
+    "description": "",
+    "slots": 0,
+    "itemTypeId": 9,
+    "itemSubTypeId": 522,
+    "itemLevel": null,
+    "attack": null,
+    "defense": null,
+    "weight": 0,
+    "requiredLevel": 1,
+    "location": "Garment",
+    "compositionPos": null,
+    "usableClass": [
+      "all"
+    ],
     "script": {}
   }
 }

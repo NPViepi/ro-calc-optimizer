@@ -35,6 +35,16 @@ import { CARDS_WITH_A_SET, classOf, lineUpsFor, scenarioKey, setClausesOf } from
  * 27111's small-size combo is physical-only; 27264 adds its printed physical
  * resistances/vulnerabilities; 300122/300123 add their printed Pitaya combo.
  * See docs/damage-taken.md and monster-damage-taken.spec.ts for the independent checks.
+ *
+ * The client text of 28/10/2026 rewrote "consumo de SP ao usar habilidades +7%" as the
+ * canonical "Custo de SP das habilidades +7%", which sp-cost-percent.spec.ts then found on
+ * ten Issgard cards that had never declared it. 300361, 300362 and 300381 have a set, so
+ * the baseline was regenerated to add their `spCostPercent` — a display-only stat gained,
+ * nothing the migration dropped.
+ *
+ * 27265 (Fanático das Trevas) gained its printed "-30% contra Fogo e Sagrado" in an audit
+ * of card penalties the records had dropped (card-penalties.spec.ts); the baseline was
+ * regenerated to add those four keys, and its set clauses are unchanged.
  */
 
 const BASELINE = 'src/app/core/__tests__/card-set-baseline.json';

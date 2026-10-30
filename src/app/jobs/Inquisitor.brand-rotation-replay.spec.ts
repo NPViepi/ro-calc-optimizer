@@ -133,6 +133,8 @@ function sim(monster: string, skill: string, passiveOverride: Record<string, num
 
   m.selectedAtkSkill = skill;
   const calc = new Calculator().setMasterItems(items).setHpSpTable(hpSpTable).setClass(cls);
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  m.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(m);
   new CalculatorController().runChain(calc, {
     monster: monsters[monster], equipAtks, masteryAtks, buffEquips, buffMasterys, consumeData: [],

@@ -84,10 +84,14 @@
   cursor: pointer;
 }
 
-.eq-card__color:hover,
-.eq-card__clear:hover {
+@media (hover: hover){.eq-card__color:hover,
+.eq-card__clear:hover{
   border-color: #304562;
-}
+}}
+@media (hover: none){.eq-card__color:active,
+.eq-card__clear:active{
+  border-color: #304562;
+}}
 
 .eq-card__color {
   /* Pulls the slot name back against the dot: the header's 10px gap is meant for the
@@ -107,14 +111,22 @@
   cursor: not-allowed;
 }
 
-.eq-card__color--idle:hover {
+@media (hover: hover){.eq-card__color--idle:hover{
   border-color: transparent;
-}
+}}
+@media (hover: none){.eq-card__color--idle:active{
+  border-color: transparent;
+}}
 
-.eq-card__color--idle .eq-card__color-dot--empty,
-.eq-card__color--idle:hover .eq-card__color-dot--empty {
+.eq-card__color--idle .eq-card__color-dot--empty{
   border-color: rgb(255 255 255 / 14%);
 }
+@media (hover: hover){.eq-card__color--idle:hover .eq-card__color-dot--empty{
+  border-color: rgb(255 255 255 / 14%);
+}}
+@media (hover: none){.eq-card__color--idle:active .eq-card__color-dot--empty{
+  border-color: rgb(255 255 255 / 14%);
+}}
 
 .eq-card__color-dot {
   width: 11px;
@@ -129,9 +141,12 @@
   border: 1px solid rgb(255 255 255 / 35%);
 }
 
-.eq-card__color:hover .eq-card__color-dot--empty {
+@media (hover: hover){.eq-card__color:hover .eq-card__color-dot--empty{
   border-color: rgb(255 255 255 / 70%);
-}
+}}
+@media (hover: none){.eq-card__color:active .eq-card__color-dot--empty{
+  border-color: rgb(255 255 255 / 70%);
+}}
 
 .eq-card__compare {
   display: inline-flex;
@@ -187,9 +202,12 @@
   font-size: 12px;
 }
 
-.eq-card__clear:hover {
+@media (hover: hover){.eq-card__clear:hover{
   color: rgb(255 255 255 / 85%);
-}
+}}
+@media (hover: none){.eq-card__clear:active{
+  color: rgb(255 255 255 / 85%);
+}}
 
 /*
  * The first-run hint. Hangs off the header rather than sitting in it: the bar is 28px of
@@ -328,7 +346,11 @@
   color: rgb(253 216 125 / 55%);
 }
 
-.eq-card__clear--compare:hover {
+@media (hover: hover){.eq-card__clear--compare:hover{
   border-color: rgb(253 216 125 / 45%);
   color: #fdd87d;
-}
+}}
+@media (hover: none){.eq-card__clear--compare:active{
+  border-color: rgb(253 216 125 / 45%);
+  color: #fdd87d;
+}}

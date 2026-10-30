@@ -329,7 +329,7 @@ export class NightWatch extends Rebellion {
       acd: 1,
       fct: 1,
       vct: 0,
-      cd: 0.75,
+      cd: 0.5,
       canCri: ({ weapon }) => weapon.isSubType('Revolver'),
       criDmgPercentage: 0.5,
       totalHit: ({ weapon }) => weapon.isSubType('Gatling Gun') ? 10 : 6,

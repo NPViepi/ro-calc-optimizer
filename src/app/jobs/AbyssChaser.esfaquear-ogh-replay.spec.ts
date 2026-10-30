@@ -85,6 +85,8 @@ function sim(monster: string, skill: string, opts: { fireOnWeapon?: boolean; act
     .getSkillBonusAndName();
   m.selectedAtkSkill = skill;
   const calc = new Calculator().setMasterItems(db).setHpSpTable(hpSpTable).setClass(cls);
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  m.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(m);
   new CalculatorController().runChain(calc, {
     monster: monsters[monster], equipAtks, masteryAtks, buffEquips: {}, buffMasterys: {},

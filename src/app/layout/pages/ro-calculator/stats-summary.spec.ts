@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { translate } from '../../../core/i18n';
+import { DEFAULT_CATALOG } from '../../../i18n';
 import { buildStatsSummary, statOriginFor, StatsSummaryOptions, SummaryRow } from './stats-summary';
 
 /** The component's own cast/delay formatter, in the shape the builder receives it:
@@ -7,7 +9,13 @@ const bonusValueText = (key: string, value: number): string => (key === 'fct' ? 
 
 /** Every key is sourced, so the builder marks every keyed row clickable; the tests that
  *  care about clickability say so themselves. */
-const OPTS: StatsSummaryOptions = { bonusValueText, canBreakdown: () => true };
+const OPTS: StatsSummaryOptions = {
+  // The real catalog rather than a stub: every label the cases below name is the one the
+  // panel prints, so a renamed entry fails here instead of silently changing the panel.
+  text: (key, params) => translate(DEFAULT_CATALOG, key, params),
+  bonusValueText,
+  canBreakdown: () => true,
+};
 
 /** A totalSummary skeleton carrying only what the panel reads, with the design's numbers. */
 function summary(over: any = {}) {

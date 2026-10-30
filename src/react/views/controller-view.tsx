@@ -22,6 +22,9 @@ export function controllerView<T extends ViewController>(factory: (services: App
     useSyncExternalStore(services.data.descriptions.subscribe, services.data.descriptions.getSnapshot);
     useSyncExternalStore(services.customItems.subscribe, services.customItems.getSnapshot);
     useSyncExternalStore(services.layout.previews.subscribe, services.layout.previews.getSnapshot);
+    // Controllers compute labels through `services.locale.text`, so a language switch
+    // has to re-render them the same way a new item description does.
+    useSyncExternalStore(services.locale.subscribe, services.locale.getSnapshot);
     useLayoutEffect(() => {
       for (const name of inputs) if (Object.prototype.hasOwnProperty.call(props, name)) (vm as any)[name] = props[name];
       if (!initialized.current) { initialized.current = true; vm.ngOnInit?.(); }

@@ -5,6 +5,20 @@ editing shared version numbers or published history. Internal-only work does
 not need notes. The supported release type is `patch`, retaining sequential
 versions such as `0.1.165-beta` → `0.1.166-beta`.
 
+## Languages
+
+The notes are published in the three languages the interface ships. A fragment
+carries `logs` (PT-BR, the source the notes are written in) plus `logs_es` and
+`logs_en`, each with one line per `logs` entry, in the same order.
+`tools/release-notes.mjs` enforces that on every fragment, so a note cannot reach
+the app untranslated.
+
+Releases published before the notes became trilingual have only `logs`, and
+nothing rewrites them. `entryLogs` in `src/releases/entry-logs.ts` falls back to
+PT-BR per entry, so the bell shows an old note in Portuguese rather than hiding
+it, and `tools/post-novidades.mjs` posts one Discord embed per language present —
+a single PT-BR embed for those older releases, exactly as before.
+
 On a push to main, the deployment workflow checks out the latest main, combines
 all pending fragments in filename order, increments the patch version, and
 consumes the fragments. Dates use America/Sao_Paulo. The app bell and Discord

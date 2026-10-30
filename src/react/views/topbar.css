@@ -25,3 +25,8 @@
 :is(app-topbar, .ui-scope-app-topbar) .topbar-settings .ui-button-icon{
   font-size: 13px;
 }
+:is(app-topbar, .ui-scope-app-topbar) .topbar-locale{
+  /* Narrower than --ui-trigger-width, but wide enough for the longest of the three
+     names — at 7.5rem the trigger clipped "Português" to "Portug…". */
+  width: 9.5rem;
+}

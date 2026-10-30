@@ -1,5 +1,6 @@
 import { Children, Fragment, ReactNode, createContext, createElement, isValidElement, useCallback, useContext, useState, useSyncExternalStore } from 'react';
 import { useServices } from '../services/application';
+import { useText } from '../state/use-text';
 import { missingIcon } from '../services/assets';
 import { Accordion } from '../ui/accordion';
 import { Block } from '../ui/block';
@@ -11,8 +12,8 @@ import { Popover } from '../ui/popover';
 import { PopoverHandle } from '../ui/popover-handle';
 import { Button, Card, Checkbox, Chip, Icon, Input, Switch, Tag } from '../ui/primitives';
 import { useReorder } from '../ui/reorder';
-import { Select } from '../ui/select';
-import { SelectButton } from '../ui/select-button';
+import { InsideOption, Select } from '../ui/select';
+import { InsideControl, SelectButton } from '../ui/select-button';
 import { Table } from '../ui/table';
 import { useTooltip } from '../ui/tooltip';
 import { VirtualList } from '../ui/virtual-list';
@@ -56,11 +57,32 @@ function PopoverView({ props, reference, children }: { props: Props; reference?:
 }
 interface RenderProps { tag: string; props: Props; children?: ReactNode; }
 interface RenderContext { services: ReturnType<typeof useServices>; rowSelection: Props | null; }
+// Elements that take focus and a tap on their own; any other tooltip anchor is given a
+// tab stop so its tip opens from the keyboard and by touch, not only under a mouse.
+const FOCUSABLE_TAGS = new Set(['button', 'a', 'input', 'select', 'textarea']);
 function InteractiveRender({ input, context }: { input: RenderProps; context: RenderContext }) {
+  const t = useText();
   const { tooltip: options, reorderIndex, reorderDisabled, reordered } = input.props;
-  const { triggerProps, tooltip } = useTooltip(options ?? { text: '' });
+  // A click that `activateWithKeys: false` marks as dormant (the row is not clickable
+  // right now) is no action, so a tap is free to open the tip.
+  const ownAction = typeof input.props['click'] === 'function' && !('activateWithKeys' in input.props && !input.props['activateWithKeys']);
+  const insideOption = useContext(InsideOption);
+  const insideControl = useContext(InsideControl);
+  const { triggerProps, tooltip, openFor } = useTooltip({ ...(options ?? { text: '' }), tap: !ownAction && !insideOption });
   const reorder = useReorder(reorderIndex ?? 0, reordered ?? (() => {}), reorderIndex == null || reorderDisabled);
-  return <>{renderElement(input, context, triggerProps, reorder)}{tooltip}</>;
+  const informative = !!options?.text && !options.disabled;
+  // Inside an option or a button that row or button is the focus stop; elsewhere the anchor needs one.
+  const focusProps: Props = !informative || insideOption || insideControl || FOCUSABLE_TAGS.has(input.tag) || input.props['tabIndex'] != null ? {}
+    : input.tag === 'app-icon' ? { tabIndex: 0, role: 'img', 'aria-hidden': 'false', 'aria-label': options.escape === false ? undefined : options.text }
+    : { tabIndex: 0 };
+  // A scrollable item description has no touch equivalent when a tap on its anchor
+  // already does something else (picks a list option, opens a picker). The info button
+  // opens the same description without that action; CSS shows it only without hover.
+  const describes = informative && (ownAction || insideOption) && String(options?.className ?? '').includes('item_desc_tooltip');
+  return <>{renderElement(input, context, { ...triggerProps, ...focusProps }, reorder)}
+    {describes && <button type="button" className={`tip-info ${ownAction ? 'tip-info--action' : ''}`} aria-label={t('ui.viewDescription')}
+      onClick={event => { event.preventDefault(); event.stopPropagation(); openFor(event.currentTarget.previousElementSibling as HTMLElement | null); }}>ⓘ</button>}
+    {tooltip}</>;
 }
 /** Binds local React primitives; calculation and feature logic live in their views. */
 export function Render(input: RenderProps) {
@@ -95,7 +117,9 @@ function renderElement({ tag, props: original, children }: RenderProps, { servic
       {badge && <span className={`ui-badge ui-component ui-badge-${props['severity'] ?? ''}${String(props['value']).length === 1 ? ' ui-badge-single' : ''}`}>{props['value']}</span>}
     </Icon>; break;
     case 'app-ui-card': rendered = <Card className={props['styleClass'] ?? props['className']}>{children}</Card>; break;
-    case 'app-ui-tag': rendered = <Tag {...props as any} {...triggerProps} className={props['styleClass'] ?? props['className']} />; break;
+    // A tag with a click (the rotation's element tag) is a button: the click is wired and Enter / Space press it.
+    case 'app-ui-tag': rendered = <Tag {...mergeProps(mappedProps, triggerProps, typeof props['click'] === 'function' ? keyActivate(activateWithKeys ?? true) : {}) as any}
+      className={props['styleClass'] ?? props['className']} />; break;
     case 'app-ui-chip': rendered = <Chip {...props as any} />; break;
     case 'app-ui-dropdown': case 'app-ui-multi-select': case 'app-ui-multiselect': case 'app-ui-cascade-select': case 'app-ui-cascadeselect':
       rendered = <Select {...selection as any} ref={attach} kind={tag === 'app-ui-dropdown' ? 'dropdown' : tag === 'app-ui-multiselect' || tag === 'app-ui-multi-select' ? 'multiselect' : 'cascadeselect'} />; break;

@@ -142,6 +142,8 @@ function sim(state: { actives: Record<string, number>; buffs: Record<string, num
 
   m.selectedAtkSkill = STORM_SLASH_SKILL;
   const calc = new Calculator().setMasterItems(items).setHpSpTable(hpSpTable).setClass(cls);
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  m.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(m);
   new CalculatorController().runChain(calc, {
     monster: monsters[DUMMY_FIRE_LV1], equipAtks, masteryAtks, buffEquips, buffMasterys,

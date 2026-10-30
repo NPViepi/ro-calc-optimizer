@@ -115,6 +115,8 @@ function sim(skillValue: string, opts: { kihop?: number; monsterId?: string } = 
     jobSpl: bonus.spl, jobCon: bonus.con, jobCrt: bonus.crt,
     selectedAtkSkill: skillValue,
   });
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  model.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(model);
 
   new CalculatorController().runChain(calc, {

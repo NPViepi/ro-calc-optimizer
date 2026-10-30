@@ -12,14 +12,16 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ItemTypeId } from 'src/app/constants/item.const';
 import { canGradeItem as canGradeItemTs } from 'src/app/utils/can-grade';
-import { buildItems, canGradeItem, latamEntry } from './build-web-data.mjs';
+import { buildItems, buildLocaleText, canGradeItem, latamEntry } from './build-web-data.mjs';
 
 const DATA_DIR = join(process.cwd(), 'src/assets/demo/data');
 const readJson = (file: string) => JSON.parse(readFileSync(join(DATA_DIR, file), 'utf8'));
 
 const rawItems: Record<string, any> = readJson('item.json');
 const latam: Record<string, any> = readJson('latam-items.json');
+const latamEn: Record<string, any> = readJson('latam-items-en.json');
 const { core, desc } = buildItems(rawItems, latam, {});
+const en = buildLocaleText(rawItems, latam, latamEn);
 
 const keys = Object.keys(rawItems);
 
@@ -139,5 +141,48 @@ describe('build-web-data: items-desc', () => {
     const forasteiros = keys.filter((k) => !latamEntry(latam, k, rawItems[k]) && !rawItems[k].preRelease);
     expect(forasteiros.length).toBeGreaterThan(100);
     expect(forasteiros.some((k) => k in desc)).toBe(false);
+  });
+});
+
+describe('build-web-data: items-name-<locale> / items-desc-<locale>', () => {
+  it('never widens the item universe past what items-core offers', () => {
+    const outsiders = Object.keys(en.names)
+      .filter((k) => !latamEntry(latam, k, rawItems[k]) && !rawItems[k].preRelease);
+    expect(outsiders).toEqual([]);
+  });
+
+  it('is keyed exactly like items-core, so the overlay lays straight over it', () => {
+    expect(Object.keys(en.names).filter((k) => core[k] === undefined)).toEqual([]);
+    expect(Object.keys(en.desc).filter((k) => core[k] === undefined)).toEqual([]);
+  });
+
+  it('leaves out every name the client spells the way items-core already does', () => {
+    expect(Object.keys(en.names).filter((k) => en.names[k] === core[k].name)).toEqual([]);
+  });
+
+  it('carries the client English name, not the Portuguese one', () => {
+    const sample = Object.keys(en.names).slice(0, 500);
+    const wrong = sample.filter((k) => en.names[k] !== (latamEn[rawItems[k].id] ?? latamEn[k]).name);
+    expect(wrong).toEqual([]);
+  });
+
+  it('translates the bulk of the catalogue rather than a handful of rows', () => {
+    // A near-empty overlay would mean the source table or the key rule broke, and an
+    // English reader would quietly go on reading Portuguese.
+    expect(Object.keys(en.names).length).toBeGreaterThan(5_000);
+  });
+
+  it('describes every item items-desc describes', () => {
+    // It is fetched INSTEAD of items-desc, so a key missing here is an item whose
+    // tooltip comes up empty — worse than one that comes up in Portuguese.
+    expect(Object.keys(desc).filter((k) => !en.desc[k])).toEqual([]);
+  });
+
+  it('falls back to the text items-desc shows when the client has none', () => {
+    // The pre-release items have no client row in any language: their English
+    // description from item.json is the only one there is.
+    const preRelease = Object.keys(desc).filter((k) => rawItems[k].preRelease);
+    expect(preRelease.length).toBeGreaterThan(100);
+    expect(preRelease.filter((k) => en.desc[k] !== rawItems[k].description)).toEqual([]);
   });
 });

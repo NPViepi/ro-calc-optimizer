@@ -7,7 +7,7 @@ import './battle-effects.css';
 export interface BattleEffect { name: string; label: string; label2?: string; itemId?: number; }
 function Effect({ item, customIcon }: { item: BattleEffect; customIcon?: (id: number) => number | undefined }) {
   const tip = useTooltip({ text: (item.label2 || '').replace(/^\s*\[\s*/, '').replace(/\s*\]\s*$/, ''), position: 'top' });
-  return <><span {...tip.triggerProps} className="hud-buff-item">
+  return <><span {...tip.triggerProps} tabIndex={item.label2 ? 0 : undefined} className="hud-buff-item">
     {item.itemId && <img src={iconUrl(item.itemId, 'item', customIcon)} alt="" className="hud-buff-icon" {...missingIcon} />}{item.label}
   </span>{tip.tooltip}</>;
 }

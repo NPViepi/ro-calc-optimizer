@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { AllowedCompareItemTypes } from 'src/app/app-config';
 import { PetLoyalty } from 'src/app/constants';
-import { itemSlotLabelPtBr } from 'src/app/constants/item-slot-i18n';
+import { itemSlotLabelKey } from 'src/app/constants/item-slot-i18n';
+import { DEFAULT_CATALOG } from 'src/app/i18n';
 import { RuneKnight } from 'src/app/jobs';
 import { createMainModel } from 'src/app/utils';
 import { Calculator } from '../calculator';
@@ -54,7 +55,7 @@ const delta = (pet: number, loyalty: PetLoyalty, key: string) =>
 describe('pet as a comparable slot', () => {
   it('is offered in the "comparar slot" picker, with a pt-BR label', () => {
     expect([...AllowedCompareItemTypes]).toContain('pet');
-    expect(itemSlotLabelPtBr('pet')).toBe('Pet');
+    expect(DEFAULT_CATALOG[itemSlotLabelKey('pet')]).toBe('Pet');
   });
 
   /*

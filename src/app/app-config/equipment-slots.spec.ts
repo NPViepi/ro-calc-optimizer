@@ -4,6 +4,7 @@ import { EQUIPMENT_SLOTS, SLOTS_BY_KEY, SLOT_GROUPS, comparableKeysOf } from './
 import { ItemOptionNumber } from '../constants/item-option-number.enum';
 import { ItemTypeEnum } from '../constants/item-type.enum';
 import { MainItemWithRelations } from '../constants/item-type.enum';
+import { DEFAULT_CATALOG } from '../i18n';
 
 /**
  * The descriptor table is the whole equipment picker now, so it has to stay pinned to the
@@ -143,12 +144,13 @@ describe('EQUIPMENT_SLOTS', () => {
     ]);
   });
 
-  it('gives every slot a pt-BR label', () => {
+  it('names every slot with a catalog key', () => {
     for (const slot of EQUIPMENT_SLOTS) {
-      expect(slot.label, slot.key).not.toBe(slot.key);
+      expect(slot.labelKey, slot.key).not.toBe(slot.key);
+      expect(DEFAULT_CATALOG[slot.labelKey], slot.key).toBeTruthy();
     }
     for (const sub of ALL_SUB_SLOTS) {
-      expect(sub.label.length, sub.key).toBeGreaterThan(0);
+      expect(DEFAULT_CATALOG[sub.label.key], sub.key).toBeTruthy();
     }
   });
 });

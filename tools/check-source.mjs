@@ -19,7 +19,7 @@ for (const name of names) {
   const file = program.getSourceFile(name);
   const imports = new Map();
   const local = relative(root, name).replaceAll('\\', '/');
-  const isolated = /^(src\/app\/core|worker|mcp)\//.test(local);
+  const isolated = /^(src\/app\/core|src\/app\/i18n|worker|mcp)\//.test(local);
   function boundary(node, value) {
     if (/^src\/react\//.test(local) && /^(?:@angular\/|rxjs(?:\/|$)|zone\.js(?:\/|$)|tslib(?:\/|$))/.test(value)) report(file, node, `Removed framework import in React source: ${value}`);
     if (!isolated) return;

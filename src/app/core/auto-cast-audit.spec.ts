@@ -28,7 +28,8 @@ describe('LATAM item auto-cast audit', () => {
   it('accounts for the current attack-trigger candidate set', () => {
     // A client-data update must deliberately reclassify the changed set rather than
     // silently making a new proc eligible for production.
-    expect(candidates).toHaveLength(243);
+    // 311221 Cristal Invernal (Autoconjuração) entrou com o cliente de 28/10/2026 e segue pendente.
+    expect(candidates).toHaveLength(244);
     const dispositions = candidates.map(([id]) => items[id].script?.autoCast ? 'verified-direct-damage' : 'pending-verification');
     expect(dispositions).toHaveLength(candidates.length);
   });

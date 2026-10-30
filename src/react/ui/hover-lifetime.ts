@@ -18,6 +18,12 @@ export class HoverLifetime {
     clearTimeout(this.showTimer); this.showTimer = undefined; this.cancelHide();
     if (!this.disposed) this.hideTimer = setTimeout(() => this.hide(), this.hideDelay());
   }
+  /** Opens at once, as a tap does: there is no pointer travel to wait for. */
+  open(): void {
+    clearTimeout(this.showTimer); this.showTimer = undefined; this.cancelHide();
+    if (!this.disposed && !this.active && this.allowed()) { this.active = true; this.show(); }
+  }
+  get isOpen(): boolean { return this.active; }
   cancelHide(): void { clearTimeout(this.hideTimer); this.hideTimer = undefined; }
   hide(): void {
     clearTimeout(this.showTimer); this.showTimer = undefined; this.cancelHide();

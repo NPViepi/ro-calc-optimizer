@@ -594,8 +594,8 @@ const JobBuffsList: ActiveSkillModel[] = [
     inputType: 'selectButton' as const,
     isDebuff: true,
     dropdown: [
-      { label: 'Não', isUse: false, value: 0 },
       { label: 'Sim', isUse: true, value: 1, bonus: { [bonusKey]: 50 } },
+      { label: 'Não', isUse: false, value: 0 },
     ],
   })),
   {

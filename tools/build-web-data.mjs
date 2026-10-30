@@ -23,6 +23,13 @@
 //
 //   items-desc[.<hash>].json   { "<key>": "<pt-BR description>" } — fetched
 //                              after the calculator's first visible calculation.
+//
+//   items-name-<locale>[.<hash>].json  { "<key>": "<name>" } — the item names in
+//                              Spanish and English, only where they differ from the
+//                              name items-core carries. Fetched beside items-core
+//                              when the reader is not reading Portuguese.
+//   items-desc-<locale>[.<hash>].json  the same two languages' descriptions, deferred
+//                              exactly like items-desc and fetched instead of it.
 //   skill-descriptions[.<hash>].json — skill prose extracted from the authored
 //                              TypeScript catalog using esbuild, also deferred.
 //
@@ -229,6 +236,42 @@ export function buildDescMcp(items, latam) {
   return out;
 }
 
+/**
+ * One language's item text, keyed the way items-core and items-desc are keyed.
+ *
+ * Names are emitted only where they differ from the name items-core already carries,
+ * which is how 14,9k rows become a ~300 KB overlay instead of a second name table: the
+ * client leaves a great many items spelled identically in all three languages, and an
+ * absent key means "the Portuguese one was already right".
+ *
+ * Descriptions carry no such comparison, and whatever items-desc shows is kept wherever
+ * the client has nothing: this artifact is fetched INSTEAD of items-desc, so a gap would
+ * be an empty tooltip rather than an untranslated one. The pre-release items need that
+ * fallback for all 200 of their rows — they have no client row in any language yet.
+ */
+export function buildLocaleText(items, latam, localeItems) {
+  const names = {};
+  const desc = {};
+
+  for (const key of Object.keys(items)) {
+    const item = items[key];
+    const pt = latamEntry(latam, key, item);
+    // Same gate as items-core's `presentInLatam`: an id neither the Portuguese table nor
+    // `preRelease` vouches for is in no dropdown, so translating it is bytes nobody reads.
+    if (!pt && !item.preRelease) continue;
+    const entry = localeItems[item.id] ?? localeItems[key];
+
+    // What items-core ended up showing — the pt-BR name when there is one, the
+    // English name from item.json when there is not.
+    const shown = pt?.name && pt.name !== item.name ? pt.name : item.name;
+    if (entry?.name && entry.name !== shown) names[key] = entry.name;
+    const text = entry?.description ?? pt?.description ?? item.description;
+    if (text) desc[key] = text;
+  }
+
+  return { names, desc };
+}
+
 export function buildMonsters(monsters, latamMonsters) {
   for (const id of Object.keys(monsters)) {
     const pt = latamMonsters[id];
@@ -242,6 +285,8 @@ export async function main() {
 
   const items = readJson(args.src, 'item.json');
   const latam = readJson(args.src, 'latam-items.json');
+  const latamEs = readJson(args.src, 'latam-items-es.json');
+  const latamEn = readJson(args.src, 'latam-items-en.json');
   const monsters = readJson(args.src, 'monster.json');
   const latamMonsters = readJson(args.src, 'latam-monsters.json');
   const hpSpTable = readJson(args.src, 'hp_sp_table.json');
@@ -249,11 +294,17 @@ export async function main() {
   const itemViews = readJson(args.src, 'item-views.json');
 
   const { core, desc } = buildItems(items, latam, args);
+  const es = buildLocaleText(items, latam, latamEs);
+  const en = buildLocaleText(items, latam, latamEn);
   const { descriptions: skillDescriptions } = splitSkillCatalog(await readSkillCatalog(ROOT));
 
   const artifacts = [
     ['itemsCore', 'items-core', core],
     ['itemsDesc', 'items-desc', desc],
+    ['itemNamesEs', 'items-name-es', es.names],
+    ['itemNamesEn', 'items-name-en', en.names],
+    ['itemsDescEs', 'items-desc-es', es.desc],
+    ['itemsDescEn', 'items-desc-en', en.desc],
     ['skillDescriptions', 'skill-descriptions', skillDescriptions],
     ['monsters', 'monsters', buildMonsters(monsters, latamMonsters)],
     ['hpsp', 'hpsp', hpSpTable],

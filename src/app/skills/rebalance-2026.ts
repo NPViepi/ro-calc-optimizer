@@ -4,7 +4,7 @@ import { ClassName } from '../jobs/_class-name';
 import type { SKILL_NAME } from '../constants/skill-name';
 import { REBALANCE_2026_REFERENCE, RebalanceTiming } from './rebalance-2026-reference';
 import { REBALANCE_2022_REFERENCE } from './rebalance-2022-reference';
-import type { SkillFormulaVersion } from './skill-formula-version';
+import { isLatamBaseline, type SkillFormulaVersion } from './skill-formula-version';
 
 type Input = AtkSkillFormulaInput;
 type Formula = AtkSkillModel['formula'];
@@ -204,7 +204,10 @@ export const REBALANCE_2022_PATCHES: Record<string, Patch> = {
   'Rock Down': { formula: i => scale(i, lv(i) * (climax(i) ? 1250 : 950) + spl(i) * 5), hit: 5 },
   'Destructive Hurricane': { ...REBALANCE_2026_PATCHES['Destructive Hurricane'], formula: i => climax(i) === 4 ? 0 : scale(i, 250 + lv(i) * 2800 + spl(i) * 5) },
   // Final Korean notice + historical implementation agree on 18000/21400 at Nv10.
-  'Astral Strike': { ...REBALANCE_2026_PATCHES['Astral Strike'], formula: i => scale(i, lv(i) * (race(i, 'undead', 'dragon') ? 2140 : 1800) + spl(i) * 10) },
+  // The article gave 2140/lv on Undead and Dragon, which only lands on the client's Nv10
+  // (21.400%). The client's own table is 400 + 2100/lv there and 300 + 1800/lv otherwise,
+  // level by level, so this skill reads the same as the later bundle.
+  'Astral Strike': REBALANCE_2026_PATCHES['Astral Strike'],
 
   'Hack and Slasher': { ...REBALANCE_2026_PATCHES['Hack and Slasher'], formula: linear(300, 700, 'pow', 7), canCri: false },
   'Storm Slash': { formula: i => scale(i, 100 + lv(i) * 170 + pow(i) * 5) * (active(i, 'Turisus Runestone') ? 1.3 : 1), totalHit: i => lv(i), canCri: true },
@@ -223,7 +226,10 @@ export const REBALANCE_2022_PATCHES: Record<string, Patch> = {
   'Overslash': { ...REBALANCE_2026_PATCHES['Overslash'], formula: i => scale(i, lv(i) * (120 + learned(i, 'Spear & Sword Mastery') * 10) + pow(i) * 5) },
   // Korean final notice: Nv5, mastery10, shield150/+10 = 12840%, not the
   // English translation's 14440%. Historical rAthena supplies 1400 + 2100*Lv.
-  'Shield Shooting': { formula: i => scale(i, 1400 + lv(i) * (2100 + learned(i, 'Shield Mastery') * 15) + pow(i) * 5 + (i.equipmentBonus.shield?.weight ?? 0) + (i.equipmentBonus.shield?.refine ?? 0) * 4) },
+  // 400 + 2300/lv is the client's table (2.700% to 11.900%); the article's 1400 + 2100/lv
+  // only agrees at Nv5. The POD, shield weight and refine terms stay the article's: the
+  // client names them without numbers.
+  'Shield Shooting': { formula: i => scale(i, 400 + lv(i) * (2300 + learned(i, 'Shield Mastery') * 15) + pow(i) * 5 + (i.equipmentBonus.shield?.weight ?? 0) + (i.equipmentBonus.shield?.refine ?? 0) * 4) },
   'Grand Judgement': { formula: i => scale(i, (race(i, 'plant', 'insect') ? 350 : 250) + lv(i) * (race(i, 'plant', 'insect') ? 1650 : 1500) + pow(i) * 7) },
   'Cross Rain': { formula: i => scale(i, lv(i) * (active(i, 'Holy Shield') ? 450 + learned(i, 'Spear & Sword Mastery') * 10 : 320 + learned(i, 'Spear & Sword Mastery') * 5) + spl(i) * 5), totalHit: 15 },
   'Metallic Fury': { formula: i => scale(i, lv(i) * 2200 + spl(i) * 1.5 * learned(i, 'Stage Manner')), getElement: (_, i) => i.ammoElement ?? ElementType.Neutral, part2: { ...part(i => active(i, '_Debuf_Sonic_Brand') ? scale(i, lv(i) * (2200 + 300 * (i.stack ?? 1)) + spl(i) * 1.5 * learned(i, 'Stage Manner')) : 0, ElementType.Neutral), element: undefined }, minStack: 1, maxStack: 5, defaultStack: 1 },
@@ -327,7 +333,7 @@ const references2022 = referenceMap(REBALANCE_2022_REFERENCE);
 
 /** Pure, per-calculation selection. Never writes to a shared job or skill definition. */
 export function resolveRebalancedSkill(skill: AtkSkillModel, version?: SkillFormulaVersion): AtkSkillModel {
-  if (version !== 'rebalance-2022-06' && version !== 'rebalance-2026-02') return skill;
+  if (version === 'pre-rebalance') return skill;
   // Sonic Brand also changes these inherited third-job ratios. Their cast data
   // and damage-packet behavior remain those of the existing implementation.
   if (skill.name === 'Reverberation' || skill.name === 'Metalic Sound') return {
@@ -335,7 +341,7 @@ export function resolveRebalancedSkill(skill: AtkSkillModel, version?: SkillForm
       ? scale(i, skill.name === 'Reverberation' ? 700 + lv(i) * 390 : lv(i) * 156 + learned(i, 'Lesson') * 60)
       : skill.formula(i),
   };
-  const historical = version === 'rebalance-2022-06';
+  const historical = isLatamBaseline(version);
   const reference = (historical ? references2022 : references2026).get(skill.name);
   const patch = (historical ? REBALANCE_2022_PATCHES : REBALANCE_2026_PATCHES)[skill.name];
   if (!reference || !patch) return skill;
@@ -369,8 +375,8 @@ function hyperVariant(skill: AtkSkillModel): Patch {
 }
 
 export function rebalancedSkillCatalog(skills: AtkSkillModel[], className: ClassName, version?: SkillFormulaVersion): AtkSkillModel[] {
-  if (version !== 'rebalance-2022-06' && version !== 'rebalance-2026-02') return skills;
-  const historical = version === 'rebalance-2022-06';
+  if (version === 'pre-rebalance') return skills;
+  const historical = isLatamBaseline(version);
   const references = historical ? REBALANCE_2022_REFERENCE : REBALANCE_2026_REFERENCE;
   const patches = historical ? REBALANCE_2022_PATCHES : REBALANCE_2026_PATCHES;
   const catalog = skills.map(skill => resolveRebalancedSkill(skill, version));

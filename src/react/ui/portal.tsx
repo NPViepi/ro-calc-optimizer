@@ -21,7 +21,7 @@ export interface PortalProps {
   backdropClassName?: string;
   lock?: boolean;
   trap?: boolean;
-  position?: 'center' | 'top' | 'right';
+  position?: 'center' | 'top' | 'right' | 'bottom';
   minWidth?: number;
   width?: number;
   role?: string;
@@ -51,7 +51,7 @@ export function Portal({ children, origin = null, anchor, positions, panelClass 
     if (width != null) pane.style.width = `${width}px`;
     if (!anchor) {
       host.style.display = 'flex'; host.style.justifyContent = position === 'right' ? 'flex-end' : 'center';
-      host.style.alignItems = position === 'top' ? 'flex-start' : 'center';
+      host.style.alignItems = position === 'top' ? 'flex-start' : position === 'bottom' ? 'flex-end' : 'center';
       pane.style.position = 'relative';
       if (position === 'top') pane.style.marginTop = '.75rem';
     }

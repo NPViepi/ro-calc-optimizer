@@ -13,6 +13,13 @@
 //                        visual slots it covers, so a multi-slot costume can hide
 //                        the headgears underneath it.
 //
+//   latam-items-es.json  { "<id>": { name, description } } — the same two fields
+//   latam-items-en.json  from the client's Spanish and English item tables. Only
+//                        the text: slots and the aegis name do not vary by
+//                        language, so they stay in latam-items.json alone. A row
+//                        the client leaves untranslated is simply absent, and the
+//                        app falls back to the Portuguese one.
+//
 //   latam-classes.json  [ <jobIconId>, … ] — the job icon ids that ship in the
 //                        LATAM client. Classes unreleased on LATAM have no icon,
 //                        so the UI hides them.
@@ -29,7 +36,7 @@
 // items.json/jobs.json (a ragassets checkout's resources/raw) for offline runs.
 // --dry reports without writing.
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadRawJson, RAW_BASE } from "./raw-source.mjs";
@@ -38,6 +45,9 @@ const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../src/assets/
 
 /** Visual-slot bits of item-views.json's `slotMask`, read by char-sprite.pipe.ts. */
 export const SLOT_BIT = { top: 1, mid: 2, low: 4, garment: 8 };
+
+/** The artifact as it stands, or `null` the first time one is emitted. */
+const readCurrent = (path) => (existsSync(path) ? readFileSync(path, "utf8") : null);
 
 /**
  * latam-items.json — the pt-BR overlay, keyed by item id.
@@ -57,6 +67,24 @@ export function buildLatamItems(items) {
     const aegisName = it.aegisName ?? it.resourceName;
     if (aegisName) rec.aegisName = aegisName;
     if (it.slots > 0) rec.slots = it.slots;
+    out[it.id] = rec;
+  }
+  return out;
+}
+
+/**
+ * latam-items-<locale>.json — the client's own item text in another language.
+ *
+ * Deliberately not a superset of latam-items.json: "exists on LATAM" is decided by the
+ * Portuguese table alone, so this one never widens the item universe. It carries `name`
+ * and `description` and nothing else, because nothing else here is language.
+ */
+export function buildLocaleItems(items) {
+  const out = {};
+  for (const it of items) {
+    if (!it.name) continue;
+    const rec = { name: it.name };
+    if (it.description) rec.description = it.description;
     out[it.id] = rec;
   }
   return out;
@@ -91,11 +119,16 @@ async function main() {
   const dry = argv.includes("--dry");
   const src = argv.includes("--src") ? argv[argv.indexOf("--src") + 1] : undefined;
 
-  const [items, jobs] = await Promise.all([loadRawJson("items.json", src), loadRawJson("jobs.json", src)]);
-  console.log(`source: ${items.length} items, ${jobs.length} jobs (${src ?? RAW_BASE})\n`);
+  const [items, itemsEs, itemsEn, jobs] = await Promise.all([
+    loadRawJson("items.json", src), loadRawJson("items_es.json", src),
+    loadRawJson("items_en.json", src), loadRawJson("jobs.json", src),
+  ]);
+  console.log(`source: ${items.length} items (es ${itemsEs.length}, en ${itemsEn.length}), ${jobs.length} jobs (${src ?? RAW_BASE})\n`);
 
   const artifacts = [
     ["latam-items.json", buildLatamItems(items)],
+    ["latam-items-es.json", buildLocaleItems(itemsEs)],
+    ["latam-items-en.json", buildLocaleItems(itemsEn)],
     ["item-views.json", buildItemViews(items)],
     ["latam-classes.json", buildLatamClasses(jobs)],
   ];
@@ -105,11 +138,11 @@ async function main() {
     const bytes = JSON.stringify(value);
     const count = Array.isArray(value) ? value.length : Object.keys(value).length;
     let status = "unchanged";
-    if (bytes !== readFileSync(path, "utf8")) {
+    if (bytes !== readCurrent(path)) {
       status = dry ? "would change" : "written";
       if (!dry) writeFileSync(path, bytes);
     }
-    console.log(`  ${name.padEnd(20)} ${String(count).padStart(6)} entries — ${status}`);
+    console.log(`  ${name.padEnd(21)} ${String(count).padStart(6)} entries — ${status}`);
   }
 }
 

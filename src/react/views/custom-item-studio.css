@@ -29,8 +29,9 @@
 :is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-viewport{ height: 200px; overflow-y: auto; overscroll-behavior: contain; }
 :is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-grid{ display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 2px; }
 :is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-option{ display: grid; place-items: center; width: 100%; height: 38px; padding: 2px; border: 0; background: transparent; cursor: pointer; }
-:is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-option:hover img,
 :is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-option--selected img{ filter: drop-shadow(0 0 3px var(--green-400)); }
+@media (hover: hover){:is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-option:hover img{ filter: drop-shadow(0 0 3px var(--green-400)); }}
+@media (hover: none){:is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-option:active img{ filter: drop-shadow(0 0 3px var(--green-400)); }}
 :is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-option:focus-visible{ outline: 1px solid var(--green-400); }
 :is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-option img{ max-width: 34px; max-height: 34px; image-rendering: pixelated; }
 :is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-fields{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }

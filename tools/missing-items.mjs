@@ -43,6 +43,8 @@ const TYPE_CATEGORY = new Map(
     // Not character gear, or not equipped at all: counted so nothing hides, never wanted.
     "acessório de mascote": "pet-accessory",
     "ovo de mascote": "pet-egg",
+    // The EP19 eggs (9170 Angelgolt, 9190 Relógio) are typed "Ovo de Monstro" instead.
+    "ovo de monstro": "pet-egg",
     isca: "taming-bait",
     "item de treinamento": "taming-bait",
     "item de domesticação": "taming-bait",

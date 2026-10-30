@@ -28,6 +28,12 @@ const MARKER = '__RO_DATA__';
 // RoService só os pede depois que ele resolve.
 const EAGER_KEYS = ['itemsCore', 'monsters', 'hpsp', 'classes'];
 
+// The item-name overlay for a reader who chose Spanish or English. It is ~55 KB over
+// the wire and `initData` awaits it beside items-core, so leaving it to the app would
+// put it a megabyte of JavaScript behind the table it is laid over — the one request
+// here that depends on a stored preference rather than on nothing at all.
+const LOCALE_NAME_KEYS = { es: 'itemNamesEs', en: 'itemNamesEn' };
+
 function parseArgs(argv) {
   let dist = join(ROOT, 'dist/sakai-ng');
   for (let i = 2; i < argv.length; i++) {
@@ -48,9 +54,12 @@ function fail(message) {
 function buildSnippet(manifest) {
   const boot = `<script>window.${MARKER}=${JSON.stringify(manifest)};
 (function(m){var b=m.base,f=m.files,o={};
-${JSON.stringify(EAGER_KEYS)}.forEach(function(k){
-var p=fetch(b+f[k]).then(function(r){if(!r.ok)throw new Error(k+" "+r.status);return r.json();});
-p.catch(function(){});o[k]=p;});
+function g(k){var p=fetch(b+f[k]).then(function(r){if(!r.ok)throw new Error(k+" "+r.status);return r.json();});
+p.catch(function(){});o[k]=p;}
+${JSON.stringify(EAGER_KEYS)}.forEach(g);
+var l=null;try{l=localStorage.getItem("ro-locale");}catch(e){}
+var n=${JSON.stringify(LOCALE_NAME_KEYS)}[l];
+if(n&&f[n])g(n);
 window.__RO_BOOT__=o;})(window.${MARKER});</script>`;
 
   return boot;

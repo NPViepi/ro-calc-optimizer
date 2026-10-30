@@ -1,0 +1,1198 @@
+/* Responsive layout for the calculator, in one file so the breakpoints are written once.
+
+   Three bands:
+     desktop  >= 1120px  two columns, build 7 : sections 5 (the layout the page always had)
+     tablet   768–1119   one pane at a time behind a sticky "Build · Resultado" switcher
+     phone    <= 767     one column, a bottom tab bar "Build · Equip. · Resultado"
+
+   Every viewport-width media query of the calculator lives here; component files keep
+   none of their own (item search and the custom item studio keep their own phone
+   layouts), and the container-width rules that adapt a component to its column live
+   here too. Script that needs the band reads `--viewport-band` (src/react/ui/viewport.ts)
+   rather than repeating a width. Inside the sections column, components adapt to the
+   column's own width through the `sections` container instead of the viewport, so a
+   narrow desktop column and a tablet pane follow the same rule.
+
+   The Angular originals (the *.component.css files under src/app) are not loaded; only
+   their size budget is checked. These sheets in src/react/views are the live ones.
+
+   Imported last (calculator-styles.ts) so it follows the component sheets it adjusts. */
+
+:root {
+  --viewport-band: desktop;
+  /* How the item picker opens: "panel" beside the slot, or "sheet" from the bottom. */
+  --item-picker: panel;
+  /* Height of the phone's bottom tab bar, safe area excluded. */
+  --pane-bar-height: 56px;
+  /* The fixed topbar's height (layout.css sets 3rem; the phone band raises it). */
+  --topbar-height: 3rem;
+}
+
+/* ---------------------------------------------------------------- desktop defaults --- */
+
+/* The columns keep their col-7 / col-5 widths (58.33% / 41.67%, padding included) at
+   every desktop width. The calculator used to be at least 1500px wide; it now shrinks
+   with the window, and the columns' contents adapt through the `build` and `sections`
+   container queries below, which only start under the old floor's column widths. */
+:is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell > .calc-col--build {
+  width: 58.3333%;
+  min-width: 0;
+  container: build / inline-size;
+}
+:is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell > .calc-col--result {
+  width: 41.6667%;
+  min-width: 0;
+  container: sections / inline-size;
+}
+:is(app-ro-calculator, .ui-scope-app-ro-calculator) :is(.calc-panes, .ss_group_toggle),
+:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-full-note,
+:is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-panel .where-above,
+app-topbar .topbar-menu,
+/* Shown only where they are needed (the blocks below): the info button beside an anchor
+   with its own action and the rotation's up / down buttons on touch; the elemental
+   tables' scroll hint below desktop. */
+.tip-info,
+:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-move,
+app-elemental-table .elemental-scroll-hint {
+  display: none;
+}
+
+/* ----------------------------------------------------- sections column (container) --- */
+
+/* Widest first: each narrower block refines the ones above it. The first fires for every
+   sections column narrower than the old 1500px floor gave it (625px): a desktop too
+   narrow for that floor (under ~1530px, ~1545px with a classic scrollbar; ~440px at
+   1120px), a tablet pane never (it is wider) and a phone always. */
+
+@container sections (max-width: 622.98px) {
+  /* Auto-cast source rows wrap their damage under the name (formerly a 1400px viewport
+     rule), lined up with the name (past the 22px icon and the row's 8px gap) and sharing
+     its line with the row's info button. */
+  :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-row {
+    flex-wrap: wrap;
+  }
+  :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-dmg {
+    /* The line less this indent and the info button with its gap (14px + 8px). */
+    flex: 1 1 calc(100% - 52px);
+    min-width: 0;
+    margin-left: 30px;
+  }
+  /* Bônus de Habilidade / Multiplicadores nests col-7 > (col-6 + col-6) beside a col-5;
+     under 625px those inner tables are ~160px or less. Stack them. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .misc-detail-table > [class*=col-],
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .misc-detail-table > .col-7 > .grid > .col-6 {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  /* Descrições dos Itens: the 250px item list beside the card would leave the card a
+     sliver, so the card goes under the list (and the empty card points up at it). */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-panel .where-beside {
+    display: none;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .item-description-panel .where-above {
+    display: inline;
+  }
+  /* Consumíveis: a name needs ~225px beside its icon and count, more than half of a
+     column this narrow, so one item per row. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .consumable-stack .ui-listbox-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Habilidades lays its skills out three across; each needs ~220px for its name beside
+     the level control, so a narrower column takes as many 220px columns as fit. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .skill-panel .calc-panel-section {
+    grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+  }
+  /* The auto-cast beta notice puts its actions under the text once they no longer fit
+     beside it (formerly a 1100px viewport rule). */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator, app-battle-hud, .ui-scope-app-battle-hud,
+    app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-cast-beta-alert {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator, app-battle-hud, .ui-scope-app-battle-hud,
+    app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-cast-beta-actions {
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+}
+
+/* The battle HUD's two cards (monster 40 / skill 60) stay side by side while the column
+   can hold them; below that they stack, monster card first as on desktop. This replaces the old viewport
+   rule at 991px, which fired on the very tablets that now give the sections full width. */
+@container sections (max-width: 539.98px) {
+  :is(app-battle-hud, .ui-scope-app-battle-hud, app-auto-cast-hud, .ui-scope-app-auto-cast-hud,
+    app-battle-damage-popovers, .ui-scope-app-battle-damage-popovers,
+    app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-cards {
+    flex-direction: column;
+  }
+  :is(app-battle-hud, .ui-scope-app-battle-hud, app-auto-cast-hud, .ui-scope-app-auto-cast-hud,
+    app-battle-damage-popovers, .ui-scope-app-battle-damage-popovers,
+    app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-cards > * {
+    width: 100%;
+    max-width: 100%;
+    flex-basis: auto;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator, app-battle-hud, .ui-scope-app-battle-hud,
+    app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-selectors-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-cards {
+    align-items: stretch;
+  }
+  :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-dmg {
+    justify-content: space-between;
+  }
+  :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-picker.ui-dropdown {
+    width: min(28rem, 100%);
+    max-width: 100%;
+  }
+  /* The timeline header's chips (e.g. "Vel.Atq limita a rotação") wrap under its title. */
+  :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-tl-head {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card) .hud-tl-head .hud-warn-chip {
+    max-width: 100%;
+    white-space: normal;
+    text-align: left;
+  }
+  /* A rotation row takes two lines: handle, step, icon and name; then the damage and
+     the row's buttons. The name may wrap instead of being cut to a few letters. */
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-row {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-body {
+    /* Room for the handle, step and icon on the same line. */
+    flex: 1 1 calc(100% - 136px);
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-name {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg {
+    flex: 1 1 auto;
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-line2 {
+    flex-wrap: wrap;
+  }
+  /* The rotation header's formula selector and buttons wrap instead of running off. */
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-head-actions {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+}
+
+@container sections (max-width: 439.98px) {
+  /* Consumíveis: a long name wraps rather than losing its end, and the attack-speed and
+     stat-food blocks stack. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .consumable-stack .calc-option-main .text_ellips {
+    white-space: normal;
+    overflow: visible;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .consumable-side {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .consumable-food {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  /* A rotation or auto-cast row's damage figures wrap rather than run off the row. */
+  :is(app-rotation-list, .ui-scope-app-rotation-list, app-auto-cast-hud, .ui-scope-app-auto-cast-hud) :is(.rot-dmg, .rot-dmg-main, .rot-dmg-meta) {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+}
+
+/* ---------------------------------------------------------- topbar menu (tablet, phone) --- */
+
+/* Everything the compact topbar drops, as full-width rows (app.topbar.tsx). */
+.topbar-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: min(280px, 100%);
+}
+.topbar-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.topbar-menu-row > span:first-of-type {
+  flex: 1 1 auto;
+}
+.topbar-menu-row:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+@media (hover: hover) {
+  .topbar-menu-row:hover {
+    background: var(--surface-hover);
+  }
+}
+@media (hover: none) {
+  .topbar-menu-row:active {
+    background: var(--surface-hover);
+  }
+}
+/* The version, which a narrow topbar may cut short, in full beside Novidades. */
+.topbar-menu-meta {
+  color: var(--text-color-secondary);
+  font-size: 0.75rem;
+}
+.topbar-menu-badge {
+  min-width: 1.5rem;
+  padding: 0 6px;
+  border-radius: 0.75rem;
+  background: var(--red-400, #ff6259);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.5rem;
+  text-align: center;
+}
+.topbar-menu-external {
+  color: var(--text-color-secondary);
+  font-size: 0.85em;
+}
+
+/* ------------------------------------------------------ description sheet (phone) --- */
+
+/* A popover on a phone (popover.tsx): a bottom sheet the screen's width, which scrolls
+   on its own when its content is taller than most of the screen. */
+.ui-popover-pane--sheet {
+  width: 100%;
+  max-width: 100%;
+}
+.ui-popover-pane--sheet > .ui-overlaypanel {
+  width: 100%;
+  max-width: 100%;
+  max-height: 85dvh;
+  overflow-y: auto;
+  margin: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-radius: 12px 12px 0 0;
+}
+
+/* A long item description opened by tap on a phone (tooltip.tsx), as a bottom sheet. */
+.ui-tooltip.ui-tooltip-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  max-height: 70dvh;
+  overflow-y: auto;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-radius: 12px 12px 0 0;
+  /* The sheet itself is the box, so the close button sits inside it. */
+  background: #304562;
+  color: var(--text-color);
+}
+.ui-tooltip.ui-tooltip-sheet.item_desc_tooltip {
+  background: #ffffff;
+  color: #000000;
+}
+.ui-tooltip.ui-tooltip-sheet .ui-tooltip-text {
+  width: auto;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  box-shadow: none;
+  background: transparent;
+}
+.ui-tooltip-sheet-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------- monster card (container) --- */
+
+/* The monster card is its own container (`.hud`, container-type in the HUD sheets). Under
+   ~520px the stat band beside the portrait wraps its numbers, so it stacks under it. */
+@container (max-width: 519.98px) {
+  :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card, app-auto-cast-hud, .ui-scope-app-auto-cast-hud,
+    app-battle-damage-popovers, .ui-scope-app-battle-damage-popovers, app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-card-col--monster .ui-card-content {
+    display: block;
+  }
+  :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card, app-auto-cast-hud, .ui-scope-app-auto-cast-hud,
+    app-battle-damage-popovers, .ui-scope-app-battle-damage-popovers, app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-card-col--monster .hud-monster-head .hud-monster-info {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+  :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card, app-auto-cast-hud, .ui-scope-app-auto-cast-hud,
+    app-battle-damage-popovers, .ui-scope-app-battle-damage-popovers, app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-band-right {
+    /* Under the portrait instead of beside it: the same padding, the divider on top. */
+    border-left: none;
+    border-top: 1px solid var(--surface-border);
+  }
+}
+
+/* Under 440px the second line (type, element, multiplier) has no room beside the handle,
+   step and icon: the body's lines join the row, so the name and its level stay beside the
+   icon (wrapping there with the cooldown warning) and the second line takes its own. */
+@container sections (max-width: 439.98px) {
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-body {
+    display: contents;
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-line1 {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-line2 {
+    flex-basis: 100%;
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-stall {
+    white-space: normal;
+  }
+}
+
+/* -------------------------------------------------------- build column (container) --- */
+
+/* The character band and the attribute + summary row were laid out for the build column
+   at the 1500px floor (~855px of content). Narrower — a desktop under ~1500px, or the
+   full-width tablet pane — they wrap. */
+@container build (max-width: 839.98px) {
+  /* Character band: the class takes its own row, everything else wraps under it. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band {
+    flex-wrap: wrap;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band > .char_class {
+    order: -1;
+    flex: 1 1 100%;
+  }
+
+  /* Attributes and summary each take the full width. Attributes go to four columns, so
+     every row still pairs a base stat with its trait as the desktop's two columns do. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .stats_row {
+    flex-wrap: wrap;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .attr_cell,
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .summary_cell {
+    flex: 1 1 100%;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .attr_grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+/* The summary's three group columns need ~180px each, and four attribute columns
+   (label, field and bonus each) ~150px. */
+@container build (max-width: 599.98px) {
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .attr_grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .ss_grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .ss_grid > .ss_col:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------------------------------------------------------------- compact (< 1120) --- */
+
+@media (max-width: 1119.98px) {
+  /* The elemental tables may scroll sideways: keep each row's monster in view while the
+     element columns pass under it. */
+  app-elemental-table-raw thead tr:first-child > th:first-child,
+  app-elemental-table-raw tbody td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    max-width: 120px;
+    background-color: var(--surface-card);
+  }
+  /* The elemental dialog's per-element tables (col-5) and its monster picker + table
+     (col-7), and the picker's checkbox (col-4) / multi-select (col-8), stack. */
+  app-elemental-table > .ui-fluid > .grid > [class*=col-],
+  app-elemental-table > .ui-fluid > .grid > [class*=col-] > .grid > :is(.col-4, .col-8) {
+    width: 100%;
+  }
+
+  :root {
+    --viewport-band: tablet;
+  }
+
+  /* Bônus de Habilidade / Multiplicadores nests col-7 > (col-6 + col-6) beside a col-5;
+     even across a tablet those inner tables get ~220px. Stack them. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .misc-detail-table > [class*=col-],
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .misc-detail-table > .col-7 > .grid > .col-6 {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* The build pane is full width, which can be wider than the container rule above
+     reaches, so the tablet takes the same layout outright: the class on its own row
+     with the rest of the band under it, and the attributes and summary each full
+     width, the attributes four across (a base stat beside its trait). */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) :is(.char_band, .stats_row) {
+    flex-wrap: wrap;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) :is(.char_band > .char_class, .attr_cell, .summary_cell) {
+    flex: 1 1 100%;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band > .char_class {
+    order: -1;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .attr_grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  /* The summary's groups two across, the third full width under them. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .ss_grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .ss_grid > .ss_col:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  /* One pane at a time, each the full page width. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell > .calc-col {
+    flex: 1 1 100%;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell > .calc-col--build {
+    padding-right: 0;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell[data-pane=result] > .calc-col--build,
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell:not([data-pane=result]) > .calc-col--result {
+    display: none;
+  }
+
+  /* index.html sets viewport-fit=cover: a landscape phone draws under its notch, so the
+     topbar and the page keep the side insets clear. The page column fills the dynamic
+     viewport, which 100vh overshoots under a mobile browser's toolbar. */
+  .layout-wrapper .layout-topbar,
+  .layout-wrapper.layout-overlay .layout-main-container,
+  .layout-wrapper.layout-static .layout-main-container,
+  .layout-wrapper .layout-main-container {
+    padding-left: calc(var(--page-gutter) + env(safe-area-inset-left));
+    padding-right: calc(var(--page-gutter) + env(safe-area-inset-right));
+  }
+  .layout-wrapper .layout-main-container {
+    min-height: 100dvh;
+  }
+  /* Focus and find-in-page stop below the topbar and the switcher. */
+  html {
+    scroll-padding-top: calc(var(--topbar-height) + var(--pane-bar-height));
+  }
+
+  /* Dialogs stay centred but no wider than 560px; the item search, the custom item
+     studio, the elemental table (as wide as its columns allow) and the saved simulations
+     (three cards across, names in full) keep their widths. A
+     phone turns them into sheets (below). The confirmation dialog's 25vw would be
+     ~200px on a tablet, too narrow for its message and two buttons. */
+  .ui-overlay-host:not(.ui-scope-app-custom-item-studio):not(.ui-scope-app-item-search) > .ui-dialog-pane:not(.ui-dialog-sidebar-pane):not(:has(app-elemental-table, > .saves-dialog)),
+  .ui-overlay-host:not(.ui-scope-app-custom-item-studio):not(.ui-scope-app-item-search) > .ui-dialog-pane:not(.ui-dialog-sidebar-pane) > .ui-dialog:not(.saves-dialog):not(:has(app-elemental-table)) {
+    max-width: min(560px, calc(100vw - 2rem));
+  }
+  .ui-confirm-dialog {
+    min-width: min(320px, calc(100vw - 2rem));
+  }
+
+  /* Item search: its 60vw dialog leaves a portrait tablet's item list ~150px wide, so
+     below desktop it takes the screen's width (its own 780px stacked layout, which is
+     wider still, is unaffected). */
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog {
+    min-width: calc(100vw - 2rem);
+  }
+
+  /* Where a newly chosen pane's top lands: under the topbar and the sticky switcher. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell {
+    scroll-margin-top: calc(var(--topbar-height) + 3rem);
+  }
+
+  /* The switcher sits under the fixed topbar and stays there while the pane scrolls. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-panes {
+    position: sticky;
+    top: var(--topbar-height);
+    z-index: 5;
+    display: flex;
+    gap: 4px;
+    margin: 0 0 12px;
+    padding: 6px 0;
+    background: var(--surface-ground);
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-panes__tab {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--surface-border);
+    border-radius: var(--border-radius);
+    background: var(--surface-card);
+    color: var(--text-color-secondary);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-panes__tab[aria-pressed=true] {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-panes__tab--equip {
+    display: none;
+  }
+
+  /* Topbar: the links and secondary buttons move into the menu sheet. */
+  app-topbar .topbar-nav {
+    display: none;
+  }
+  app-topbar .topbar-menu {
+    display: inline-flex;
+  }
+  .layout-topbar {
+    gap: 4px;
+  }
+  /* The topbar's dialogs render elsewhere (a portal): their empty hosts take no part in
+     the row, or each would add a gap after the menu button. */
+  .layout-topbar > :is(app-ui-dialog, app-help-improve),
+  .layout-topbar > app-help-improve > app-ui-dialog {
+    display: contents;
+  }
+
+  /* Habilidades: the pane is wider than a desktop sections column but its three columns
+     cut names short; take as many 260px columns as fit. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .skill-panel .calc-panel-section {
+    grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+  }
+
+  /* Pickers and dialogs keep their place; they just never outgrow a tablet. */
+  .ui-overlaypanel {
+    max-width: min(560px, calc(100vw - 16px));
+  }
+}
+
+/* ------------------------------------------------------------------ phone (< 768) --- */
+
+@media (max-width: 767.98px) {
+  :root {
+    --viewport-band: phone;
+    --item-picker: sheet;
+    --page-gutter: 8px;
+    --topbar-height: 3.5rem;
+  }
+  /* The elemental tables are wider than a phone: say once that they scroll sideways. */
+  app-elemental-table .elemental-scroll-hint {
+    display: block;
+    margin: 0 0 6px;
+    color: var(--text-color-secondary);
+    font-size: 12px;
+  }
+  /* The switcher moved to the bottom: focus stops clear of both fixed bars. */
+  html {
+    scroll-padding: var(--topbar-height) 0 calc(var(--pane-bar-height) + env(safe-area-inset-bottom));
+  }
+  /* Popovers stay between the topbar and the tab bar and can always be closed. */
+  .ui-overlaypanel {
+    max-height: calc(100dvh - var(--topbar-height) - var(--pane-bar-height) - env(safe-area-inset-bottom) - 16px);
+    overflow-y: auto;
+  }
+  /* The sheet's header (popover.tsx): stays on top while the content scrolls under it,
+     and takes its own row so the content keeps the sheet's whole width. */
+  .ui-overlaypanel-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: flex-end;
+    background: var(--surface-card);
+    border-bottom: 1px solid var(--surface-border);
+  }
+  .ui-overlaypanel-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-color-secondary);
+    font: inherit;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  /* The switcher moved to the bottom, so a pane's top only clears the topbar. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell {
+    scroll-margin-top: calc(var(--topbar-height) + 0.5rem);
+  }
+
+
+  /* Bottom tab bar. 100dvh-safe: it is anchored to the bottom edge and pads itself by the
+     home-indicator inset, and the page reserves the same height so nothing hides under it. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-panes {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 996;
+    margin: 0;
+    padding: 6px calc(8px + env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
+    border-top: 1px solid var(--surface-border);
+    background: var(--surface-card);
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-panes__tab {
+    flex-direction: column;
+    gap: 2px;
+    min-height: 44px;
+    border: 0;
+    background: transparent;
+    font-size: 12px;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-panes__tab--equip {
+    display: inline-flex;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-panes__tab[aria-pressed=true] {
+    background: rgb(255 255 255 / 6%);
+  }
+  .layout-wrapper .layout-main-container {
+    padding-top: calc(var(--topbar-height) + 0.5rem);
+    padding-bottom: calc(var(--pane-bar-height) + env(safe-area-inset-bottom) + 1rem);
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell[data-pane=equip] .stats_stack,
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell[data-pane=build] app-equipment-grid {
+    display: none;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-shell[data-pane=equip] app-equipment-grid {
+    margin-top: 0;
+  }
+
+  :is(app-elemental-table, .ui-scope-app-elemental-table) .hud-selectors-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Resultado: the sections run past the page gutter to the screen's sides, and pad their
+     content by that gutter, so their cards line up with the Build and Equip. cards. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-col--result {
+    margin-inline: calc(-1 * var(--page-gutter));
+  }
+  /* Outranks the accordion's first / last tab corner rules (_controls.css). */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-col--result .ui-accordion app-ui-accordion-tab:nth-child(n)
+    :is(.ui-accordion-header .ui-accordion-header-link, .ui-accordion-content) {
+    border-inline: 0;
+    border-radius: 0;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .calc-col--result .ui-accordion-content {
+    padding-inline: var(--page-gutter);
+  }
+
+  /* Topbar: logo, then two 44px icons — search and menu. */
+  .layout-topbar {
+    height: var(--topbar-height);
+  }
+  app-topbar .topbar-bell,
+  app-topbar .topbar-settings,
+  app-topbar .topbar-label {
+    display: none;
+  }
+  app-topbar .topbar-icon,
+  app-topbar .topbar-search {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+    padding: 0;
+  }
+  app-topbar .topbar-version {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Character band: class / Nv + Job / points / actions, one per row. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band > .char_class {
+    flex: 0 0 auto;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band > .char_levels {
+    order: 0;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band > .char_points {
+    order: 1;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band > .build_actions {
+    order: 2;
+    flex-wrap: wrap;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_levels > .ui-inputgroup,
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_points > .char_point_box {
+    flex: 1 1 0;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_levels app-ui-dropdown {
+    flex: 1 1 auto;
+    width: auto;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band .build_actions .ui-button,
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band .char_class .ui-dropdown,
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band .char_point_box,
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .char_band .joined_field {
+    height: 44px;
+  }
+  /* Text buttons claim at least 120px (a quarter row when wider), so a narrow phone
+     breaks them two and one, with the two icon buttons beside the last, never alone. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .build_actions > button {
+    flex: 1 1 max(120px, 25%);
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .build_actions > .ui-button-icon-only {
+    flex: 0 0 44px;
+  }
+
+  /* Attributes: two columns of 40px controls. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .attr_grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 6px;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .attr_cell .joined_field {
+    height: 40px;
+  }
+
+  /* Summary: headline in a 2 x 2 block, one group column at a time. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .ss_headline {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .ss_headline_item {
+    flex-wrap: wrap;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .ss_grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Each group folds behind a button at the end of its header. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .ss_group_toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    order: 1;
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-color-secondary);
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .ss_folded {
+    display: none;
+  }
+
+  /* Slot comparison: the ribbon (how many slots compare, clear all) stays under the
+     topbar while the slots scroll. */
+  :is(app-equipment-grid, .ui-scope-app-equipment-grid) .eq-grid__ribbon {
+    position: sticky;
+    top: var(--topbar-height);
+    z-index: 5;
+    padding: 6px 0;
+    background: var(--surface-ground);
+  }
+  /* The item's own chip takes a line of its own, its name the card's width less the
+     clear and info buttons on the same row. */
+  app-equipment-chip:has(.eq-chip--primary),
+  app-equipment-chip .eq-chip__picker:has(> .eq-chip--primary) {
+    flex: 1 1 100%;
+  }
+  app-equipment-chip .eq-chip--primary {
+    flex: 1 1 0%;
+  }
+  /* Slot card: the header wraps instead of squeezing its controls. */
+  :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__head {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* Dialogs become bottom sheets, near full height. The custom item studio keeps the
+     phone layout it already had. */
+  .ui-overlay-host:not(.ui-scope-app-custom-item-studio) > .ui-dialog-pane:not(.ui-dialog-sidebar-pane) {
+    align-self: flex-end;
+    width: 100%;
+    max-width: 100%;
+    max-height: 92dvh;
+    margin-top: 0;
+  }
+  .ui-overlay-host:not(.ui-scope-app-custom-item-studio) > .ui-dialog-pane:not(.ui-dialog-sidebar-pane) > .ui-dialog {
+    width: 100%;
+    min-width: 100%;
+    max-height: 92dvh;
+    border-radius: 12px 12px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* The item search sheet scrolls as one: filters, then the list at its full page of
+     rows. The description opens in a popover from the tapped row (item-search.tsx). */
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog {
+    height: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog > .ui-dialog-content {
+    overflow-y: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-workspace {
+    flex: 1 1 0%;
+    align-self: flex-start;
+    min-height: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-filters {
+    flex: 0 0 auto;
+    min-height: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-filter-controls {
+    max-height: none;
+    overflow: visible;
+    background: none;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-results {
+    display: block;
+    flex: 0 0 auto;
+    height: auto;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-search-list .ui-datatable-wrapper {
+    overflow: visible;
+  }
+}
+
+/* --------------------------------------------------------------- short viewports --- */
+
+/* A landscape phone or a shorter one (under 820px tall): the item search's nested
+   scrollers would leave its list no height at all, so its body scrolls as one. The
+   filters show in full, and the results below keep most of a screen, their own
+   scrollers and their pagination. */
+@media (max-width: 1119.98px) and (max-height: 819.98px) {
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog > .ui-dialog-content {
+    overflow-y: auto;
+  }
+  /* The workspace sits in a row: it keeps the dialog's width and takes its content's
+     height. Inside it (a column) the filters keep theirs. */
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-workspace {
+    flex: 1 1 0%;
+    align-self: flex-start;
+    min-width: 0;
+    min-height: auto;
+    max-height: none;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-filters {
+    flex: 0 0 auto;
+    min-height: auto;
+    max-height: none;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-filter-controls {
+    max-height: none;
+    overflow: visible;
+    background: none;
+  }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-results {
+    flex: 0 0 auto;
+    height: max(18rem, 85dvh);
+  }
+}
+
+/* A landscape phone (under 500px tall): the picker panel beside the slot would show two
+   rows, so the item picker opens as a sheet, as on a phone held upright. */
+@media (max-width: 1119.98px) and (max-height: 499.98px) {
+  :root {
+    --item-picker: sheet;
+  }
+}
+
+/* The item picker as a bottom sheet (item-picker.tsx opens it as one where `--item-picker`
+   says "sheet": a phone, upright or on its side), the full screen wide and near its full height; the list grows into it (the
+   virtual list measures itself). */
+.ui-item-picker-pane--sheet {
+  width: 100%;
+  max-width: 100%;
+  max-height: 85dvh;
+}
+.ui-item-picker-pane--sheet app-item-picker-overlay {
+  display: block;
+  width: 100%;
+}
+.ui-item-picker-pane--sheet :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker {
+  width: 100%;
+  max-width: none;
+  height: 85dvh;
+  max-height: 85dvh;
+  border-radius: 12px 12px 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ------------------------------------------------------------------- touch input --- */
+
+/* No pointer to hover with (a phone or a touch tablet, at any width): what hover used to
+   reveal is shown up front, hover-only visual states move to :active, and every control a
+   finger has to hit is at least 40px, an icon-only one 44px. */
+@media (hover: none) {
+  :root {
+    --touch-target: 40px;
+    --touch-icon: 44px;
+  }
+
+  /* Info buttons beside anchors whose tap is their own action (render.tsx). */
+  .tip-info--action,
+  [role=option] .tip-info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 var(--touch-icon);
+    width: var(--touch-icon);
+    height: var(--touch-icon);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-color-secondary);
+    font: inherit;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator, app-battle-hud, .ui-scope-app-battle-hud,
+    app-auto-cast-hud, .ui-scope-app-auto-cast-hud, app-status-input, app-battle-monster-card) .bonus_clickable {
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+  }
+  .ui-button.ui-button-icon-only,
+  .ui-button.ui-button-text {
+    outline: 1px solid var(--surface-border);
+    outline-offset: -1px;
+  }
+
+  /* Buttons, fields, list options, checkboxes (the label row is the target) and
+     accordion headers. */
+  .ui-button,
+  .ui-inputtext,
+  .ui-dropdown,
+  .ui-multiselect,
+  .ui-checkbox-label,
+  .ui-select-item,
+  .ui-listbox-item,
+  .ui-accordion-header-link,
+  .layout-wrapper select,
+  :is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__row {
+    min-height: var(--touch-target);
+  }
+  .ui-checkbox-label {
+    min-width: var(--touch-target);
+  }
+  /* 44px paginator buttons sit edge to edge, without the bar's side padding, so a row
+     of seven (three page links on touch) fits a list from ~310px wide (a 390px phone);
+     a narrower list wraps them onto a second row. */
+  .ui-paginator {
+    padding-inline: 0;
+  }
+  .ui-paginator-element {
+    margin-inline: 0;
+  }
+  /* A table header with a tip: a cell's height and width are its minimum. */
+  app-misc-detail th[tabindex] {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+  /* Text buttons as narrow as "Sim" / "Não" keep a finger's width. */
+  .ui-button {
+    min-width: var(--touch-target);
+  }
+  /* Icon-only buttons and close buttons; the paginator's arrows and page numbers. */
+  .ui-button.ui-button-icon-only,
+  .ui-paginator-element,
+  .ui-dialog-header-icon,
+  .ui-tooltip-sheet-close,
+  .skill-formula-info,
+  app-topbar :is(.topbar-icon, .topbar-search, .topbar-settings),
+  app-equipment-grid .eq-ribbon__clear,
+  :is(app-slot-color-picker, .ui-scope-app-slot-color-picker) .cpicker__rename,
+  :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) :is(.eq-card__color, .eq-card__clear),
+  .damage-taken-info {
+    min-width: var(--touch-icon);
+    min-height: var(--touch-icon);
+  }
+  /* Batalha keeps its desktop sizes on touch: its buttons, fields and headers are not
+     raised to a finger's height (fidelity first, at the cost of smaller targets). */
+  :is(app-battle-hud, .ui-scope-app-battle-hud, app-battle-monster-card,
+    app-battle-effects, app-rotation-list, .ui-scope-app-rotation-list, app-rotation-timeline, .ui-scope-app-rotation-timeline,
+    app-auto-cast-hud, .ui-scope-app-auto-cast-hud)
+    :is(.ui-button, .ui-inputtext, .ui-dropdown, .ui-multiselect, .ui-checkbox-label, .ui-accordion-header-link, select, .skill-formula-info, .damage-taken-info) {
+    min-width: 0;
+    min-height: 0;
+  }
+  :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) :is(.eq-card__color, .eq-card__clear) {
+    border-radius: 22px;
+    margin-right: 0;
+  }
+  :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__compare {
+    min-height: var(--touch-icon);
+  }
+  /* The comparison row's swap / clear buttons float at its top right with a mouse; at
+     44px they would cover the row's chips, so on touch they take their own line above. */
+  :is(app-equipment-slot-card, .ui-scope-app-equipment-slot-card) .eq-card__compare-actions {
+    position: static;
+    justify-content: flex-end;
+    padding: 4px 8px 0;
+  }
+
+  /* Values and labels that open a breakdown, a table or a tip on tap: the text keeps its
+     size and the box around it grows to a finger. */
+  :is(app-status-input, .ui-scope-app-status-input) .status_extra,
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) :is(.ss_value_text, .ss_delta, .ss_headline_value, .ss_headline_delta, .ss_reduction, .stats_compare_toggle),
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .stats_side,
+  app-equipment-grid .eq-ribbon__text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target);
+    min-width: var(--touch-target);
+  }
+
+  /* A skill name in Habilidades opens its details; it keeps its ellipsis, so it grows
+     by padding rather than by becoming a flex box. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator) .skill_link {
+    min-width: var(--touch-target);
+    padding-block: calc((var(--touch-target) - 1lh) / 2);
+  }
+
+  /* Rotation: up / down buttons stand in for the drag handle (which still works). The
+     Batalha view keeps its desktop sizes on touch, so they are as small as the row's
+     other buttons. */
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-move {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 0 2px;
+    border: 0;
+    background: transparent;
+    color: var(--text-color-secondary);
+    font-size: 12px;
+  }
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-move:disabled {
+    opacity: 0.35;
+  }
+  /* A full rotation's add button is disabled, so its tip cannot open: the limit is
+     printed beside it instead. */
+  :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-full-note {
+    display: inline;
+    margin-left: 8px;
+    color: var(--text-color-secondary);
+    font-size: 12px;
+  }
+
+  /* The stacked item search's filter box shows its touch-sized fields and first bonus. */
+  :is(app-item-search, .ui-scope-app-item-search) {
+    --item-search-filter-rows: 14.75rem;
+  }
+
+  /* Item picker: a finger-sized filter field, and breadcrumbs (the only way back up the
+     bonus tree) as real targets. */
+  :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__input {
+    height: var(--touch-target);
+  }
+  :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__row--create {
+    min-height: var(--touch-icon);
+  }
+  :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__crumb {
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+    padding-inline: 8px;
+  }
+  /* Item picker: 44px rows (item-picker-overlay.ts), each with its info button beside it. */
+  :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__item {
+    display: flex;
+    align-items: center;
+    min-height: var(--touch-icon);
+  }
+  :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) .picker__item > .picker__row {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  :is(app-item-picker-overlay, .ui-scope-app-item-picker-overlay) :is(.picker__row--create, .picker__row--none) {
+    height: var(--touch-icon);
+  }
+
+  /* Equipment chips at finger height; a filled chip's clear button, which a mouse finds
+     on hover, sits beside it instead. */
+  app-equipment-chip :is(.eq-chip, .eq-chip__custom) {
+    min-width: var(--touch-icon);
+    height: var(--touch-icon);
+  }
+  app-equipment-chip .eq-chip__picker {
+    gap: 4px;
+  }
+  app-equipment-chip .eq-chip__clear {
+    position: static;
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: var(--touch-icon);
+    height: var(--touch-icon);
+    margin-top: 0;
+    border-radius: var(--border-radius);
+    background: transparent;
+    box-shadow: none;
+    border: 1px solid var(--surface-border);
+    color: var(--text-color-secondary);
+    font-size: 12px;
+  }
+
+  /* An attribute label holding the other build's value opens its tip by tap. */
+  app-status-input .status_label--other {
+    min-width: var(--touch-target);
+  }
+
+  /* Custom item studio: the icon grid's buttons are icon-only, so 44px each, as many
+     across as fit. */
+  :is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(var(--touch-icon), 1fr));
+  }
+  :is(app-custom-item-studio, .ui-scope-app-custom-item-studio) .studio-icon-option {
+    height: var(--touch-icon);
+  }
+
+  /* Footer links, one per finger; the same for the Novidades dialog's link to the
+     original changelog and the Configurações "Prévias" label that opens its tip. */
+  app-footer .layout-footer a,
+  .changelog-original-link,
+  .settings-preview-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-target);
+  }
+
+  /* A touch screen has nothing to drag a replay file with: only the button is offered. */
+  :is(app-ro-calculator, .ui-scope-app-ro-calculator, app-help-improve, .ui-scope-app-help-improve) .replay-dropzone-drag {
+    display: none;
+  }
+}

@@ -35,6 +35,8 @@ test('consumable search matches abbreviations and accents, clears, and retains s
   await expect(panel.getByRole('option', { name: label, exact: true })).toHaveAttribute('aria-selected', 'true');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ro-set')!).consumables)).toEqual(selection);
   await page.setViewportSize({ width: 390, height: 844 });
+  // A phone shows the sections behind the bottom bar's "Resultado" tab.
+  await page.getByRole('button', { name: 'Resultado', exact: true }).click();
   await search.scrollIntoViewIfNeeded();
   const bounds = await search.boundingBox();
   expect(bounds!.x).toBeGreaterThanOrEqual(0);

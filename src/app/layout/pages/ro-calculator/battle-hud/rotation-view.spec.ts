@@ -1,3 +1,5 @@
+import { translate } from 'src/app/core/i18n';
+import { DEFAULT_CATALOG } from 'src/app/i18n';
 import { describe, expect, it } from 'vitest';
 import { BASIC_ATTACK_VALUE } from '../../../../core/rotation';
 import { buildRotationView, computeRotationTimeToKill, RotationSkillMeta, toScheduleStep } from './rotation-view';
@@ -75,6 +77,9 @@ const atkSkills: RotationSkillMeta[] = [
   { value: 'Sunset Blast==5', label: 'Entardecer Nv5', icon: 5466, levelList: [{ label: 'Entardecer Nv5', value: 'Sunset Blast==5' }] },
 ];
 
+/** The real pt-BR catalog, so an asserted label is the one the row prints. */
+const text = (key: any, params?: any) => translate(DEFAULT_CATALOG, key, params);
+
 describe('toScheduleStep', () => {
   it('keys a skill by name, so its levels share one recarga', () => {
     const step = toScheduleStep({ value: 'Solar Kick==7', summary: summaryOf({ reducedAcd: 0.3, reducedCd: 0.5 }), damage: 10 });
@@ -103,6 +108,7 @@ describe('buildRotationView', () => {
     const value = 'Eternal Slash==5';
     const summary = summaryOf({ perHit: 4500, hits: 4 });
     const result = buildRotationView({
+    text,
       rotation: [value],
       summaryByValue: new Map([[value, summary]]),
       baseSummary: summary,
@@ -114,11 +120,41 @@ describe('buildRotationView', () => {
     expect(result.entries[0].stackCount).toBe(4);
     expect(result.entries[0].damage).toBe(18_000);
   });
+  it('cala as leituras de dano de uma habilidade que não bate', () => {
+    // Esconderijo e Infiltrar entram na rotação pelo tempo que ocupam, não pelo dano
+    // (cards bLnU1DLpGeA2vxQ794I4 e FPpmOoKCq7KzPxV4NUZ3). A linha lia "0" ao lado de um
+    // elemento neutro e de um "Sem crít.", três números sobre um golpe que não acontece.
+    const value = 'Hiding==1';
+    const summary = summaryOf({ perHit: 4500, hits: 1 });
+    const utility = buildRotationView({
+      text,
+      rotation: [value],
+      summaryByValue: new Map([[value, summary]]),
+      baseSummary: summary,
+      hasSelectedChances: false,
+      atkSkills: [{ value, label: 'Esconderijo Nv1', isUtility: true }],
+    });
+
+    expect(utility.entries[0]).toMatchObject({ showsDamage: false, damage: 0, damageRanges: [], requireTxt: '' });
+
+    // Sem a marca, a mesma habilidade volta a relatar o que a cadeia devolveu.
+    const offensive = buildRotationView({
+      text,
+      rotation: [value],
+      summaryByValue: new Map([[value, summary]]),
+      baseSummary: summary,
+      hasSelectedChances: false,
+      atkSkills: [{ value, label: 'Esconderijo Nv1' }],
+    });
+
+    expect(offensive.entries[0]).toMatchObject({ showsDamage: true, damage: 4500 });
+  });
   it('keeps separate accumulation and damage for repeated rotation tiles', () => {
     const value = 'Eternal Slash==5';
     const first = summaryOf({ perHit: 4500, hits: 1 });
     const second = summaryOf({ perHit: 4500, hits: 4 });
     const result = buildRotationView({
+    text,
       rotation: [value, value],
       summaryByValue: new Map([[value, first]]),
       summaryByIndex: new Map([[0, first], [1, second]]),
@@ -138,6 +174,7 @@ describe('buildRotationView', () => {
   ]);
 
   const view = buildRotationView({
+    text,
     rotation: ['Solar Kick==7', 'Sunset Blast==5', 'Solar Kick==7', BASIC_ATTACK_VALUE],
     summaryByValue,
     baseSummary: base,
@@ -167,13 +204,16 @@ describe('buildRotationView', () => {
     };
     const args = { rotation: ['Solar Kick==7'], summaryByValue: new Map([['Solar Kick==7', withProc]]), baseSummary: withProc, atkSkills };
 
-    expect(buildRotationView({ ...args, hasSelectedChances: false }).entries[0].damage).toBeCloseTo(3000, 5);
-    expect(buildRotationView({ ...args, hasSelectedChances: true }).entries[0].damage).toBeCloseTo(4500, 5);
+    expect(buildRotationView({
+    text, ...args, hasSelectedChances: false }).entries[0].damage).toBeCloseTo(3000, 5);
+    expect(buildRotationView({
+    text, ...args, hasSelectedChances: true }).entries[0].damage).toBeCloseTo(4500, 5);
   });
 
   it('keeps the base damage when the effected pass produced nothing', () => {
     // A build with a chance ticked that this skill's own pass never fired.
     const view2 = buildRotationView({
+    text,
       rotation: ['Solar Kick==7'],
       summaryByValue: new Map([['Solar Kick==7', base]]),
       baseSummary: base,
@@ -215,6 +255,7 @@ describe('buildRotationView', () => {
     const magic = summaryOf({ dmgType: 'Magical' });
     const melee = summaryOf({ dmgType: 'Melee' });
     const view3 = buildRotationView({
+    text,
       rotation: ['Solar Kick==7', 'Sunset Blast==5'],
       summaryByValue: new Map([['Solar Kick==7', magic], ['Sunset Blast==5', melee]]),
       baseSummary: melee,
@@ -243,6 +284,7 @@ describe('buildRotationView', () => {
       { value: 'Solar Kick==7', label: 'Chute Solar Nv7', canCri: true },
     ];
     const crit = buildRotationView({
+    text,
       rotation: ['Sunset Blast==5', 'Solar Kick==7'],
       summaryByValue: new Map([
         ['Sunset Blast==5', { ...summaryOf({}), dmg: { ...summaryOf({}).dmg, skillCanCri: true, skillCriRateToMonster: 42.5 } }],
@@ -270,6 +312,7 @@ describe('buildRotationView', () => {
 
   it('zeroes a skill the build cannot cast and lists it as blocked', () => {
     const blockedView = buildRotationView({
+    text,
       rotation: ['Solar Kick==7'],
       summaryByValue: new Map([['Solar Kick==7', summaryOf({ requireTxt: 'twohandSword', perHit: 9999 })]]),
       baseSummary: base,
@@ -283,6 +326,7 @@ describe('buildRotationView', () => {
 
   it('reports no time to kill against an immune target', () => {
     const immune = buildRotationView({
+    text,
       rotation: ['Solar Kick==7'],
       summaryByValue: new Map([['Solar Kick==7', summaryOf({ perHit: 0, hits: 0 })]]),
       baseSummary: summaryOf({ perHit: 0, hits: 0, basicDps: 0 }),
@@ -297,6 +341,7 @@ describe('buildRotationView', () => {
 
   it('handles an empty rotation', () => {
     const empty = buildRotationView({
+    text,
       rotation: [],
       summaryByValue,
       baseSummary: base,
@@ -317,6 +362,7 @@ describe('stall reporting', () => {
   it('never stalls a one-entry rotation on its own recarga', () => {
     const long = summaryOf({ castPeriod: 1, reducedCd: 60, perHit: 1000, hits: 1 });
     const view = buildRotationView({
+    text,
       rotation: ['Solar Kick==7'],
       summaryByValue: new Map([['Solar Kick==7', long]]),
       baseSummary: long,
@@ -333,6 +379,7 @@ describe('stall reporting', () => {
     const slow = summaryOf({ castPeriod: 0.2, reducedAcd: 0.2, reducedCd: 10, perHit: 1000, hits: 1 });
     const quick = summaryOf({ castPeriod: 0.2, reducedAcd: 0.2, reducedCd: 0.2, perHit: 1000, hits: 1 });
     const view = buildRotationView({
+    text,
       rotation: ['Solar Kick==7', 'Sunset Blast==5'],
       summaryByValue: new Map([['Solar Kick==7', slow], ['Sunset Blast==5', quick]]),
       baseSummary: slow,
@@ -349,6 +396,7 @@ describe('crit-weighted rows', () => {
   const viewFor = (over: { canCri?: boolean; criRate?: number }) => {
     const summary = summaryOf({ perHit: 1_114_048, hits: 1, criDmg: 1_760_192, ...over });
     return buildRotationView({
+    text,
       rotation: ['Solar Kick==7'],
       summaryByValue: new Map([['Solar Kick==7', summary]]),
       baseSummary: summary,
@@ -390,6 +438,7 @@ describe('crit-weighted rows', () => {
       critMax: 2200,
     });
     const entry = buildRotationView({
+    text,
       rotation: ['Solar Kick==7'],
       summaryByValue: new Map([['Solar Kick==7', summary]]),
       baseSummary: summary,
@@ -406,6 +455,7 @@ describe('crit-weighted rows', () => {
   it('splits ataque básico into the same two rolls the engine averaged', () => {
     const summary = summaryOf({ basicMin: 1400, basicMax: 1600, basicCriMin: 2900, basicCriMax: 3100, basicCriRate: 40 });
     const entry = buildRotationView({
+    text,
       rotation: [BASIC_ATTACK_VALUE],
       summaryByValue: new Map(),
       baseSummary: summary,
@@ -431,6 +481,7 @@ describe('crit-weighted rows', () => {
   it('shows the min-max roll of a skill that cannot crit', () => {
     const summary = summaryOf({ perHit: 1000, hits: 1, critMin: 900, critMax: 1100 });
     const entry = buildRotationView({
+    text,
       rotation: ['Solar Kick==7'],
       summaryByValue: new Map([['Solar Kick==7', summary]]),
       baseSummary: summary,

@@ -1,0 +1,24 @@
+{
+  "type": "patch",
+  "logs": [
+    "Adicionado um seletor de idioma na barra superior, com português, espanhol e inglês. No celular e no tablet ele fica no menu. O idioma escolhido fica guardado no navegador e vale também ao abrir um link compartilhado.",
+    "Na primeira visita o simulador pergunta qual idioma usar, com a pergunta escrita nos três idiomas, e guarda a resposta para não perguntar de novo.",
+    "Traduzida por completo a interface: todas as telas, painéis, caixas de diálogo, mensagens e avisos aparecem no idioma escolhido.",
+    "Os nomes e as descrições dos itens passam a acompanhar o idioma escolhido: em espanhol e em inglês eles vêm das tabelas do próprio cliente. Os nomes de habilidades, classes e monstros — e as raças, tamanhos e propriedades dos alvos — seguem em português por enquanto.",
+    "As novidades passam a ser publicadas nos três idiomas e acompanham o idioma escolhido. Todo o histórico anterior também foi traduzido: as 192 versões já publicadas aparecem em espanhol e inglês."
+  ],
+  "logs_es": [
+    "Agregado un selector de idioma en la barra superior, con portugués, español e inglés. En el celular y en la tablet está en el menú. El idioma elegido queda guardado en el navegador y también vale al abrir un enlace compartido.",
+    "En la primera visita el simulador pregunta qué idioma usar, con la pregunta escrita en los tres idiomas, y guarda la respuesta para no volver a preguntar.",
+    "Traducida por completo la interfaz: todas las pantallas, paneles, cuadros de diálogo, mensajes y avisos aparecen en el idioma elegido.",
+    "Los nombres y las descripciones de los objetos pasan a seguir el idioma elegido: en español y en inglés vienen de las tablas del propio cliente. Los nombres de habilidades, clases y monstruos — y las razas, tamaños y propiedades de los objetivos — siguen en portugués por ahora.",
+    "Las novedades pasan a publicarse en los tres idiomas y siguen el idioma elegido. Todo el historial anterior también fue traducido: las 192 versiones ya publicadas aparecen en español e inglés."
+  ],
+  "logs_en": [
+    "Added a language selector to the top bar, with Portuguese, Spanish and English. On a phone or tablet it sits in the menu. The chosen language is kept in the browser and also applies when opening a shared link.",
+    "On the first visit the simulator asks which language to use, with the question written in all three, and remembers the answer so it never asks again.",
+    "Fully translated the interface: every screen, panel, dialog, message and notice appears in the chosen language.",
+    "Item names and descriptions now follow the chosen language: in Spanish and English they come from the client's own tables. The names of skills, classes and monsters — and the races, sizes and properties of targets — remain in Portuguese for now.",
+    "Release notes are now published in all three languages and follow the chosen language. The whole earlier history was translated too: the 192 releases already published appear in Spanish and English."
+  ]
+}

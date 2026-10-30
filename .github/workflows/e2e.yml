@@ -1,0 +1,56 @@
+# The browser suite ran only on developer machines, and ten of its tests had rotted
+# unnoticed. It runs on Windows because the appearance baselines are recorded there
+# and the font stack resolves to Segoe UI, which no Linux runner can match.
+name: End-to-end tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # playwright.config.ts drives the Chrome already installed on the runner, so no
+      # browser download is needed, and it starts the dev server, which builds its own data.
+      - name: Interactions and layout
+        run: pnpm e2e:ci
+
+      # Pixel references carry one machine's Chrome build, so a difference here is as
+      # likely to be the runner as the interface: this step reports, it never blocks.
+      - name: Appearance references
+        id: appearance
+        continue-on-error: true
+        run: pnpm e2e e2e/appearance.spec.ts
+
+      - name: Upload the report
+        if: failure() || steps.appearance.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7

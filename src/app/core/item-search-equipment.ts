@@ -5,6 +5,7 @@ import { costumeSlotDescriptor } from './costume-slot-descriptor';
 import { DropdownModel } from '../models/dropdown.model';
 import { ItemModel } from '../models/item.model';
 import { isEquipmentEnchant } from '../constants/enchant_item';
+import { Translate, resolveText } from '../i18n';
 
 export type ItemChipLists = Readonly<Record<string, readonly DropdownModel[] | undefined>>;
 
@@ -61,7 +62,7 @@ export function itemSearchPosition(chip: Chip, descriptor: EquipmentSlotDescript
 
 export function equipmentSearchTargets(slots: readonly EquipmentSlotDescriptor[], model: Record<string, any>,
   derivations: Record<string, SlotDerivation>, lists: ItemChipLists, items: Record<number, ItemModel>,
-  compare = false, comparing: ReadonlySet<string> = new Set(), showAmmo = false): ItemSearchEquipTarget[] {
+  text: Translate, compare = false, comparing: ReadonlySet<string> = new Set(), showAmmo = false): ItemSearchEquipTarget[] {
   return slots.flatMap(original => {
     const descriptor = costumeSlotDescriptor(original, items[model[original.key]]);
     const derivation = derivations[descriptor.key];
@@ -73,7 +74,8 @@ export function equipmentSearchTargets(slots: readonly EquipmentSlotDescriptor[]
         const options = itemChipOptions(chip, descriptor, derivation, lists, items);
         if (!options.length) return [];
         return [{ position, targetKey: itemSearchTargetKey(chip, compare), chip, options, compare,
-          label: chip.kind === 'item' ? descriptor.label : descriptor.label + ' · ' + chip.placeholder }];
+          label: chip.kind === 'item' ? text(descriptor.labelKey)
+            : text(descriptor.labelKey) + ' · ' + resolveText(text, chip.placeholder) }];
       });
   });
 }

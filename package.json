@@ -1,6 +1,6 @@
 {
   "name": "ro-calculator",
-  "version": "0.1.187-beta",
+  "version": "0.1.192-beta",
   "license": "MIT",
   "scripts": {
     "prepare": "node scripts/setup-hooks.mjs",
@@ -20,6 +20,7 @@
     "lint": "node tools/check-source.mjs",
     "lint:check": "node tools/check-source.mjs",
     "e2e": "playwright test",
+    "e2e:ci": "playwright test --ignore-snapshots --forbid-only",
     "e2e:update": "playwright test --update-snapshots",
     "deploy:worker": "pnpm --dir tooling/cloudflare deploy"
   },

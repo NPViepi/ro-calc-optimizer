@@ -23,7 +23,8 @@ import { CustomItems as CustomItemLibraryService } from '../services/custom-item
 import { encodeCustomBundle } from 'src/app/core/custom-item-library';
 import { createExtraOptionList, ExtraOptionMap } from 'src/app/utils/create-extra-option-list';
 import { WEAPON_SUBTYPE_LABEL_PT_BR, WeaponSubTypeNameMapById, WeaponTypeNameMapBySubTypeId } from 'src/app/constants/weapon-type-mapper';
-import { ItemSlotLabelPtBr } from 'src/app/constants/item-slot-i18n';
+import { ItemSlotLabelKey } from 'src/app/constants/item-slot-i18n';
+import { TextKey, Translate, resolveText } from 'src/app/i18n';
 import { VALID_SKILL_IDS, resolveSkillById } from 'src/app/skills';
 import { compileVisualItemRule, readVisualItemRule, VisualCondition, VisualConditionKind, VisualItemRule as Rule } from 'src/app/core/custom-item-visual-script';
 import { ItemSubTypeId } from 'src/app/constants/item-sub-type.enum';
@@ -107,16 +108,24 @@ export class CustomItemStudioComponent extends ViewState {
   // Off-hand is an equip destination; the weapon itself uses the same category.
   readonly kinds = CUSTOM_KINDS.filter((kind) => kind !== 'leftWeapon');
   readonly kindOptions = this.kinds.map((value) => ({ value, label: CUSTOM_KIND_LABELS[value] }));
-  readonly libraryKindOptions = [{ value: '', label: 'Todas as categorias' }, ...this.kindOptions];
+  get libraryKindOptions() { return [{ value: '', label: this.text('cis.allCategories') }, ...this.kindOptions]; }
   readonly kindLabels = CUSTOM_KIND_LABELS;
   readonly baOptions = createExtraOptionList();
-  readonly sections = [{ label: 'Item', value: 'item' }, { label: 'Slots e BAs', value: 'sockets' }, { label: 'Script', value: 'bonuses' }];
-  readonly sectionsWithoutSlots = this.sections.filter((section) => section.value !== 'sockets');
-  get availableSections() { return this.isEquipment(this.draft.kind) ? this.sections : this.sectionsWithoutSlots; }
-  readonly modes = [{ label: 'Visual', value: 'visual' }, { label: 'JSON bruto', value: 'json' }];
-  readonly yesNoOptions = [{ label: 'Sim', value: true }, { label: 'Não', value: false }];
+  // Every list below names itself through the catalog, so each is read on render: the
+  // controller is built once and outlives a language switch, and a field initializer
+  // would keep whichever language was on screen at the time.
+  get sections() {
+    return [{ label: this.text('cis.secItem'), value: 'item' },
+      { label: this.text('cis.secSockets'), value: 'sockets' }, { label: this.text('cis.secScript'), value: 'bonuses' }];
+  }
+  get availableSections() {
+    const sections = this.sections;
+    return this.isEquipment(this.draft.kind) ? sections : sections.filter((section) => section.value !== 'sockets');
+  }
+  get modes() { return [{ label: this.text('cis.modeVisual'), value: 'visual' }, { label: this.text('cis.modeJson'), value: 'json' }]; }
+  get yesNoOptions() { return [{ label: this.text('cis.yes'), value: true }, { label: this.text('cis.no'), value: false }]; }
   readonly scriptHelpExample = JSON.stringify({ atk: ['10', '7===20'], cri: ['2---5'] }, null, 2);
-  readonly mobileViews = [{ label: 'Editor', value: 'editor' }, { label: 'Prévia', value: 'preview' }];
+  get mobileViews() { return [{ label: this.text('cis.viewEditor'), value: 'editor' }, { label: this.text('cis.viewPreview'), value: 'preview' }]; }
   readonly counts = createNumberDropdownList({ from: 0, to: 4 });
   readonly baCounts = createNumberDropdownList({ from: 0, to: 5 });
   cardCounts = this.counts;
@@ -136,104 +145,129 @@ export class CustomItemStudioComponent extends ViewState {
       [ItemSubTypeId.Kunai]: 'Kunai', [ItemSubTypeId.Bullet]: 'Projétil',
       [ItemSubTypeId.ThrowingDagger]: 'Adaga de arremesso',
     } as Record<number, string>)[id] }));
-  readonly cardPositions = [
-    ['Arma', CardPosition.Weapon], ['Topo, meio e baixo', CardPosition.Head],
-    ['Escudo', CardPosition.Shield], ['Armadura', CardPosition.Armor],
-    ['Capa', CardPosition.Garment], ['Calçado', CardPosition.Boot],
-    ['Acessórios', CardPosition.Acc], ['Acessório esquerdo', CardPosition.AccL],
-    ['Acessório direito', CardPosition.AccR], ['Qualquer posição', CardPosition.All],
-  ].map(([label, value]) => ({ label, value }));
+  get cardPositions() { return ([
+    ['itemSlot.weapon', CardPosition.Weapon], ['cis.cardPosHead', CardPosition.Head],
+    ['itemSlot.shield', CardPosition.Shield], ['itemSlot.armor', CardPosition.Armor],
+    ['itemSlot.garment', CardPosition.Garment], ['cis.cardPosBoot', CardPosition.Boot],
+    ['cis.cardPosAcc', CardPosition.Acc], ['cis.cardPosAccLeft', CardPosition.AccL],
+    ['cis.cardPosAccRight', CardPosition.AccR], ['cis.anyPosition', CardPosition.All],
+    ] as [TextKey, CardPosition][]).map(([key, value]) => ({ label: this.text(key), value }));
+  }
   readonly isEquipment = customKindIsEquipment;
   readonly trackIcon = (_: number, item: ItemModel) => item.id;
   readonly mcpUrl = environment.mcpUrl;
   readonly bonusKeys = Object.keys(createRawTotalBonus()).filter((key) => !INTERNAL_ITEM_FIELDS.has(key))
     .map((key) => ({ key, label: bonusKeyLabel(key) }));
   readonly bonusLabel = bonusKeyLabel;
-  readonly attributeOptions: DropdownModel[] = [
-    ['str', 'FOR'], ['agi', 'AGI'], ['vit', 'VIT'], ['int', 'INT'], ['dex', 'DES'], ['luk', 'SOR'],
-    ['level', 'Nível base'], ['jobLevel', 'Nível de classe'],
-  ].map(([value, label]) => ({ value, label }));
+  get attributeOptions(): DropdownModel[] { return ([
+    ['str', 'stat.str'], ['agi', 'stat.agi'], ['vit', 'stat.vit'], ['int', 'stat.int'], ['dex', 'stat.dex'], ['luk', 'stat.luk'],
+    ['level', 'cis.baseLevel'], ['jobLevel', 'cis.jobLevel'],
+    ] as [string, TextKey][]).map(([value, key]) => ({ value, label: this.text(key) }));
+  }
   readonly conditionSkills: DropdownModel[] = [...VALID_SKILL_IDS].map((id) => {
     const skill = resolveSkillById(id);
-    return { value: id, label: skill?.name ?? `Habilidade #${id}`, icon: id, iconType: skill?.iconType ?? 'skill' };
+    return { value: id, label: skill?.name ?? this.text('cis.skillPlaceholder', { id }), icon: id, iconType: skill?.iconType ?? 'skill' };
   });
-  readonly conditionWeaponTypes: DropdownModel[] = [...new Map(this.weaponSubtypes.map(({ id, label }) =>
-    [WeaponTypeNameMapBySubTypeId[id], { value: WeaponTypeNameMapBySubTypeId[id], label: id >= 273 && id <= 277 ? 'Arma de fogo' : label }])).values()];
-  readonly conditionOptions: RuleConditionOption[] = [
-    { value: 'none', label: 'Sem condição' },
+  get conditionWeaponTypes(): DropdownModel[] {
+    return [...new Map(this.weaponSubtypes.map(({ id, label }) =>
+      [WeaponTypeNameMapBySubTypeId[id], { value: WeaponTypeNameMapBySubTypeId[id], label: id >= 273 && id <= 277 ? this.text('cis.firearm') : label }])).values()];
+  }
+  /**
+   * Rebuilt only when the language changed: the view asks for it once per condition on
+   * every render, and the list carries the whole class and skill catalogs. The first
+   * entry's text is the cache key — a cheap stand-in for the locale, which a plain
+   * `Translate` does not carry.
+   */
+  get conditionOptions(): RuleConditionOption[] {
+    const stamp = this.text('cis.condNone');
+    if (this.conditionOptionsStamp !== stamp) {
+      this.conditionOptionsStamp = stamp;
+      this.conditionOptionsCache = this.buildConditionOptions();
+    }
+    return this.conditionOptionsCache;
+  }
+
+  private conditionOptionsStamp = '';
+  private conditionOptionsCache: RuleConditionOption[] = [];
+
+  private buildConditionOptions(): RuleConditionOption[] {
+    return [
+    { value: 'none', label: this.text('cis.condNone') },
     {
-      value: 'refine', label: 'Refino mínimo', input: 'number', valueLabel: 'Refino mínimo', example: '7',
-      help: 'Refino do próprio item, sem o sinal +. Ex.: 7 ativa o bônus a partir do refino +7.',
+      value: 'refine', label: this.text('cis.condRefine'), input: 'number', valueLabel: this.text('cis.condRefine'), example: '7',
+      help: this.text('cis.condRefineHelp'),
     },
     {
-      value: 'refineStep', label: 'A cada X refinos', input: 'number', valueLabel: 'Intervalo de refinos', example: '2',
-      help: 'Aplica o bônus a cada intervalo completo de refinos. Ex.: 2 aplica uma vez no +2, duas no +4 e assim por diante.',
+      value: 'refineStep', label: this.text('cis.condRefineStep'), input: 'number', valueLabel: this.text('cis.condRefineStepValue'), example: '2',
+      help: this.text('cis.condRefineStepHelp'),
     },
     {
-      value: 'grade', label: 'Grau mínimo', input: 'select', options: this.grades.filter(({ value }) => !!value), valueLabel: 'Graduação mínima',
-      help: 'Use D, C, B ou A. A graduação indicada e as superiores ativam o bônus.',
+      value: 'grade', label: this.text('cis.condGrade'), input: 'select', options: this.grades.filter(({ value }) => !!value), valueLabel: this.text('cis.condGradeValue'),
+      help: this.text('cis.condGradeHelp'),
     },
     {
-      value: 'level', label: 'Nível mínimo', input: 'number', valueLabel: 'Nível base mínimo', example: '100',
-      help: 'Nível base do personagem a partir do qual o bônus fica ativo.',
+      value: 'level', label: this.text('cis.condLevel'), input: 'number', valueLabel: this.text('cis.condLevelValue'), example: '100',
+      help: this.text('cis.condLevelHelp'),
     },
     {
-      value: 'stat', label: 'A cada X do atributo', input: 'select', options: this.attributeOptions, valueLabel: 'Atributo ou nível',
-      extraLabel: 'Pontos por bônus', extraExample: '10',
-      help: 'Aplica o valor do bônus a cada quantidade completa de pontos do atributo ou nível escolhido.',
+      value: 'stat', label: this.text('cis.condStat'), input: 'select', options: this.attributeOptions, valueLabel: this.text('cis.condStatValue'),
+      extraLabel: this.text('cis.condStatExtra'), extraExample: '10',
+      help: this.text('cis.condStatHelp'),
     },
     {
-      value: 'statMin', label: 'Atributo mínimo', input: 'select', options: this.attributeOptions, valueLabel: 'Atributo ou nível',
-      extraLabel: 'Quantidade mínima', extraExample: '120', help: 'O bônus fica ativo quando o atributo base ou nível alcança esta quantidade.',
+      value: 'statMin', label: this.text('cis.condStatMin'), input: 'select', options: this.attributeOptions, valueLabel: this.text('cis.condStatValue'),
+      extraLabel: this.text('cis.condStatMinExtra'), extraExample: '120', help: this.text('cis.condStatMinHelp'),
     },
     {
-      value: 'equip', label: 'Equipado junto', input: 'item', valueLabel: 'Item necessário',
-      help: 'Escolha o item que precisa estar equipado. Adicione outra condição deste tipo para exigir mais um item.',
+      value: 'equip', label: this.text('cis.condEquip'), input: 'item', valueLabel: this.text('cis.condEquipValue'),
+      help: this.text('cis.condEquipHelp'),
     },
     {
-      value: 'class', label: 'Classe', input: 'select', options: this.classes.map((job) => ({ ...job, iconType: 'job' })), valueLabel: 'Classe necessária',
-      help: 'O bônus também vale para as evoluções da classe escolhida.',
+      value: 'class', label: this.text('cis.condClass'), input: 'select', options: this.classes.map((job) => ({ ...job, iconType: 'job' })), valueLabel: this.text('cis.condClassValue'),
+      help: this.text('cis.condClassHelp'),
     },
     {
-      value: 'skill', label: 'Habilidade aprendida', input: 'select', options: this.conditionSkills, valueLabel: 'Habilidade aprendida',
-      extraLabel: 'Nível mínimo da habilidade', extraExample: '5',
-      help: 'Escolha a habilidade e o nível mínimo que o personagem precisa ter aprendido.',
+      value: 'skill', label: this.text('cis.condSkill'), input: 'select', options: this.conditionSkills, valueLabel: this.text('cis.condSkill'),
+      extraLabel: this.text('cis.condSkillExtra'), extraExample: '5',
+      help: this.text('cis.condSkillHelp'),
     },
     {
-      value: 'activeSkill', label: 'Perícia ativa', input: 'select', options: this.conditionSkills, valueLabel: 'Perícia ativa',
-      help: 'Escolha a perícia que precisa estar ativada na build.',
+      value: 'activeSkill', label: this.text('cis.condActiveSkill'), input: 'select', options: this.conditionSkills, valueLabel: this.text('cis.condActiveSkill'),
+      help: this.text('cis.condActiveSkillHelp'),
     },
     {
-      value: 'loyalty', label: 'Lealdade do pet', input: 'select', options: this.loyaltyOptions, valueLabel: 'Faixa de lealdade',
-      help: 'Aplica a partir dessa faixa; para o mesmo bônus, prevalece a maior faixa atingida.',
+      value: 'loyalty', label: this.text('cis.condLoyalty'), input: 'select', options: this.loyaltyOptions, valueLabel: this.text('cis.condLoyaltyValue'),
+      help: this.text('cis.condLoyaltyHelp'),
     },
     {
-      value: 'weaponType', label: 'Tipo de arma', input: 'select', options: this.conditionWeaponTypes, valueLabel: 'Tipo de arma',
-      help: 'O bônus exige uma arma deste tipo equipada.',
+      value: 'weaponType', label: this.text('cis.weaponType'), input: 'select', options: this.conditionWeaponTypes, valueLabel: this.text('cis.weaponType'),
+      help: this.text('cis.condWeaponHelp'),
     },
     {
-      value: 'ammoType', label: 'Tipo de munição', input: 'select', options: this.ammoSubtypes.map(({ id, label }) => ({ value: id, label })), valueLabel: 'Tipo de munição',
-      help: 'O bônus exige uma munição deste tipo equipada.',
+      value: 'ammoType', label: this.text('cis.condAmmoType'), input: 'select', options: this.ammoSubtypes.map(({ id, label }) => ({ value: id, label })), valueLabel: this.text('cis.condAmmoType'),
+      help: this.text('cis.condAmmoHelp'),
     },
     {
-      value: 'position', label: 'Posição', input: 'select', options: Object.entries(ItemSlotLabelPtBr).map(([value, label]) => ({ value, label })), valueLabel: 'Posição do item',
-      help: 'Posição em que este item precisa estar equipado.',
+      value: 'position', label: this.text('cis.condPosition'), input: 'select', options: Object.entries(ItemSlotLabelKey).map(([value, key]) => ({ value, label: this.text(key) })), valueLabel: this.text('cis.condPositionValue'),
+      help: this.text('cis.condPositionHelp'),
     },
     {
-      value: 'spawn', label: 'Mapa do monstro', input: 'text', valueLabel: 'Código do mapa', example: 'tur_d03_i',
-      help: 'Informe um mapa de aparição do monstro.',
+      value: 'spawn', label: this.text('cis.condSpawn'), input: 'text', valueLabel: this.text('cis.condSpawnValue'), example: 'tur_d03_i',
+      help: this.text('cis.condSpawnHelp'),
     },
     {
-      value: 'until', label: 'Válido até (data)', input: 'date', valueLabel: 'Último dia de validade',
-      help: 'O bônus permanece ativo até o fim do dia informado.',
+      value: 'until', label: this.text('cis.condUntil'), input: 'date', valueLabel: this.text('cis.condUntilValue'),
+      help: this.text('cis.condUntilHelp'),
     },
-  ];
+    ];
+  }
+
   conditionHelp(kind: VisualConditionKind): RuleConditionOption {
     return this.conditionOptions.find((option) => option.value === kind)!;
   }
 
   constructor(public readonly library: CustomItemLibraryService, private readonly picker: ItemPickerService,
-    private readonly layout?: CalculatorLayout) { super();}
+    private readonly text: Translate, private readonly layout?: CalculatorLayout) { super();}
 
   blank(kind: CustomKind): CustomItemDraft {
     return {
@@ -362,8 +396,9 @@ export class CustomItemStudioComponent extends ViewState {
 
   sourceCategory(item: ItemModel): string {
     if (item.custom) return this.kindLabels[(item as CustomItemDefinition).kind];
-    return ({ 1: 'Arma', 2: 'Equipamento', 3: 'Consumível', 4: 'Munição', 6: 'Carta', 11: 'Encantamento' } as Record<number, string>)[item.itemTypeId]
-      ?? 'Item';
+    const key = ({ 1: 'cis.typeWeapon', 2: 'cis.typeEquip', 3: 'cis.typeConsumable', 4: 'cis.typeAmmo',
+      6: 'cis.typeCard', 11: 'cis.typeEnchant' } as Record<number, TextKey>)[item.itemTypeId];
+    return this.text(key ?? 'cis.secItem');
   }
 
   closeImportOutside(event: FocusEvent, source: HTMLElement): void {
@@ -432,11 +467,12 @@ export class CustomItemStudioComponent extends ViewState {
       const list = this.draft[defaults] ?? [];
       const limit = Math.max(0, Number(this.draft[capacity]) || 0);
       if (list.length > limit) {
-        removed.push(`${list.length - limit} ${defaults === 'defaultBas' ? 'BA(s)' : defaults === 'defaultCards' ? 'carta(s)' : 'encantamento(s)'}`);
+        removed.push(this.text(defaults === 'defaultBas' ? 'cis.countBas'
+          : defaults === 'defaultCards' ? 'cis.countCards' : 'cis.countEnchants', { n: list.length - limit }));
         (this.draft as any)[defaults] = list.slice(0, limit);
       }
     }
-    this.capacityNotice = removed.length ? `Capacidade reduzida: ${removed.join(', ')} removido(s) das seleções iniciais.` : '';
+    this.capacityNotice = removed.length ? this.text('cis.capacityNotice', { removed: removed.join(', ') }) : '';
     this.validate();
   }
 
@@ -444,16 +480,17 @@ export class CustomItemStudioComponent extends ViewState {
     this.cardCounts = this.counts.filter(({ value }) => Number(value) <= 4 - Number(this.draft.enchantCapacity ?? 0));
     this.enchantCounts = this.counts.filter(({ value }) => Number(value) <= 4 - Number(this.draft.cardCapacity ?? 0));
     this.attachmentRows = ([
-      ['defaultCards', 'Cartas iniciais', 'card', this.draft.cardCapacity, 'Carta'],
-      ['defaultEnchants', 'Encantamentos iniciais', 'enchant', this.draft.enchantCapacity, 'Encantamento'],
-      ['defaultBas', 'BAs iniciais', 'option', this.draft.baCapacity, 'BA'],
-    ] as const).map(([field, label, kind, capacity, placeholder]) => ({
+      ['defaultCards', this.text('cis.initialCards'), 'card', this.draft.cardCapacity, 'chip.cardNumber'],
+      ['defaultEnchants', this.text('cis.initialEnchants'), 'enchant', this.draft.enchantCapacity, 'studio.enchantNumber'],
+      ['defaultBas', this.text('cis.initialBas'), 'option', this.draft.baCapacity, 'studio.baNumber'],
+    ] as const).map(([field, label, kind, capacity, placeholderKey]) => ({
       field, label, views: Array.from({ length: capacity ?? 0 }, (_, index): ChipView => {
         const value = this.draft[field]?.[index];
         const item = kind !== 'option' && value ? this.items[Number(value)] : undefined;
+        const placeholder = { key: placeholderKey, params: { number: index + 1 } };
         return {
-          chip: { kind, index, slotKey: this.draft.kind as ItemTypeEnum, placeholder: `${placeholder} ${index + 1}` },
-          text: item?.name ?? (value ? ExtraOptionMap.get(String(value)) ?? String(value) : `${placeholder} ${index + 1}`),
+          chip: { kind, index, slotKey: this.draft.kind as ItemTypeEnum, placeholder },
+          text: item?.name ?? (value ? ExtraOptionMap.get(String(value)) ?? String(value) : resolveText(this.text, placeholder)),
           filled: !!value, icon: item?.id ?? null, descId: item?.id ?? null,
           elementClass: null, primary: false, preRelease: !!item?.preRelease,
         };
@@ -462,7 +499,7 @@ export class CustomItemStudioComponent extends ViewState {
   }
 
   pickAttachment(field: AttachmentField, view: ChipView, anchor: HTMLElement): void {
-    const base = { anchor, title: view.chip.placeholder, value: this.draft[field]?.[view.chip.index] };
+    const base = { anchor, title: resolveText(this.text, view.chip.placeholder), value: this.draft[field]?.[view.chip.index] };
     const request: PickerRequest = field === 'defaultBas'
       ? { ...base, value: String(base.value ?? ''), mode: 'tree', roots: this.baOptions, leafIndex: ExtraOptionMap }
       : { ...base, mode: 'flat', options: field === 'defaultCards' ? this.cardOptions : this.enchantOptions,
@@ -506,7 +543,7 @@ export class CustomItemStudioComponent extends ViewState {
   }
 
   pickConditionItem(condition: VisualCondition, anchor: HTMLElement): void {
-    this.picker.open({ mode: 'flat', anchor, title: 'Item necessário', value: condition.value,
+    this.picker.open({ mode: 'flat', anchor, title: this.text('cis.pickRequiredItem'), value: condition.value,
       options: this.conditionItemOptions, filterKeys: ['label', 'value'], iconKey: 'value', items: this.items,
     }).then((result) => { if (this.lifetime.active) this.action(() => {
       if (!result.committed) return;
@@ -516,7 +553,8 @@ export class CustomItemStudioComponent extends ViewState {
   }
 
   conditionItemName(condition: VisualCondition): string {
-    return this.items[Number(condition.value)]?.name ?? (condition.value ? `Item #${condition.value}` : 'Escolher item');
+    return this.items[Number(condition.value)]?.name
+      ?? (condition.value ? this.text('cis.itemNumber', { id: condition.value }) : this.text('cis.pickItem'));
   }
 
   private readRules(): void {
@@ -541,11 +579,11 @@ export class CustomItemStudioComponent extends ViewState {
     this.visualErrors = [];
     this.rules.forEach((rule, index) => {
       const result = compileVisualItemRule(rule);
-      this.visualErrors.push(...result.errors.map((error) => `Bônus ${index + 1}: ${error}`));
+      this.visualErrors.push(...result.errors.map((error) => this.text('cis.bonusError', { n: index + 1, message: error })));
       if (result.expression != null) {
         const values = script[rule.key] ?? [];
         if (!Array.isArray(values) || values.some((value) => typeof value !== 'string')) {
-          this.visualErrors.push(`Bônus ${index + 1}: este campo contém dados incompatíveis. Corrija-o no JSON.`);
+          this.visualErrors.push(this.text('cis.bonusIncompatible', { n: index + 1 }));
         } else script[rule.key] = [...values as string[], result.expression];
       }
     });
@@ -588,17 +626,17 @@ export class CustomItemStudioComponent extends ViewState {
     const result = validateCustomItems([input], this.items);
     this.diagnostics = [...(this.rawError ? [this.rawError] : []), ...this.visualErrors, ...result.errors.map((error) => itemValidationMessage(error))];
     this.previewItem = this.visualErrors.length ? undefined : result.items[0] ?? (!this.rawError && !input.name.trim()
-      ? validateCustomItems([{ ...input, name: 'Novo item' }], this.items).items[0] : undefined);
+      ? validateCustomItems([{ ...input, name: this.text('cis.newItem') }], this.items).items[0] : undefined);
     this.previewIcon = Number(this.previewItem?.iconItemId
       || inferCustomIcon(this.draft.kind, this.draft.itemSubTypeId, this.items));
-    this.previewText = this.previewItem ? customItemDescription(this.previewItem) : 'Corrija os erros do script para atualizar a descrição.';
+    this.previewText = this.previewItem ? customItemDescription(this.previewItem) : this.text('cis.descriptionError');
     this.refreshAttachments();
     this.updatePreview();
   }
 
   pickPreview(field: PreviewField, anchor: HTMLElement): void {
     this.picker.open({
-      mode: 'flat', anchor, title: field === 'refine' ? 'Refino' : 'Grau',
+      mode: 'flat', anchor, title: this.text(field === 'refine' ? 'eq.pickRefine' : 'eq.pickGrade'),
       value: field === 'refine' ? this.previewRefine : this.previewGrade,
       options: field === 'refine'
         ? customKindIsShadow(this.draft.kind) ? this.previewShadowRefines : this.previewRefines
@@ -622,8 +660,9 @@ export class CustomItemStudioComponent extends ViewState {
     this.previewControls = (['refine', 'grade'] as const)
       .filter((field) => field === 'refine' ? this.draft.isRefinable : this.draft.canGrade)
       .map((field) => ({ field, view: {
-        chip: { kind: field, index: 0, slotKey: this.draft.kind as ItemTypeEnum, placeholder: field === 'refine' ? '+ 0' : 'Grau' },
-        text: field === 'refine' ? `+ ${this.previewRefine}` : this.previewGrade ? `Grau ${this.previewGrade}` : 'Grau',
+        chip: { kind: field, index: 0, slotKey: this.draft.kind as ItemTypeEnum, placeholder: { key: field === 'refine' ? 'chip.refine' : 'chip.grade' } },
+        text: field === 'refine' ? `+ ${this.previewRefine}`
+          : this.previewGrade ? this.text('eq.gradeValue', { grade: this.previewGrade }) : this.text('chip.grade'),
         filled: field === 'refine' ? this.previewRefine > 0 : !!this.previewGrade,
         icon: null, descId: null, elementClass: null, primary: false, preRelease: false,
       } }));
@@ -663,8 +702,8 @@ export class CustomItemStudioComponent extends ViewState {
         return lines.map((line) => {
           const replaced = !selected.includes(line);
           const result = replaced ? { active: false, value: 0 } : calc.evaluateItemRule(slot as ItemTypeEnum, line, this.previewRefine);
-          return { label: bonusKeyLabel(key), reason: replaced ? 'Substituída pela faixa de lealdade mais alta.'
-            : result.active ? 'Condição atendida nesta build.' : 'Condição não atendida nesta build.',
+          return { label: bonusKeyLabel(key), reason: this.text(replaced ? 'cis.reasonReplaced'
+            : result.active ? 'cis.reasonActive' : 'cis.reasonInactive'),
             ...result };
         });
       });
@@ -681,13 +720,13 @@ export class CustomItemStudioComponent extends ViewState {
       this.library.save(result.items[0]);
       this.saved.emit({ item: result.items[0], context: this.context });
       this.visible = false;
-    } catch (error) { this.diagnostics = itemFailureMessages(error, 'Não foi possível salvar o item. Seu rascunho foi mantido; tente novamente.'); }
+    } catch (error) { this.diagnostics = itemFailureMessages(error, this.text('cis.saveFailed')); }
   }
 
   remove(item: CustomItemDefinition): void {
-    if (!window.confirm(`Excluir "${item.name}" dos Meus itens? As simulações salvas mantêm uma cópia.`)) return;
+    if (!window.confirm(this.text('cis.deleteConfirm', { name: item.name }))) return;
     try { this.library.remove(item.id); this.deleted.emit(item.id); }
-    catch (error) { this.diagnostics = itemFailureMessages(error, 'Não foi possível excluir o item. Tente novamente.'); }
+    catch (error) { this.diagnostics = itemFailureMessages(error, this.text('cis.deleteFailed')); }
   }
 
   async share(item: CustomItemDefinition): Promise<void> {
@@ -697,7 +736,7 @@ export class CustomItemStudioComponent extends ViewState {
       await navigator.clipboard.writeText(await shortenUrl(url, environment.shortenerUrl));
       this.copied = true;
     }
-    catch (error) { this.diagnostics = itemFailureMessages(error, 'Não foi possível copiar o link. Verifique a permissão do navegador e tente novamente.'); }
+    catch (error) { this.diagnostics = itemFailureMessages(error, this.text('cis.copyFailed')); }
   }
 
   exportJson(): void {
@@ -713,13 +752,13 @@ export class CustomItemStudioComponent extends ViewState {
     if (!file) return;
     let source = '';
     try {
-      if (file.size > CUSTOM_ITEM_MAX_BYTES) throw new Error('Arquivo de itens grande demais (máximo de 256 KiB).');
+      if (file.size > CUSTOM_ITEM_MAX_BYTES) throw new Error(this.text('cis.fileTooBig'));
       source = await file.text();
       const parsed = JSON.parse(source);
-      if (parsed?.version !== 1) throw new Error('Versão do arquivo de itens não reconhecida.');
+      if (parsed?.version !== 1) throw new Error(this.text('cis.fileVersion'));
       this.library.store.import(parsed.items, this.items);
       this.library.refresh();
       for (const item of this.library.items) this.saved.emit({ item });
-    } catch (error) { this.diagnostics = itemFailureMessages(error, 'Não foi possível importar. Escolha um arquivo JSON de itens válido.', source); }
+    } catch (error) { this.diagnostics = itemFailureMessages(error, this.text('cis.importFailed'), source); }
   }
 }

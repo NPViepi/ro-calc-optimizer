@@ -89,7 +89,7 @@ describe('Cacos de Gelo is offered to the Magus rotation', () => {
   it('carries the client cast and delay window', () => {
     const skill = crystalImpact(new ArchMage());
 
-    expect({ fct: skill.fct, vct: skill.vct, acd: skill.acd, cd: skill.cd }).toEqual({ fct: 1.5, vct: 4, acd: 1, cd: 6 });
+    expect({ fct: skill.fct, vct: skill.vct, acd: skill.acd, cd: skill.cd }).toEqual({ fct: 1.5, vct: 4, acd: 0.5, cd: 2 });
   });
 });
 

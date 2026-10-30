@@ -2,6 +2,7 @@ import { ViewState } from '../state/view-state';
 import { Events } from '../services/events';
 import { RESIST_REDUCTION_KEYS_BY_ELE } from 'src/app/core/summary-tables';
 import { elementTagClass as elementTagClassFn } from '../../app/layout/pages/ro-calculator/battle-hud/battle-hud.logic';
+import { Translate } from 'src/app/i18n';
 
 
 export class MiscDetailComponent extends ViewState {
@@ -24,7 +25,7 @@ export class MiscDetailComponent extends ViewState {
    valueClick = new Events<{ label: string; keys: string[]; valueClass: string; compare?: boolean }>();
   elementTagClass = elementTagClassFn;
 
-  constructor() { super();}
+  constructor(private readonly text: Translate) { super();}
 
   private static readonly SIZE_SHORT: Record<string, string> = { Small: 's', Medium: 'm', Large: 'l' };
   /** physical bonuses are shown in the ATK (orange) colour, magical in the MATK (blue) colour. */
@@ -32,7 +33,7 @@ export class MiscDetailComponent extends ViewState {
   private static readonly MAGIC = 'summary_stat_matk';
 
   private fmLabel(displayName: string, kind: 'physical' | 'magical'): string {
-    return `${displayName} (${kind === 'physical' ? 'Físico' : 'Mágico'})`;
+    return this.text('misc.kindLabel', { name: displayName, kind: this.text(kind === 'physical' ? 'misc.physical' : 'misc.magical') });
   }
 
   private toneOf(kind: 'physical' | 'magical'): string {
@@ -53,9 +54,9 @@ export class MiscDetailComponent extends ViewState {
     // R.R. Elem.: the target elemental-resistance reduction (Oratio/Infecção/Intoxicação), keyed by element.
     if (kind === 'resist') {
       const keys = RESIST_REDUCTION_KEYS_BY_ELE[e] ?? [];
-      return this.emitValue(`R.R. Elemental (${name})`, keys, MiscDetailComponent.MAGIC, compare);
+      return this.emitValue(this.text('misc.elementRRLabel', { name }), keys, MiscDetailComponent.MAGIC, compare);
     }
-    return this.emitValue(`${name} (Elem. Mágico)`, ['m_my_element_all', `m_my_element_${e}`], MiscDetailComponent.MAGIC, compare);
+    return this.emitValue(this.text('misc.magicElementLabel', { name }), ['m_my_element_all', `m_my_element_${e}`], MiscDetailComponent.MAGIC, compare);
   }
 
   onRaceClick(val: any, kind: 'physical' | 'magical', compare = false): void {
@@ -88,7 +89,7 @@ export class MiscDetailComponent extends ViewState {
    *  the shared dialog adds "(comparação)" to the title. */
   onSkillClick(val: any, kind: 'value' | 'cd', compare = false): void {
     const name = val.displayName || val.name;
-    if (kind === 'cd') return this.valueClick.emit({ label: `${name} (CD)`, keys: [`cd__${val.name}`], valueClass: 'summary_damage', compare });
+    if (kind === 'cd') return this.valueClick.emit({ label: this.text('misc.cdLabel', { name }), keys: [`cd__${val.name}`], valueClass: 'summary_damage', compare });
     this.valueClick.emit({ label: name, keys: [val.name], valueClass: 'summary_damage', compare });
   }
 

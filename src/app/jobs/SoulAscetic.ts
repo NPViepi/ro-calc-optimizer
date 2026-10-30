@@ -251,10 +251,10 @@ export class SoulAscetic extends SoulReaper {
       name: 'Talisman of Soul Stealing',
       label: 'Talisman of Soul Stealing Lv5',
       value: 'Talisman of Soul Stealing==5',
-      acd: 0.5,
+      acd: 0,
       fct: 1.5,
       vct: 3,
-      cd: 2,
+      cd: 1,
       isMatk: true,
       formula: (input: AtkSkillFormulaInput): number => {
         const { model, skillLevel, status } = input;
@@ -298,7 +298,7 @@ export class SoulAscetic extends SoulReaper {
       acd: 0,
       fct: 1.5,
       vct: 1,
-      cd: 0.3,
+      cd: 0.4,
       isMatk: true,
       hit: 2,
       formula: (input: AtkSkillFormulaInput): number => {
@@ -413,7 +413,7 @@ export class SoulAscetic extends SoulReaper {
       acd: 0,
       fct: 1.5,
       vct: 2,
-      cd: 60,
+      cd: 5,
       isMatk: true,
       /**
        * Five hits, from the replay's single cast: 13.775.920 at `count` 5. Reading the

@@ -2,10 +2,11 @@ import { ViewState } from '../state/view-state';
 import { Events } from '../services/events';
 import { ReplaySubmissionClient as ReplaySubmissionService } from '../../app/replay/submission-client';
 import { CalculatorData as RoService } from '../services/calculator-services';
-import { ReplayTraits, TRAIT_KEYS, TRAIT_LABELS } from 'src/app/replay/replay-traits';
+import { ReplayTraits, TRAIT_KEYS } from 'src/app/replay/replay-traits';
 import { SubmissionCheck, validateReplaySubmission } from 'src/app/replay/validate-submission';
 import { createNumberDropdownList } from 'src/app/utils/create-number-dropdown-list';
 import { HELP_IMPROVE_DIALOG_STYLE } from '../../app/layout/dialog-geometry';
+import { TextKey, Translate, resolveText } from 'src/app/i18n';
 
 const ZERO_TRAITS: ReplayTraits = { pow: 0, sta: 0, wis: 0, spl: 0, con: 0, crt: 0 };
 
@@ -21,7 +22,15 @@ export class HelpImproveDialogComponent extends ViewState {
   readonly traitKeys = TRAIT_KEYS;
   /** The calculator's own trait range, so the two pickers offer the same values. */
   readonly traitStatusList = createNumberDropdownList({ from: 0, to: 100 });
-  readonly traitLabels = TRAIT_LABELS;
+  /** The status-window abbreviations, from the catalog rather than the replay layer. */
+  get traitLabels(): Record<string, string> {
+    return Object.fromEntries(TRAIT_KEYS.map((key) => [key, this.text(`stat.${key}` as TextKey)]));
+  }
+
+  /** Why a recording was refused, in the reader's language. */
+  get rejectionMessage(): string {
+    return this.rejected ? resolveText(this.text, this.rejected.text) : '';
+  }
 
   readonly browikiUrl = 'https://browiki.org/wiki/Replay';
   readonly discordUrl = 'https://discord.gg/JCXTqqWq9Q';
@@ -44,7 +53,8 @@ export class HelpImproveDialogComponent extends ViewState {
   sentId = '';
   sendError = '';
 
-  constructor(private roService: RoService, private submissions: ReplaySubmissionService) { super();}
+  constructor(private roService: RoService, private submissions: ReplaySubmissionService,
+    private readonly text: Translate) { super();}
 
   get accepted(): SubmissionCheck | null {
     return this.check && this.check.ok ? this.check : null;
@@ -122,7 +132,7 @@ export class HelpImproveDialogComponent extends ViewState {
       this.check = {
         ok: false,
         blocker: 'unreadable',
-        message: 'Não foi possível ler o arquivo.',
+        text: { key: 'hi.readFailed' },
         summary: null,
         traits: null,
         needsTraits: false,
@@ -156,7 +166,7 @@ export class HelpImproveDialogComponent extends ViewState {
       this.bytes = null;
     } catch (e) {
       console.error(e);
-      this.sendError = 'Não deu para enviar agora. Tente de novo daqui a pouco — se insistir, avise no Discord.';
+      this.sendError = this.text('hi.sendFailed');
     } finally {
       this.sending = false;
     }

@@ -254,8 +254,11 @@ Per card, following the plan:
 Then close the loop:
 
 - Add a uniquely named `release-notes/<batch-slug>.json` fragment with
-  `{"type":"patch","logs":["..."]}` — one user-facing log per card, preserving
-  reporter credits and impersonal Portuguese wording. Do not edit `package.json`
+  `{"type":"patch","logs":["..."],"logs_es":["..."],"logs_en":["..."]}` — one
+  user-facing log per card, preserving reporter credits and impersonal wording. The
+  notes are published in three languages: write `logs` in Portuguese and translate it
+  into `logs_es` and `logs_en`, one line per entry, in the same order. Credits stay as
+  written in every language. Do not edit `package.json`
   or published release history: the main workflow assigns the version.
   Validate with `node tools/release-notes.mjs`. See `docs/releases.md`.
 - Move the cards:

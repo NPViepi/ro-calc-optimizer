@@ -92,6 +92,8 @@ function simulate(skillValue: string, opts: { ultimate?: boolean } = {}) {
   model.selectedAtkSkill = skillValue;
 
   const calc = new Calculator().setMasterItems(items).setHpSpTable(hpSpTable).setClass(cls);
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  model.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(model);
   new CalculatorController().runChain(calc, {
     monster: monsters[DUMMY_MEDIUM],
@@ -283,6 +285,8 @@ function simulateGeared(skillValue: string, opts: { ultimate?: boolean } = {}) {
   model.jobPow = bonus.pow; model.jobSta = bonus.sta; model.jobWis = bonus.wis;
   model.jobSpl = bonus.spl; model.jobCon = bonus.con; model.jobCrt = bonus.crt;
   model.selectedAtkSkill = skillValue;
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  model.skillFormulaVersion = 'pre-rebalance';
 
   const calc = new Calculator().setMasterItems(items).setHpSpTable(hpSpTable).setClass(cls);
   calc.loadItemFromModel(model);
