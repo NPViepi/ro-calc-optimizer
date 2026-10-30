@@ -1,7 +1,7 @@
 {
   "name": "ro-calc-optimizer-desktop",
   "productName": "RO Calc Optimizer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "App desktop do Simulador RO LATAM com otimizador de builds",
   "author": "NPViepi",
   "license": "MIT",
