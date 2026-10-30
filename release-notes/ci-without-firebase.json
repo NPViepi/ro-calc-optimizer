@@ -1,4 +1,12 @@
 {
   "type": "patch",
-  "logs": ["Corrigida a integração contínua das PRs para executar as verificações, os testes e o build sem exigir credenciais do Firebase."]
+  "logs": [
+    "Corrigida a integração contínua das PRs para executar as verificações, os testes e o build sem exigir credenciais do Firebase."
+  ],
+  "logs_es": [
+    "Corregida la integración continua de las PRs para ejecutar las verificaciones, las pruebas y el build sin exigir credenciales de Firebase."
+  ],
+  "logs_en": [
+    "Fixed the PR continuous integration so it runs the checks, tests and build without requiring Firebase credentials."
+  ]
 }
