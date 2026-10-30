@@ -1,8 +1,10 @@
 import { ViewState } from '../state/view-state';
 import { Events } from '../services/events';
 import { VirtualListHandle as VirtualListComponent } from '../ui/virtual-list';
+import { hoverless } from '../ui/viewport';
 import { DescriptionStore as ItemDescriptionStore } from '../services/data-client';
 import { buildFilterIndex, filterOptions, searchOptionLeaves } from 'src/app/core/picker-filter';
+import { Translate } from 'src/app/i18n';
 import { DropdownModel } from 'src/app/models/dropdown.model';
 import { ItemModel } from 'src/app/models/item.model';
 import { OptionTreeNode, PickerRequest, PickerResult } from '../../app/layout/pages/ro-calculator/item-picker/item-picker.model';
@@ -21,6 +23,8 @@ interface PickerRow {
 }
 
 const ROW_HEIGHT = 28;
+// A finger needs a 44px row; a mouse keeps the dense list.
+const TOUCH_ROW_HEIGHT = 44;
 const MAX_VIEWPORT = 300;
 /**
  * Above this many options the list is virtualised — and a virtualised list has to be a
@@ -66,11 +70,14 @@ export class ItemPickerOverlayComponent extends ViewState {
    */
   pinnedWidth: number | null = null;
 
-  readonly rowHeight = ROW_HEIGHT;
+  readonly rowHeight = hoverless() ? TOUCH_ROW_HEIGHT : ROW_HEIGHT;
 
   constructor(
 private readonly host: { nativeElement: HTMLElement },
     public readonly itemDescriptions: ItemDescriptionStore,
+    private readonly text: Translate,
+    /** Opened as a bottom sheet (item-picker.tsx decides when it opens). */
+    private readonly sheet = false,
   ) { super();}
 
   /** Called by the service right after the portal is attached. */
@@ -118,8 +125,10 @@ private readonly host: { nativeElement: HTMLElement },
     return this.createKind ? -2 : this.clearable ? -1 : 0;
   }
 
-  get viewportHeight(): number {
-    return Math.min(this.rows.length * ROW_HEIGHT, MAX_VIEWPORT);
+  get viewportHeight(): number | null {
+    // In a bottom sheet a short list fills the sheet instead of stopping at 300px.
+    if (!this.virtualise && this.sheet) return null;
+    return Math.min(this.rows.length * this.rowHeight, MAX_VIEWPORT);
   }
 
   /** Tree mode only, and only while browsing — a search has no place in the tree. */
@@ -313,8 +322,8 @@ private readonly host: { nativeElement: HTMLElement },
     if (!custom.length) return matches;
     const official = matches.filter((row) => !request.items?.[Number(row.value)]?.custom);
     return [
-      { label: 'Meus itens', value: null, section: true }, ...custom,
-      ...(official.length ? [{ label: 'Banco de itens', value: null, section: true }, ...official] : []),
+      { label: this.text('picker.myItems'), value: null, section: true }, ...custom,
+      ...(official.length ? [{ label: this.text('picker.itemBank'), value: null, section: true }, ...official] : []),
     ];
   }
 

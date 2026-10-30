@@ -1,6 +1,9 @@
-import { ReactNode } from 'react';
+import { createContext, ReactNode } from 'react';
 import { optionLabel, optionValue, chooseSelection } from './selection';
+import { forwardTipFocus } from './tooltip';
 
+/** True under a select button's own button: that button is the focus stop, not the tip anchors inside it. */
+export const InsideControl = createContext(false);
 export interface SelectButtonProps {
   options: any[];
   value: any;
@@ -22,9 +25,9 @@ export function SelectButton({ options, value, onChange, disabled, multiple, opt
       const selectedValue = optionValue(option, valueKey, labelKey);
       const selected = multiple ? (value ?? []).includes(selectedValue) : value === selectedValue;
       return <button key={index} type="button" className={`ui-button ui-component ${selected ? 'ui-highlight' : ''}`}
-        aria-pressed={selected} disabled={disabled || option?.disabled} onClick={event => {
+        aria-pressed={selected} disabled={disabled || option?.disabled} {...(renderItem ? forwardTipFocus : {})} onClick={event => {
           onChange(chooseSelection(value, option, !!multiple, true, disabled, valueKey, labelKey), event);
-        }}>{renderItem ? renderItem(option) : <span className="ui-button-label">{optionLabel(option, labelKey)}</span>}</button>;
+        }}>{renderItem ? <InsideControl.Provider value>{renderItem(option)}</InsideControl.Provider> : <span className="ui-button-label">{optionLabel(option, labelKey)}</span>}</button>;
     })}
   </div>;
 }

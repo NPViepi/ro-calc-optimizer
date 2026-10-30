@@ -243,13 +243,13 @@ describe('Soul Ascetic cast/cooldown metadata', () => {
   // the client's own Conjuração/Espera window.
   const cases: { name: string; vct: number; fct: number; cd: number }[] = [
     { name: 'Exorcism of Malicious Soul', vct: 3, fct: 1.5, cd: 1 },
-    { name: 'Talisman of Soul Stealing', vct: 3, fct: 1.5, cd: 2 },
+    { name: 'Talisman of Soul Stealing', vct: 3, fct: 1.5, cd: 1 },
     { name: 'Talisman of Blue Dragon', vct: 1, fct: 1.5, cd: 0.3 },
-    { name: 'Talisman of White Tiger', vct: 1, fct: 1.5, cd: 0.3 },
+    { name: 'Talisman of White Tiger', vct: 1, fct: 1.5, cd: 0.4 },
     { name: 'Talisman of Red Phoenix', vct: 1, fct: 1.5, cd: 0.45 },
     { name: 'Talisman of Black Tortoise', vct: 1, fct: 1.5, cd: 0.7 },
     { name: 'Talisman of Four Bearing God', vct: 2, fct: 1.5, cd: 1 },
-    { name: 'Mandala of the Beasts', vct: 2, fct: 1.5, cd: 60 },
+    { name: 'Mandala of the Beasts', vct: 2, fct: 1.5, cd: 5 },
   ];
 
   it.each(cases)('$name has vct $vct, fct $fct, cd $cd', ({ name, vct, fct, cd }) => {

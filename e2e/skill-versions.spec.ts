@@ -1,6 +1,23 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 
-for (const version of ['rebalance-2022-06', 'rebalance-2026-02'] as const) test('formula selectors synchronize and persist: ' + version, async ({ page }) => {
+/**
+ * An equipment piece the catalog still flags `preRelease`, resolved from the data rather
+ * than named here. The flag is dropped from an id as soon as LATAM ships it (see
+ * `preRelease` in item.model.ts), which is exactly what retired the name this test used
+ * to hard-code -- the pt-BR overlay took over and the preview filter stopped hiding it.
+ * It has to be an item every class can wear, since the slot lists the search reads are
+ * built for the current class.
+ */
+const PREVIEW_ITEM = (() => {
+  const items: Record<string, { name: string; usableClass?: string[]; preRelease?: boolean }> =
+    JSON.parse(readFileSync('src/assets/demo/data/item.json', 'utf8'));
+  const hit = Object.values(items).find((item) => item.preRelease && (item.usableClass || []).includes('all'));
+  if (!hit) throw new Error('item.json flags no class-agnostic pre-release equipment: the preview filter cannot be exercised');
+  return hit.name.replace(/\s*\[\d+\]$/, '');
+})();
+
+for (const version of ['pre-rebalance', 'rebalance-2026-02'] as const) test('formula selectors synchronize and persist: ' + version, async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.addInitScript(() => {
@@ -13,12 +30,12 @@ for (const version of ['rebalance-2022-06', 'rebalance-2026-02'] as const) test(
   const battle = page.getByRole('region',{name:'Batalha',exact:true});
   const selector = battle.getByRole('combobox',{name:'Versão das fórmulas de habilidades'});
   await expect(selector).toHaveValue('current');
-  await expect(selector.locator('option')).toHaveText(['Atual (LATAM)', 'Rebalance - 02/06/2022 - (kRO)', 'Rebalance - 21/12/2022 - (kRO)']);
+  await expect(selector.locator('option')).toHaveText(['Atual (LATAM)', 'Pré-rebalanceamento (até 28/10/2026)', 'Rebalance - 21/12/2022 - (kRO)']);
   const referencesButton = battle.getByRole('button', { name: 'Referências dos rebalanceamentos', exact: true });
   await referencesButton.click();
   const references = page.getByRole('region', { name: 'Referências dos rebalanceamentos', exact: true });
   await expect(references).toContainText('As datas indicam quando cada rebalanceamento chegou ao kRO (servidor coreano).');
-  await expect(references.getByRole('heading')).toHaveText(['Rebalance - 02/06/2022 - (kRO)', 'Rebalance - 21/12/2022 - (kRO)']);
+  await expect(references.getByRole('heading')).toHaveText(['Atual (LATAM) — Rebalance 02/06/2022 (kRO)', 'Rebalance - 21/12/2022 - (kRO)']);
   const sourceUrls = [
     'https://ro.gnjoy.com/news/notice/View.asp?BBSMode=10001&seq=7600&curpage=1',
     'https://www.divine-pride.net/forum/index.php?/topic/3723-kro-jobs-improvement-project/page/13/#comment-11126',
@@ -145,6 +162,8 @@ for (const version of ['rebalance-2022-06', 'rebalance-2026-02'] as const) test(
   expect(mobileSidebarBounds!.x + mobileSidebarBounds!.width).toBe(await page.evaluate(() => document.documentElement.getBoundingClientRect().width));
   await page.screenshot({ path: '.tmp/settings-sidebar-mobile.png' });
   await settings.getByRole('button', { name: 'Fechar', exact: true }).click();
+  // A phone shows the sections behind the bottom bar's "Resultado" tab.
+  await page.getByRole('button', { name: 'Resultado', exact: true }).click();
   const mobileSelector = page.getByRole('region',{name:'Batalha',exact:true}).getByRole('combobox',{name:'Versão das fórmulas de habilidades'});
   await referencesButton.scrollIntoViewIfNeeded();
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
@@ -179,9 +198,9 @@ test('preview switch filters both skill generations and item search and restores
   const search = async (present: boolean) => {
     await page.getByRole('button', { name: 'Buscar itens', exact: true }).click();
     const dialog = page.getByRole('dialog').filter({ has: page.getByPlaceholder('Nome do item') });
-    await dialog.getByPlaceholder('Nome do item').fill('Issgard Warrior Crown');
+    await dialog.getByPlaceholder('Nome do item').fill(PREVIEW_ITEM);
     await dialog.getByRole('button', { name: 'Buscar', exact: true }).click();
-    await expect(dialog.locator('.item-search-result-row').filter({ hasText: 'Issgard Warrior Crown' })).toHaveCount(present ? 1 : 0);
+    await expect(dialog.locator('.item-search-result-row').filter({ hasText: PREVIEW_ITEM })).toHaveCount(present ? 1 : 0);
     await dialog.getByRole('button', { name: 'Fechar', exact: true }).click();
   };
   await search(true);

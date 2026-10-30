@@ -229,6 +229,17 @@ export class RoyalGuard extends Paladin {
       },
     },
     {
+      /**
+       * Aegis Inferi não é segurada pela VelAtq — card tQu6cQrmdmxtWDyUKgRI, reportado
+       * por Hatakashi. O motivo é a pós-conjuração de 1 segundo que a habilidade tem:
+       * o tempo de movimento de ataque só entra quando a habilidade não traz pós-conjuração
+       * própria, e aqui ela traz. Com redução de recarga suficiente o ciclo da habilidade
+       * fica menor que 1/VelAtq, e era aí que o piso aparecia onde não devia.
+       *
+       * A mesma leitura valeria para qualquer habilidade com pós-conjuração própria, mas
+       * mudar todas de uma vez é outra conversa e sem relato que a sustente — ver
+       * `AtkSkillModel.ignoreAspdFloor` e a lista fechada em `rotation-aspd-floor.spec.ts`.
+       */
       name: 'Earth Drive',
       label: 'Earth Drive Lv5',
       value: 'Earth Drive==5',
@@ -237,6 +248,7 @@ export class RoyalGuard extends Paladin {
       fct: 0,
       vct: 1,
       cd: 2.5,
+      ignoreAspdFloor: true,
       isMelee: true,
       hit: 5,
       formula: (input: AtkSkillFormulaInput): number => {

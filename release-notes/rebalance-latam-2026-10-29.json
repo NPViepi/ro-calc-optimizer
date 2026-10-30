@@ -1,0 +1,24 @@
+{
+  "type": "patch",
+  "logs": [
+    "O rebalanceamento de 02/06/2022 do kRO passa a ser o padrão do simulador: o cliente de 28/10/2026 trouxe as novas tabelas de dano e os novos tempos das classes de 4ª e das 4ª expandidas, e o seletor \"Fórmulas\" mostra isso em \"Atual (LATAM)\". As fórmulas anteriores continuam disponíveis em \"Pré-rebalanceamento (até 28/10/2026)\", para comparar com gravações antigas.",
+    "Descrições de habilidade atualizadas pelo texto do cliente de 28/10/2026: 156 foram reescritas e 41 que faltavam foram cadastradas.",
+    "Colisão Astral e Arremessar Escudo corrigidas contra a tabela do cliente, que discorda das tabelas de referência em todos os níveis menos o último.",
+    "Baforada Draconiana chegou ao LATAM: a habilidade sai da prévia, passa a mostrar nome e descrição em português e tem o dano do Nv2 corrigido de 700% para 750%.",
+    "\"Choque do Carrinho\" renomeada para \"Choque de Carrinho\", o nome que o cliente passou a usar."
+  ],
+  "logs_es": [
+    "El rebalanceo del 02/06/2022 de kRO pasa a ser el valor por defecto del simulador: el cliente del 28/10/2026 trajo las nuevas tablas de daño y los nuevos tiempos de las clases de 4.ª y de las 4.ª expandidas, y el selector \"Fórmulas\" lo refleja en \"Actual (LATAM)\". Las fórmulas anteriores siguen disponibles en \"Pre-rebalanceo (hasta el 28/10/2026)\", para comparar con grabaciones antiguas.",
+    "Descripciones de habilidad actualizadas con el texto del cliente del 28/10/2026: 156 fueron reescritas y 41 que faltaban quedaron registradas.",
+    "Colisión Astral y Lanzamiento de Escudo corregidas contra la tabla del cliente, que no coincide con las tablas de referencia en ningún nivel salvo el último.",
+    "Aliento Dracónico llegó a LATAM: la habilidad sale de la vista previa, muestra nombre y descripción localizados y tiene el daño del Nv2 corregido de 700% a 750%.",
+    "\"Choque do Carrinho\" renombrada a \"Choque de Carrinho\", el nombre que el cliente pasó a usar."
+  ],
+  "logs_en": [
+    "The 02/06/2022 kRO rebalance is now the simulator's default: the 28/10/2026 client brought the new damage tables and the new timings for the fourth and expanded fourth classes, and the \"Formulas\" selector shows that under \"Current (LATAM)\". The earlier formulas stay available under \"Pre-rebalance (until 28/10/2026)\", to compare against older recordings.",
+    "Skill descriptions refreshed from the 28/10/2026 client text: 156 were rewritten and 41 that were missing are now registered.",
+    "Astral Strike and Shield Shooting corrected against the client table, which disagrees with the reference tables at every level but the last.",
+    "Dragonic Breath has reached LATAM: the skill leaves the preview, shows its localized name and description, and has its Nv2 damage corrected from 700% to 750%.",
+    "\"Choque do Carrinho\" renamed to \"Choque de Carrinho\", the name the client now uses."
+  ]
+}

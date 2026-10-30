@@ -134,9 +134,12 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.ui-inputtext:enabled:hover {
+@media (hover: hover){.ui-inputtext:enabled:hover{
   border-color: var(--primary-color);
-}
+}}
+@media (hover: none){.ui-inputtext:enabled:active{
+  border-color: var(--primary-color);
+}}
 
 .ui-inputtext:enabled:focus, .ui-link:focus-visible {
   outline: 0;
@@ -173,10 +176,14 @@
   transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
-.ui-button:enabled:hover {
+@media (hover: hover){.ui-button:enabled:hover{
   background: var(--button-hover);
   border-color: var(--button-hover);
-}
+}}
+@media (hover: none){.ui-button:enabled:active{
+  background: var(--button-hover);
+  border-color: var(--button-hover);
+}}
 
 .ui-button:focus {
   outline: 0;
@@ -276,18 +283,30 @@
   border-color: transparent;
 }
 
-.ui-button-outlined:enabled:hover, .ui-button-text:enabled:hover {
+@media (hover: hover){.ui-button-outlined:enabled:hover,
+.ui-button-text:enabled:hover{
   color: var(--button-color);
   background: color-mix(in srgb, var(--button-color) 4%, transparent);
-}
+}}
+@media (hover: none){.ui-button-outlined:enabled:active,
+.ui-button-text:enabled:active{
+  color: var(--button-color);
+  background: color-mix(in srgb, var(--button-color) 4%, transparent);
+}}
 
-.ui-button-text:enabled:hover {
+@media (hover: hover){.ui-button-text:enabled:hover{
   border-color: transparent;
-}
+}}
+@media (hover: none){.ui-button-text:enabled:active{
+  border-color: transparent;
+}}
 
-.ui-button-outlined:enabled:hover {
+@media (hover: hover){.ui-button-outlined:enabled:hover{
   border-color: var(--button-color);
-}
+}}
+@media (hover: none){.ui-button-outlined:enabled:active{
+  border-color: var(--button-color);
+}}
 
 .ui-fluid .ui-button {
   width: 100%;
@@ -332,14 +351,21 @@
   border-color: #81c784;
 }
 
-.ui-selectbutton .ui-button:not(.ui-highlight):enabled:hover {
+@media (hover: hover){.ui-selectbutton .ui-button:not(.ui-highlight):enabled:hover{
   background: rgba(255, 255, 255, 0.03);
-}
+}}
+@media (hover: none){.ui-selectbutton .ui-button:not(.ui-highlight):enabled:active{
+  background: rgba(255, 255, 255, 0.03);
+}}
 
-.ui-selectbutton .ui-button.ui-highlight:enabled:hover {
+@media (hover: hover){.ui-selectbutton .ui-button.ui-highlight:enabled:hover{
   background: #6abd6e;
   border-color: #6abd6e;
-}
+}}
+@media (hover: none){.ui-selectbutton .ui-button.ui-highlight:enabled:active{
+  background: #6abd6e;
+  border-color: #6abd6e;
+}}
 
 .ui-overlay-badge {
   position: relative;
@@ -541,13 +567,19 @@
   background: rgba(255, 255, 255, 0.87);
 }
 
-.ui-inputswitch:not(.ui-disabled):hover .ui-inputswitch-slider {
+@media (hover: hover){.ui-inputswitch:not(.ui-disabled):hover .ui-inputswitch-slider{
   background: rgba(255, 255, 255, 0.03);
-}
+}}
+@media (hover: none){.ui-inputswitch:not(.ui-disabled):active .ui-inputswitch-slider{
+  background: rgba(255, 255, 255, 0.03);
+}}
 
-.ui-inputswitch-checked:not(.ui-disabled):hover .ui-inputswitch-slider {
+@media (hover: hover){.ui-inputswitch-checked:not(.ui-disabled):hover .ui-inputswitch-slider{
   background: #6abd6e;
-}
+}}
+@media (hover: none){.ui-inputswitch-checked:not(.ui-disabled):active .ui-inputswitch-slider{
+  background: #6abd6e;
+}}
 
 .ui-inputswitch input:focus-visible + .ui-inputswitch-slider {
   box-shadow: var(--focus-ring);
@@ -563,9 +595,16 @@
   border-radius: 3px;
 }
 
-.ui-dropdown:not(.ui-disabled):hover, .ui-multiselect:not(.ui-disabled):hover, .ui-cascadeselect:not(.ui-disabled):hover {
+@media (hover: hover){.ui-dropdown:not(.ui-disabled):hover,
+.ui-multiselect:not(.ui-disabled):hover,
+.ui-cascadeselect:not(.ui-disabled):hover{
   border-color: var(--primary-color);
-}
+}}
+@media (hover: none){.ui-dropdown:not(.ui-disabled):active,
+.ui-multiselect:not(.ui-disabled):active,
+.ui-cascadeselect:not(.ui-disabled):active{
+  border-color: var(--primary-color);
+}}
 
 .ui-dropdown.ui-focus, .ui-multiselect.ui-focus, .ui-cascadeselect.ui-focus,
 .ui-dropdown:focus-within, .ui-multiselect:focus-within, .ui-cascadeselect:focus-within {
@@ -714,9 +753,18 @@
   color: var(--highlight-text-color);
 }
 
-.ui-select-item:not(.ui-disabled):hover, .ui-select-item.ui-focus:not(.ui-highlight), .ui-listbox-item:not(.ui-disabled):hover, .ui-listbox-item:focus-visible {
+.ui-select-item.ui-focus:not(.ui-highlight),
+.ui-listbox-item:focus-visible{
   background: rgba(255, 255, 255, 0.03);
 }
+@media (hover: hover){.ui-select-item:not(.ui-disabled):hover,
+.ui-listbox-item:not(.ui-disabled):hover{
+  background: rgba(255, 255, 255, 0.03);
+}}
+@media (hover: none){.ui-select-item:not(.ui-disabled):active,
+.ui-listbox-item:not(.ui-disabled):active{
+  background: rgba(255, 255, 255, 0.03);
+}}
 
 .ui-select-item:focus, .ui-listbox-item:focus {
   outline: 0;
@@ -749,9 +797,15 @@
   margin-left: auto;
 }
 
-.ui-cascadeselect-item-content:hover, .ui-cascadeselect-item-content:focus-visible {
+.ui-cascadeselect-item-content:focus-visible{
   background: rgba(255, 255, 255, 0.03);
 }
+@media (hover: hover){.ui-cascadeselect-item-content:hover{
+  background: rgba(255, 255, 255, 0.03);
+}}
+@media (hover: none){.ui-cascadeselect-item-content:active{
+  background: rgba(255, 255, 255, 0.03);
+}}
 
 .ui-cascadeselect-sublist {
   position: absolute;
@@ -897,9 +951,12 @@
   outline-offset: -1px;
 }
 
-.ui-datatable-tbody > tr.ui-selectable-row:hover {
+@media (hover: hover){.ui-datatable-tbody > tr.ui-selectable-row:hover{
   background: rgba(255, 255, 255, 0.03);
-}
+}}
+@media (hover: none){.ui-datatable-tbody > tr.ui-selectable-row:active{
+  background: rgba(255, 255, 255, 0.03);
+}}
 
 .ui-datatable-loading-overlay {
   position: absolute;
@@ -946,9 +1003,12 @@
   align-items: center;
 }
 
-.ui-paginator-element:hover {
+@media (hover: hover){.ui-paginator-element:hover{
   background: rgba(255, 255, 255, 0.03);
-}
+}}
+@media (hover: none){.ui-paginator-element:active{
+  background: rgba(255, 255, 255, 0.03);
+}}
 
 .ui-paginator-element.ui-highlight {
   background: var(--highlight-bg);
@@ -1021,9 +1081,12 @@
   border-radius: 50%;
 }
 
-.ui-dialog-header-icon:hover {
+@media (hover: hover){.ui-dialog-header-icon:hover{
   background: rgba(255, 255, 255, 0.03);
-}
+}}
+@media (hover: none){.ui-dialog-header-icon:active{
+  background: rgba(255, 255, 255, 0.03);
+}}
 
 .ui-dialog-content {
   overflow-y: auto;

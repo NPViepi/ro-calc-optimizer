@@ -60,6 +60,7 @@ pnpm start          # servidor local em http://localhost:4200
 | `pnpm test:watch`   | Vitest em modo watch                           |
 | `pnpm test:cov`     | Testes com cobertura                           |
 | `pnpm e2e`         | Comparação visual e interações no navegador    |
+| `pnpm e2e:ci`      | Mesma suíte sem comparar imagens (usada no CI) |
 | `pnpm typecheck`   | React, Worker e testes de backend        |
 | `pnpm typecheck:react` | Tipos dos componentes e serviços React       |
 | `pnpm lint:check`  | Imports não usados e fronteiras da engine                    |

@@ -1,3 +1,4 @@
+import { Translate } from 'src/app/i18n';
 // Geometry for the cycle flowchart: turns the scheduler's absolute times into the
 // percentage-positioned blocks the template draws. Pure, no Angular — same split as
 // aspd-curve.logic.ts. Percentages (not pixels) so the chart is fluid, and so the two
@@ -99,8 +100,8 @@ export interface TimelineSource {
  * One chart. `scale` is the denominator every position divides by — pass the longer of
  * the two cycles in comparison mode so both charts line up on one time axis.
  */
-export function buildTimelineChart(input: TimelineSource & { scale: number; title?: string; isCompare?: boolean }): TimelineChart {
-  const { cycle, entries, title = '', isCompare = false } = input;
+export function buildTimelineChart(input: TimelineSource & { text: Translate; scale: number; title?: string; isCompare?: boolean }): TimelineChart {
+  const { cycle, entries, text, title = '', isCompare = false } = input;
   const scale = input.scale > 0 ? input.scale : 1;
   const pct = (seconds: number) => (seconds / scale) * 100;
 
@@ -126,20 +127,20 @@ export function buildTimelineChart(input: TimelineSource & { scale: number; titl
     };
 
     const fixedEnd = lane.start + (entry?.fixed ?? 0);
-    push('fixa', lane.start, fixedEnd, 'Conjuração fixa');
-    push('variavel', fixedEnd, lane.castEnd, 'Conjuração variável');
+    push('fixa', lane.start, fixedEnd, text('tl.fixedCast'));
+    push('variavel', fixedEnd, lane.castEnd, text('tl.variableCast'));
     // The two share the lane as stripes only while both exist; whichever is alone gets
     // the full height, so a lane never looks half-empty for no reason.
     const hasPos = lane.posEnd - lane.castEnd > 1e-6;
     const hasRecarga = lane.recEnd - lane.castEnd > 1e-6;
-    push('pos', lane.castEnd, lane.posEnd, 'Pós-conjuração', !hasRecarga);
-    push('recarga', lane.castEnd, lane.recEnd, 'Recarga', !hasPos);
+    push('pos', lane.castEnd, lane.posEnd, text('tl.afterCast'), !hasRecarga);
+    push('recarga', lane.castEnd, lane.recEnd, text('tl.cooldown'), !hasPos);
     // The VelAtq wait sits immediately *before* the step it held back. On the first lane
     // it wraps from the previous pass, which is the same instant modulo the cycle — draw
     // it at the end of the window rather than off the left edge.
     if (lane.aspdWait > 1e-6) {
       const from = lane.start - lane.aspdWait;
-      const tooltip = 'Espera por Vel.Atq: com a Vel.Atq atual esta habilidade não sai no fim da pós-conjuração anterior';
+      const tooltip = text('tl.aspdWaitTip');
       if (from < -1e-9) push('aspd', from + cycle.cycleDuration, cycle.cycleDuration, tooltip);
       else push('aspd', from, lane.start, tooltip);
     }
@@ -183,14 +184,14 @@ export function buildTimelineChart(input: TimelineSource & { scale: number; titl
  * The chart set the panel renders: one normally, two on a shared scale when comparing.
  * Both keep their own cycle-end marker — they are complete, independent readings.
  */
-export function buildTimelineCharts(input: { current: TimelineSource; compare?: TimelineSource | null }): TimelineChart[] {
-  const { current, compare } = input;
-  if (!compare) return [buildTimelineChart({ ...current, scale: current.cycle.cycleDuration })];
+export function buildTimelineCharts(input: { text: Translate; current: TimelineSource; compare?: TimelineSource | null }): TimelineChart[] {
+  const { text, current, compare } = input;
+  if (!compare) return [buildTimelineChart({ ...current, text, scale: current.cycle.cycleDuration })];
 
   const scale = Math.max(current.cycle.cycleDuration, compare.cycle.cycleDuration);
 
   return [
-    buildTimelineChart({ ...current, scale, title: `Atual · ciclo ${fmt(current.cycle.cycleDuration)}s` }),
-    buildTimelineChart({ ...compare, scale, title: `⇄ Comparação · ciclo ${fmt(compare.cycle.cycleDuration)}s`, isCompare: true }),
+    buildTimelineChart({ ...current, text, scale, title: text('tl.titleCurrent', { cycle: fmt(current.cycle.cycleDuration) }) }),
+    buildTimelineChart({ ...compare, text, scale, title: text('tl.titleCompare', { cycle: fmt(compare.cycle.cycleDuration) }), isCompare: true }),
   ];
 }

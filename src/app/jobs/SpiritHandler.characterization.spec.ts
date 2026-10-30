@@ -176,9 +176,9 @@ describe('Spirit Handler cast/cooldown metadata', () => {
   const cases: { name: string; acd: number; vct: number; fct: number; cd: number }[] = [
     { name: 'Chulho Sonic Claw', acd: 0.5, vct: 0, fct: 0, cd: 0.25 },
     { name: 'Howling of Chulho', acd: 0, vct: 0, fct: 1, cd: 1 },
-    { name: 'Hogogong Strike', acd: 0, vct: 0, fct: 1, cd: 0.5 },
+    { name: 'Hogogong Strike', acd: 0, vct: 0, fct: 1, cd: 0.35 },
     { name: 'Hyunrok Breeze', acd: 0.5, vct: 3, fct: 1.5, cd: 4.5 },
-    { name: 'Hyunrok Cannon', acd: 0.5, vct: 2, fct: 1.5, cd: 0.3 },
+    { name: 'Hyunrok Cannon', acd: 0, vct: 2, fct: 1.5, cd: 0.3 },
   ];
 
   it.each(cases)('$name has acd $acd, vct $vct, fct $fct, cd $cd', ({ name, acd, vct, fct, cd }) => {

@@ -12,7 +12,7 @@ import { ElementType } from '../constants/element-type.const';
 import { REBALANCE_2022_REFERENCE } from './rebalance-2022-reference';
 import { SKILL_FORMULA_VERSION_OPTIONS, SkillFormulaVersion } from './skill-formula-version';
 
-const version = 'rebalance-2022-06' as const;
+const version = 'current' as const;
 function job(name: ClassName, active: Record<string, number> = {}): CharacterBase {
   const cls = new Jobs[name]() as CharacterBase;
   cls.setLearnSkills({ activeSkillIds: cls.activeSkills.map(s => active[s.name] ?? 0), passiveSkillIds: cls.passiveSkills.map(() => 0) }).getSkillBonusAndName();
@@ -41,7 +41,7 @@ describe('third fourth-job / second expanded-job rebalance, June 2022', () => {
     expect(new Set(REBALANCE_2022_REFERENCE.flatMap(g => g.classes)).size).toBe(20);
     for (const group of REBALANCE_2022_REFERENCE) for (const name of group.classes) {
       const cls = job(name);
-      const current = snapshot(cls.getAtkSkills('current'));
+      const legacy = snapshot(cls.getAtkSkills('pre-rebalance'));
       const later = snapshot(cls.getAtkSkills('rebalance-2026-02'));
       const skills = cls.getAtkSkills(version);
       for (const [skillName, ref] of Object.entries(group.skills)) {
@@ -58,7 +58,7 @@ describe('third fourth-job / second expanded-job rebalance, June 2022', () => {
           }
         }
       }
-      expect(snapshot(cls.getAtkSkills('current'))).toEqual(current);
+      expect(snapshot(cls.getAtkSkills('pre-rebalance'))).toEqual(legacy);
       expect(snapshot(cls.getAtkSkills('rebalance-2026-02'))).toEqual(later);
     }
   });
@@ -70,7 +70,10 @@ describe('third fourth-job / second expanded-job rebalance, June 2022', () => {
     ['Hack and Slasher',10,7300], ['Storm Slash',5,950], ['Madness Crusher',5,4400], ['Servant Weapon',5,2500], ['Dragonic Aura',10,36500],
     ['Crescive Bolt',10,4420], ['Gale Storm',10,9500], ['Shadow Stab',5,1500], ['Eternal Slash',5,1325],
     ['Abyss Dagger',5,2600], ['Deft Stab',10,5850], ['Frenzy Shot',10,4000], ['Abyss Square',5,2850],
-    ['Explosion Blaster',5,14000], ['Massive Flame Blaster',10,21500], ['Second Flame',5,14700], ['Astral Strike',10,18000],
+    ['Explosion Blaster',5,14000], ['Massive Flame Blaster',10,21500], ['Second Flame',5,14700],
+    // 18.300%, not the article's 18.000%: the client's table is 300 + 1800/Nv level by
+    // level, and the article's 2140/Nv only lands on its Nv10. See skill-ratio-client-table.
+    ['Astral Strike',10,18300],
     ['Overslash',10,1200], ['Shield Shooting',5,11900], ['Grand Judgement',10,15250], ['Cross Rain',10,3200],
     ['Metallic Fury',5,11000], ['Rhythm Shooting',5,800], ['Rose Blossom',5,10200],
     ['Framen',5,4000], ['Arbitrium',10,10000], ['Petitio',10,10500],
@@ -146,23 +149,23 @@ describe('third fourth-job / second expanded-job rebalance, June 2022', () => {
     expect(skill.part2.element).toBeUndefined();
   });
 
-  it('round trips the earlier version and preserves the LATAM default', () => {
-    const model = { ...createMainModel(), skillFormulaVersion: version, skillStacks: { 'Metallic Fury': 5 } };
+  it('round trips the historical version and keeps the rebalance as the default', () => {
+    const model = { ...createMainModel(), skillFormulaVersion: 'pre-rebalance' as const, skillStacks: { 'Metallic Fury': 5 } };
     const restored = normalizeSavedModel(decodeBuild(encodeBuild(model)));
-    expect(restored.skillFormulaVersion).toBe(version);
+    expect(restored.skillFormulaVersion).toBe('pre-rebalance');
     expect(restored.skillStacks).toEqual(model.skillStacks);
     expect(normalizeSavedModel({}).skillFormulaVersion).toBe('current');
     expect(normalizeSavedModel({ skillFormulaVersion: 'future' }).skillFormulaVersion).toBe('current');
-    expect(SKILL_FORMULA_VERSION_OPTIONS.map(o => o.value)).toEqual(['current', version, 'rebalance-2026-02']);
+    expect(SKILL_FORMULA_VERSION_OPTIONS.map(o => o.value)).toEqual(['current', 'pre-rebalance', 'rebalance-2026-02']);
   });
 });
 
 const items = JSON.parse(readFileSync('src/assets/demo/data/item.json', 'utf8'));
 const monsters = JSON.parse(readFileSync('src/assets/demo/data/monster.json', 'utf8'));
 const table = JSON.parse(readFileSync('src/assets/demo/data/hp_sp_table.json', 'utf8'));
-function solve(name: ClassName, skill: string, formulaVersion: SkillFormulaVersion, active: Record<string, number> = {}, stacks?: Record<string, number>) {
+function solve(name: ClassName, skill: string, formulaVersion: SkillFormulaVersion, active: Record<string, number> = {}, overrides: Partial<ReturnType<typeof createMainModel>> = {}) {
   const cls = job(name, active);
-  const model = { ...createMainModel(), class: cls.classId, level: 250, jobLevel: 1, str: 130, int: 130, dex: 130, spl: 100, selectedAtkSkill: skill, skillFormulaVersion: formulaVersion, skillStacks: stacks };
+  const model = { ...createMainModel(), class: cls.classId, level: 250, jobLevel: 1, str: 130, int: 130, dex: 130, spl: 100, selectedAtkSkill: skill, skillFormulaVersion: formulaVersion, ...overrides };
   const calc = new Calculator().setMasterItems(items).setHpSpTable(table).setClass(cls);
   calc.loadItemFromModel(model);
   new CalculatorController().runChain(calc, { monster: monsters['21077'], ...cls.getSkillBonusAndName(), buffEquips: {}, buffMasterys: {}, consumeData: [], aspdPotion: undefined, extraOptionScripts: [], selectedAtkSkill: skill, selectedChances: [], usedHpL: false } as any);
@@ -171,33 +174,41 @@ function solve(name: ClassName, skill: string, formulaVersion: SkillFormulaVersi
 
 describe('historical formulas in real damage and autocasts', () => {
   it('selects each build independently, including an explicitly supplied legacy autocast skill', () => {
-    const old = solve(ClassName.ArchMage, 'Frozen Slash==5', 'current');
+    const old = solve(ClassName.ArchMage, 'Frozen Slash==5', 'pre-rebalance');
     const third = solve(ClassName.ArchMage, 'Frozen Slash==5', version);
     const fourth = solve(ClassName.ArchMage, 'Frozen Slash==5', 'rebalance-2026-02');
     expect(third.dmg.baseSkillDamage).toBeGreaterThan(old.dmg.baseSkillDamage);
     expect(fourth.dmg.baseSkillDamage - third.dmg.baseSkillDamage).toBe(375);
     expect(third.calc.solveAutoCast('Frozen Slash==5', job(ClassName.ArchMage).atkSkills.find(s => s.name === 'Frozen Slash')).baseSkillDamage).toBe(third.dmg.baseSkillDamage);
-    expect(solve(ClassName.ArchMage, 'Frozen Slash==5', 'current').dmg).toEqual(old.dmg);
+    expect(solve(ClassName.ArchMage, 'Frozen Slash==5', 'pre-rebalance').dmg).toEqual(old.dmg);
   });
+
+  // Fúria Estridente needs an instrument and an arrow (client: "Apenas com Chicote ou
+  // Instrumento", "Consome 1 Flecha equipada"). The requirement arrived with the skill's
+  // "Atual (LATAM)" entry in `shared-skills.ts`, which this version now patches instead
+  // of being synthesised bare, so the build has to carry both.
+  const BARD_INSTRUMENT = 570028;
+  const FIRE_ARROW = 1752;
 
   it('passes selected marked-target counts to Metallic Fury secondary damage', () => {
     const active = { '_Debuf_Sonic_Brand': 1 };
-    const one = solve(ClassName.Troubadour, 'Metallic Fury==5', version, active, { 'Metallic Fury': 1 });
-    const five = solve(ClassName.Troubadour, 'Metallic Fury==5', version, active, { 'Metallic Fury': 5 });
+    const equip = { weapon: BARD_INSTRUMENT, ammo: FIRE_ARROW };
+    const one = solve(ClassName.Troubadour, 'Metallic Fury==5', version, active, { ...equip, skillStacks: { 'Metallic Fury': 1 } });
+    const five = solve(ClassName.Troubadour, 'Metallic Fury==5', version, active, { ...equip, skillStacks: { 'Metallic Fury': 5 } });
     expect(five.dmg.baseSkillDamage - one.dmg.baseSkillDamage).toBe(15000);
     expect(five.dmg.skillMaxDamage2).toBeGreaterThan(one.dmg.skillMaxDamage2);
     expect(five.dmg.skillMaxDamage).toBe(one.dmg.skillMaxDamage);
   });
 
-  it('applies the third rebalance Climax bonuses and Vigor without changing LATAM', () => {
-    const old = solve(ClassName.ArchMage, 'Destructive Hurricane==5', 'current', { Climax: 3 });
+  it('applies the third rebalance Climax bonuses and Vigor, which the legacy build lacks', () => {
+    const old = solve(ClassName.ArchMage, 'Destructive Hurricane==5', 'pre-rebalance', { Climax: 3 });
     const third = solve(ClassName.ArchMage, 'Destructive Hurricane==5', version, { Climax: 3 });
     const fourth = solve(ClassName.ArchMage, 'Destructive Hurricane==5', 'rebalance-2026-02', { Climax: 3 });
     expect(third.dmg.skillMaxDamage).toBeGreaterThan(old.dmg.skillMaxDamage);
     expect(third.dmg.skillMaxDamage).toBeGreaterThan(fourth.dmg.skillMaxDamage);
-    const current = solve(ClassName.DragonKnight, 'Dragonic Breath==10', 'current', { Vigor: 10 }).calc.getTotalSummary() as any;
+    const legacy = solve(ClassName.DragonKnight, 'Dragonic Breath==10', 'pre-rebalance', { Vigor: 10 }).calc.getTotalSummary() as any;
     const rebalanced = solve(ClassName.DragonKnight, 'Dragonic Breath==10', version, { Vigor: 10 }).calc.getTotalSummary() as any;
-    expect(rebalanced.flatBasicDmg - current.flatBasicDmg).toBe(50);
-    expect(rebalanced.vigorBasicRaceDmg - current.vigorBasicRaceDmg).toBe(50);
+    expect(rebalanced.flatBasicDmg - legacy.flatBasicDmg).toBe(50);
+    expect(rebalanced.vigorBasicRaceDmg - legacy.vigorBasicRaceDmg).toBe(50);
   });
 });

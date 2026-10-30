@@ -5,6 +5,7 @@ import { DamageFormulaCalc, DamageFormulaNode } from '../../app/models/damage-su
 import { buildDpsSteps, buildGraphClusters, DpsSteps, FormulaGraphCluster, isCritWeighted, pickHeroDamage } from '../../app/layout/pages/ro-calculator/battle-hud/battle-hud.logic';
 import { DamageBranch } from './rotation-list';
 import { calcDmgDpsDetailed } from '../../app/utils/calc-dmg-dps';
+import { Translate } from '../../app/i18n';
 
 export interface DamagePopoverEntry {
   name: string;
@@ -24,8 +25,7 @@ export interface DamagePopoverContext {
 
 
 export class BattleDamagePopoversComponent extends ViewState {
-  constructor(
-) { super();}
+  constructor(private readonly text: Translate) { super();}
 
    formulaPanel = new UiPopoverComponent();
    noCriPanel = new UiPopoverComponent();
@@ -122,7 +122,7 @@ export class BattleDamagePopoversComponent extends ViewState {
       ? this.dmg?.criMinDamage === this.dmg?.criMaxDamage
       : this.dmg?.basicMinDamage === this.dmg?.basicMaxDamage;
   }
-  get basicTitle(): string { return this.basicBranch === 'critical' ? 'Como o dano crítico é calculado' : 'Como o ataque básico é calculado'; }
+  get basicTitle(): string { return this.text(this.basicBranch === 'critical' ? 'pop.howCri' : 'pop.howBasic'); }
   get damageIsFlat(): boolean {
     const hero = pickHeroDamage(this.dmg, !!this.context?.hasSelectedChances);
     return hero.min === hero.max;
@@ -166,7 +166,7 @@ export class BattleDamagePopoversComponent extends ViewState {
       ? isCritWeighted((this.dmg?.criRateToMonster ?? 0) > 0, this.dmg?.criRateToMonster)
       : isCritWeighted(this.dmg?.skillCanCri, this.dmg?.skillCriRateToMonster);
   }
-  get meanTitle(): string { return this.weightedCrit ? 'Como a média por crítico é calculada' : 'Como o dano médio é calculado'; }
+  get meanTitle(): string { return this.text(this.weightedCrit ? 'pop.howCriMean' : 'pop.howMean'); }
 
   isNodeClickable(node: DamageFormulaNode): boolean { return !!node.detail || !!node.calc || !!node.keys?.length; }
   openFormulaNode(node: DamageFormulaNode, compare = false): void {

@@ -9,6 +9,7 @@ import { CritRateBreakdown, CritRateStep } from '../../../../core/crit-rate';
 import { calcDmgDpsDetailed } from '../../../../utils/calc-dmg-dps';
 import { formatCalcNumber, formatNumber, formatRate, formatSignedCalcNumber } from '../../../../utils/format-number';
 import { DamageFormulaCalcRow, DamageFormulaGraph, DamageFormulaNode } from '../../../../models/damage-summary.model';
+import { Translate } from '../../../../i18n';
 
 /** Neutro has no colour of its own; everything else gets the theme's property_* class. */
 const ELEMENT_COLOR_CLASSES: Set<string> = new Set(Object.values(ElementType).filter((e) => e !== ElementType.Neutral));
@@ -211,7 +212,7 @@ export function buildOptimizeInfo(input: {
   sumDex2Int1: number;
   /** ASPD-supported uses/sec — the exact ceiling the engine caps with (basicAspd.hitsPerSec, i.e. totalSummary.calc.hitPerSecs). */
   aspdHitsPerSec: number;
-}): OptimizeInfo {
+}, text: Translate): OptimizeInfo {
   const { reducedFct, reducedVct, reducedAcd, reducedCd, castPeriod, hitPeriod, dps, sumDex2Int1, aspdHitsPerSec } = input;
   const toZero = Math.max(0, 530 - sumDex2Int1);
 
@@ -246,49 +247,51 @@ export function buildOptimizeInfo(input: {
   const components: CastComponentInfo[] = [
     {
       key: 'fixa',
-      label: 'Fixa',
+      label: text('opt.fixa'),
       seconds: reducedFct,
-      hint: 'reduz com −Conj. Fixa de equipamentos',
-      doneText: fixaZero ? 'já zerada ✓' : null,
+      hint: text('opt.hintFixa'),
+      doneText: fixaZero ? text('opt.doneZeroed') : null,
     },
     {
       key: 'variavel',
-      label: 'Variável',
+      label: text('opt.variavel'),
       seconds: reducedVct,
-      hint: `DES×2+INT: ${sumDex2Int1} / 530 para zerar (faltam ${toZero}) — ou −Conj. Variável %`,
-      doneText: variavelStatsMet ? 'stats já zeram a conjuração variável ✓' : reducedVct < ZERO_SECONDS_EPS ? 'já zerada ✓' : null,
+      hint: text('opt.hintVariavel', { sum: sumDex2Int1, missing: toZero }),
+      doneText: variavelStatsMet
+        ? text('opt.doneStats')
+        : reducedVct < ZERO_SECONDS_EPS ? text('opt.doneZeroed') : null,
     },
     {
       key: 'pos',
-      label: 'Pós',
+      label: text('opt.pos'),
       seconds: reducedAcd,
-      hint: 'reduz com −Pós-conjuração',
-      doneText: posZero ? 'já zerada ✓' : null,
+      hint: text('opt.hintPos'),
+      doneText: posZero ? text('opt.doneZeroed') : null,
     },
     {
       key: 'recarga',
-      label: 'Recarga',
+      label: text('opt.recarga'),
       seconds: reducedCd,
-      hint: 'fixa da habilidade — não reduzível',
+      hint: text('opt.hintRecarga'),
       doneText: null,
     },
     {
       key: 'aspd',
-      label: 'Vel.Atq',
+      label: text('opt.aspd'),
       seconds: 0,
       hideSeconds: true,
       hint: aspdLimits
-        ? `limita a conjuração — aumente a Vel.Atq: o cast permite ${fmtRate(castRate)}/s, mas a Vel.Atq só suporta ${fmtRate(aspdHitsPerSec)}/s`
+        ? text('opt.hintAspd', { cast: fmtRate(castRate), aspd: fmtRate(aspdHitsPerSec) })
         : '',
-      doneText: aspdLimits ? null : `suporta a conjuração ✓ (${fmtRate(aspdHitsPerSec)}/s ≥ ${fmtRate(castRate)}/s)`,
+      doneText: aspdLimits ? null : text('opt.doneAspd', { aspd: fmtRate(aspdHitsPerSec), cast: fmtRate(castRate) }),
     },
   ];
 
   const headline = aspdLimits
-    ? 'A Vel.Atq limita a conjuração — aumente a Vel.Atq para ganhar DPS.'
+    ? text('opt.headlineAspd')
     : isOptimized
-      ? 'Conjuração já otimizada — nada relevante a melhorar.'
-      : `Gargalo atual: ${components.find((c) => c.key === bottleneck)!.label}`;
+      ? text('opt.headlineOptimized')
+      : text('opt.headlineBottleneck', { component: components.find((c) => c.key === bottleneck)!.label });
 
   return { isOptimized, headline, bottleneck, components, whatIf };
 }
@@ -634,8 +637,9 @@ export interface RotationPickerOption {
 export function buildRotationPickerOptions(
   basicAttackValue: string,
   atkSkills: { label: string; value: string; icon?: number; levelList?: any[] }[] | null | undefined,
+  text: Translate,
 ): RotationPickerOption[] {
-  const options: RotationPickerOption[] = [{ label: 'Ataque básico', value: basicAttackValue, isBasic: true }];
+  const options: RotationPickerOption[] = [{ label: text('skd.basicAttack'), value: basicAttackValue, isBasic: true }];
 
   for (const skill of atkSkills ?? []) {
     options.push({ label: skill.label, value: skill.value, icon: skill.icon, levelList: skill.levelList });

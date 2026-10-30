@@ -31,11 +31,6 @@
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-card-col--skill{
   flex: 60 1 0;
 }
-@media (max-width: 991px){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-cards{
-    flex-direction: column;
-  }
-
-}
  app-battle-hud .hud-card.ui-card,
  .ui-scope-app-battle-hud .hud-card.ui-card{
   height: 100%;
@@ -507,10 +502,14 @@
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero .clickable{
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero .clickable:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero .clickable:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero .clickable:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero .pcol.sim .pnum{
   color: var(--yellow-200);
 }
@@ -869,19 +868,6 @@
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-card-col--monster .monster_id_link{
   order: 5;
 }
-@container (max-width: 420px){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-card-col--monster  .ui-card-content{
-    display: block;
-  }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-card-col--monster .hud-monster-info{
-    width: auto;
-  }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-band-right{
-    border-left: none;
-    padding-left: 0;
-    margin-top: 8px;
-  }
-
-}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-rot-layout{
   display: flex;
   flex-direction: column;
@@ -967,9 +953,12 @@
   color: var(--primary-color);
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-help:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-help:hover{
   background: var(--highlight-bg);
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-help:active{
+  background: var(--highlight-bg);
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-warn-chip.ui-button,
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-invalid-chip{
 
@@ -988,11 +977,16 @@
   border: 1px solid var(--surface-border);
   color: var(--yellow-300, #ffe082);
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-warn-chip.ui-button:enabled:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-warn-chip.ui-button:enabled:hover{
   background: rgba(255, 224, 130, 0.08);
   border-color: var(--surface-border);
   color: var(--yellow-300, #ffe082);
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-warn-chip.ui-button:enabled:active{
+  background: rgba(255, 224, 130, 0.08);
+  border-color: var(--surface-border);
+  color: var(--yellow-300, #ffe082);
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-invalid-chip{
   border: 1px solid var(--red-300, #ff8980);
   color: var(--red-300, #ff8980);
@@ -1111,10 +1105,14 @@
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero-strip .clickable{
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero-strip .clickable:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero-strip .clickable:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero-strip .clickable:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-hero-strip .pdelta{
   font-size: 14px;
   font-weight: 700;
@@ -1206,9 +1204,12 @@
   cursor: pointer;
   user-select: none;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-desc-toggle:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-desc-toggle:hover{
   color: var(--text-color);
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-desc-toggle:active{
+  color: var(--text-color);
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-desc-toggle .ui-icon{
   font-size: 10px;
 }
@@ -1239,10 +1240,14 @@
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val{
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
@@ -1317,10 +1322,14 @@
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val{
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .pd-dmg-val:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
@@ -1417,16 +1426,26 @@
  .ui-scope-app-rotation-list .rot-clear.ui-button .ui-button-icon-left{
   margin-right: 0.3rem;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-optimize.ui-button:enabled:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-optimize.ui-button:enabled:hover{
   background: rgba(255, 224, 130, 0.08);
   border-color: var(--surface-border);
   color: #ffe082;
-}
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-clear.ui-button:enabled:hover{
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-optimize.ui-button:enabled:active{
+  background: rgba(255, 224, 130, 0.08);
+  border-color: var(--surface-border);
+  color: #ffe082;
+}}
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-clear.ui-button:enabled:hover{
   background: rgba(255, 137, 128, 0.08);
   border-color: var(--surface-border);
   color: var(--red-300, #ff8980);
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-clear.ui-button:enabled:active{
+  background: rgba(255, 137, 128, 0.08);
+  border-color: var(--surface-border);
+  color: var(--red-300, #ff8980);
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-add.ui-button{
   background: transparent;
   border: 1px dashed var(--surface-border);
@@ -1448,11 +1467,16 @@
  .ui-scope-app-rotation-list .rot-add.ui-button .ui-button-icon-left{
   margin-right: 0.4rem;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-add.ui-button:enabled:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-add.ui-button:enabled:hover{
   background: var(--highlight-bg);
   border-color: var(--surface-border);
   color: var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-add.ui-button:enabled:active{
+  background: var(--highlight-bg);
+  border-color: var(--surface-border);
+  color: var(--primary-color);
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-rows{
   display: flex;
   flex-direction: column;
@@ -1513,9 +1537,12 @@
   cursor: pointer;
   border-radius: 3px;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-icon--btn:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-icon--btn:hover{
   outline: 1px solid var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-icon--btn:active{
+  outline: 1px solid var(--primary-color);
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-icon--btn:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 1px;
@@ -1625,9 +1652,12 @@
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-branch{
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-branch:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-branch:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-branch:active{
+  text-decoration: underline;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-branch:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 1px;
@@ -1638,10 +1668,14 @@
   color: var(--teal-300, #61beb5);
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-val:hover,
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-val:hover,
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-crit-val.bonus_clickable:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-val:active,
+:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-crit-val.bonus_clickable:active{
+  text-decoration: underline;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-val:focus-visible,
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-crit-val:focus-visible{
   outline: 2px solid var(--primary-color);
@@ -1653,9 +1687,12 @@
   color: var(--yellow-200, #fde4a5);
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-sim:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-sim:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-sim:active{
+  text-decoration: underline;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-dmg-sim:focus-visible,
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-crit-sim:focus-visible{
   outline: 2px solid var(--primary-color);
@@ -1760,9 +1797,12 @@
   cursor: pointer;
   flex-shrink: 0;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-remove:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-remove:hover{
   color: var(--red-300, #ff8980);
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-remove:active{
+  color: var(--red-300, #ff8980);
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-handle{
   height: 22px;
   display: flex;
@@ -2362,9 +2402,12 @@
   font-size: 11px;
   text-decoration: none;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .item-description-links a:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .item-description-links a:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .item-description-links a:active{
+  text-decoration: underline;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .item-description-bonuses{
   padding: 0.75rem;
 }
@@ -2398,9 +2441,12 @@
   text-decoration: none;
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) a.skill_link:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) a.skill_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) a.skill_link:active{
+  text-decoration: underline;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .summary_stat_atk{
 
   background-color: var(--stat-chip-bg, #121212);
@@ -2563,12 +2609,6 @@
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-cast-shared-block{
   margin-bottom: 14px;
 }
-@media (max-width: 768px){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-selectors-row{
-    flex-direction: column;
-    gap: 8px;
-  }
-
-}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .dropdown_monster_group_label{
   background-color: var(--green-900);
   color: white;
@@ -2589,9 +2629,12 @@
   text-decoration: underline dotted transparent;
   transition: text-decoration-color 0.12s ease;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .bonus_clickable:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .bonus_clickable:hover{
   text-decoration: underline dotted currentColor;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .bonus_clickable:active{
+  text-decoration: underline dotted currentColor;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .bonus_breakdown_list{
   list-style: none;
   margin: 0;
@@ -2640,9 +2683,12 @@
   color: var(--primary-color);
   text-decoration: none;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .bonus_breakdown_calc_link:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .bonus_breakdown_calc_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .bonus_breakdown_calc_link:active{
+  text-decoration: underline;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .bonus_breakdown_calc_link .ui-icon{
   font-size: 0.7rem;
 }
@@ -2664,9 +2710,12 @@
   display: inline-flex;
   align-items: center;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .monster_id_link:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .monster_id_link:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .monster_id_link:active{
+  text-decoration: underline;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .img_monster{
 
 
@@ -2981,13 +3030,16 @@
 
 }
  app-ro-calculator .ui-accordion-tab .ui-highlight > button,
- .ui-scope-app-ro-calculator .ui-accordion-tab .ui-highlight > button,
- app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover,
- .ui-scope-app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover{
+ .ui-scope-app-ro-calculator .ui-accordion-tab .ui-highlight > button{
   color: var(--primary-color-text) !important;
   background: var(--primary-color) !important;
 
 }
+@media (hover: hover){ app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover,
+ .ui-scope-app-ro-calculator .ui-accordion-tab .ui-accordion-header :hover{
+  color: var(--primary-color-text);
+  background: var(--primary-color);
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .job_img{
   width: 25px;
   height: 25px;
@@ -3008,9 +3060,12 @@
   cursor: pointer;
   transition: border-color 0.15s, background-color 0.15s;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .replay-dropzone:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .replay-dropzone:hover{
   border-color: var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .replay-dropzone:active{
+  border-color: var(--primary-color);
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .replay-dropzone.dragover{
   border-color: var(--primary-color);
   background-color: var(--surface-100);
@@ -3431,9 +3486,12 @@
   white-space: nowrap;
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .stats_compare_toggle:hover:not(:disabled){
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .stats_compare_toggle:hover:not(:disabled){
   color: #fdd87d;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .stats_compare_toggle:active:not(:disabled){
+  color: #fdd87d;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .stats_compare_toggle--on{
   padding: 0 6px;
   border-color: rgb(253 216 125 / 55%);
@@ -3596,16 +3654,6 @@
 }
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-cast-beta-actions .ui-button{
   white-space: nowrap;
-}
-@media (max-width: 1100px){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-cast-beta-alert{
-    align-items: stretch;
-    flex-direction: column;
-  }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-cast-beta-actions{
-    flex-wrap: wrap;
-    margin-left: 0;
-  }
-
 }
 
 
@@ -3836,15 +3884,21 @@ app-auto-cast-hud{
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-damage-branch{
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-damage-branch:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-damage-branch:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-damage-branch:active{
+  text-decoration: underline;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-dps-value{
   cursor: pointer;
 }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-dps-value:hover{
+@media (hover: hover){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-dps-value:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-dps-value:active{
+  text-decoration: underline;
+}}
 :is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .rot-tag--dps{
   color: var(--teal-300, #61beb5);
   border-color: rgba(97, 190, 181, 0.45);
@@ -3875,34 +3929,4 @@ app-auto-cast-hud{
  .ui-scope-app-auto-cast-hud .auto-source-picker.ui-dropdown{
   width: min(28rem, 100%);
   max-width: 100%;
-}
-@media (max-width: 991px){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-cards{
-    flex-direction: column;
-  }
-
-
-}
-@media (max-width: 1400px){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-row{
-    flex-wrap: wrap;
-  }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-dmg{
-    margin-left: 38px;
-  }
-
-}
-@media (max-width: 700px){:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .hud-cards{
-    align-items: stretch;
-    flex-direction: column;
-  }
-:is(app-auto-cast-hud, .ui-scope-app-auto-cast-hud) .auto-source-dmg{
-    width: calc(100% - 38px);
-    margin-left: 38px;
-    justify-content: space-between;
-  }
- app-auto-cast-hud .auto-source-picker.ui-dropdown,
- .ui-scope-app-auto-cast-hud .auto-source-picker.ui-dropdown{
-    width: min(28rem, 100%);
-    max-width: 100%;
-  }
-
 }

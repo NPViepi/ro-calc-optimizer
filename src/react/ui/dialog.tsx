@@ -1,4 +1,5 @@
 import { CSSProperties, ReactNode, createElement, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useText } from '../state/use-text';
 import { Portal } from './portal';
 import { Icon } from './primitives';
 
@@ -20,6 +21,7 @@ export interface DialogProps {
 }
 export function Dialog({ visible, onVisibleChange, onClosed, header = '', footer, children, modal = false,
   closable = true, closeOnEscape = true, dismissableMask = false, style, contentStyle, className = '', position }: DialogProps) {
+  const t = useText();
   const id = useId();
   const [host, setHost] = useState<HTMLElement | null>(null);
   const closed = useRef(onClosed); closed.current = onClosed;
@@ -37,7 +39,7 @@ export function Dialog({ visible, onVisibleChange, onClosed, header = '', footer
     onBackdrop={() => { if (dismissableMask) close(); }}>
     <section className={`ui-dialog ui-component ${position === 'right' ? 'ui-dialog-sidebar' : ''} ${className}`} style={style} role="dialog" aria-modal={modal} aria-labelledby={id} tabIndex={-1}>
       <div className="ui-dialog-header"><span className={`ui-dialog-title ${typeof header === 'string' ? '' : 'ui-dialog-title-custom'}`} id={id}>{header}</span>
-        {closable && <button type="button" className="ui-dialog-header-icon ui-dialog-header-close ui-link" aria-label="Fechar" onClick={close}><Icon name="times" /></button>}
+        {closable && <button type="button" className="ui-dialog-header-icon ui-dialog-header-close ui-link" aria-label={t('ui.dialog.close')} onClick={close}><Icon name="times" /></button>}
       </div><div className="ui-dialog-content" style={contentStyle}>{children}</div>
       {footer != null && <div className="ui-dialog-footer">{footer}</div>}
     </section>

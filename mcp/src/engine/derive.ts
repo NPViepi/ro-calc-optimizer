@@ -10,6 +10,7 @@ import { JobBuffs } from 'src/app/constants/job-buffs';
 import { CharacterBase } from 'src/app/jobs/_character-base.abstract';
 import { MainModel } from 'src/app/models/main.model';
 import { normalizeClassLimits } from 'src/app/core/class-limits';
+import { defaultAtkSkill } from 'src/app/core/rotation';
 
 /** Pull level/jobLevel into the class's legal range, with the app's fallbacks. */
 export function clampLevels(model: MainModel, char: CharacterBase): void {
@@ -74,7 +75,7 @@ export function applySkillMaps(model: MainModel, char: CharacterBase): void {
  */
 export function resolveAtkSkill(model: MainModel, char: CharacterBase): void {
   const atkSkills = char.atkSkills;
-  const fallback = atkSkills[0]?.value;
+  const fallback = defaultAtkSkill(atkSkills);
   const wanted = model.selectedAtkSkill;
   if (!wanted) {
     model.selectedAtkSkill = fallback;

@@ -7,11 +7,16 @@ import { DescriptionStore } from '../services/data-client';
 import { Events } from '../services/events';
 import { ItemModel } from '../../app/models/item.model';
 import { SlotListBag } from '../../app/layout/pages/ro-calculator/equipment-grid/slot-list-bag.model';
+import { DEFAULT_CATALOG, TextKey } from '../../app/i18n';
+import { TextParams, translate } from '../../app/core/i18n';
+
+/** The controllers take a translator; pt-BR is the one the assertions read in. */
+const text = (key: TextKey, params?: TextParams) => translate(DEFAULT_CATALOG, key, params);
 
 function setup() {
   const layout = new CalculatorLayout();
   const descriptions = new DescriptionStore();
-  const grid = new EquipmentGridComponent({ hintPending: false } as any, layout);
+  const grid = new EquipmentGridComponent({ hintPending: false } as any, text, layout);
   const item = (id: number, name: string, fields: Partial<ItemModel> = {}) => ({ id, name, aegisName: 'Test_' + id, slots: 1, script: {}, ...fields } as ItemModel);
   grid.items = { 1: item(1, 'Chapéu'), 2: item(2, 'Armadura'), 3: item(3, 'Carta'),
     4: item(4, 'Acessório esquerdo'), 5: item(5, 'Acessório direito'), 6: item(6, 'Armadura alternativa'),
@@ -119,7 +124,7 @@ describe('equipping from item search', () => {
   it('hands off the compact picker without committing a selection', () => {
     const { targets, descriptions, dispose } = setup();
     const target = targets()[0];
-    const picker = new ItemPickerOverlayComponent({ nativeElement: null! }, descriptions);
+    const picker = new ItemPickerOverlayComponent({ nativeElement: null! }, descriptions, text);
     picker.init({ mode: 'flat', anchor: null!, title: 'Selecionar', options: target.options,
       value: null, filterKeys: ['label'], search: target });
     const seen: unknown[] = []; picker.closed.subscribe(result => seen.push(result));

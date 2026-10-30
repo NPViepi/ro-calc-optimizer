@@ -228,8 +228,10 @@ test('item list and description scroll independently while pagination stays visi
   const detail = dialog.getByRole('region', { name: 'Descrição do item', exact: true });
   const pagination = dialog.getByRole('navigation', { name: 'Paginação', exact: true });
   const content = dialog.locator('.ui-dialog-content');
-  for (const width of [1920, 390]) {
-    await page.setViewportSize({ width, height: width === 390 ? 844 : 918 });
+  // A phone scrolls the sheet as one and opens the description in a popover instead
+  // (responsive-layout.spec.ts).
+  for (const width of [1920]) {
+    await page.setViewportSize({ width, height: 918 });
     const before = (await pagination.boundingBox())!;
     await list.evaluate(element => { element.scrollTop = element.scrollHeight; });
     await detail.evaluate(element => { element.scrollTop = 0; });

@@ -203,7 +203,7 @@ describe('Night Watch cast/cooldown metadata', () => {
     { name: 'The Vigilante at Night', vct: 0, fct: 1.5, cd: 0.5 },
     { name: 'Only One Bullet', vct: 0, fct: 1, cd: 0.3 },
     { name: 'Spiral Shooting', vct: 0, fct: 1.5, cd: 0.5 },
-    { name: 'Magazine for One', vct: 0, fct: 1, cd: 0.75 },
+    { name: 'Magazine for One', vct: 0, fct: 1, cd: 0.5 },
     { name: 'Wild Fire', vct: 0, fct: 1, cd: 0.5 },
     { name: 'Basic Grenade', vct: 0, fct: 1, cd: 0.3 },
     { name: 'Hasty Fire in the Hole', vct: 0, fct: 1, cd: 1 },

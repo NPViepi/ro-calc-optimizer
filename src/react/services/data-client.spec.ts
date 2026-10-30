@@ -32,17 +32,78 @@ describe('React data loading', () => {
     const descriptions = new DescriptionStore();
     descriptions.upsert(1_000_000_000_001, 'Custom');
     const client = new DataClient({ manifest, inFlight: { itemsCore: items } }, descriptions, fetcher);
-    const loading = client.loadDescriptions();
+    const loading = client.loadDescriptions('pt-BR');
     expect(fetcher).not.toHaveBeenCalled();
     finish({});
     await loading;
-    expect(client.loadDescriptions()).toBe(loading);
+    expect(client.loadDescriptions('pt-BR')).toBe(loading);
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(fetcher).toHaveBeenCalledWith('assets/data/descriptions.json');
     expect(descriptions.get(1)).toBe('Official');
     expect(descriptions.get(1_000_000_000_001)).toBe('Custom');
     expect(descriptions.getSnapshot()).toBe(2);
   });
+  it('fetches the descriptions of the language the reader chose', async () => {
+    const manifest = { base: 'assets/data/', files: { itemsDesc: 'pt.json', itemsDescEn: 'en.json' } } as unknown as DataManifest;
+    const fetcher = vi.fn(async (url: string) => new Response(JSON.stringify({ '1': url.includes('en') ? 'Official' : 'Oficial' })));
+    const descriptions = new DescriptionStore();
+    const client = new DataClient({ manifest, inFlight: { itemsCore: Promise.resolve({}) } }, descriptions, fetcher as unknown as typeof fetch);
+
+    await client.loadDescriptions('en');
+    expect(fetcher).toHaveBeenCalledWith('assets/data/en.json');
+    expect(descriptions.get(1)).toBe('Official');
+  });
+
+  it('republishes the descriptions of a language the reader comes back to', async () => {
+    const manifest = { base: 'assets/data/', files: { itemsDesc: 'pt.json', itemsDescEn: 'en.json' } } as unknown as DataManifest;
+    const fetcher = vi.fn(async (url: string) => new Response(JSON.stringify({ '1': url.includes('en') ? 'Official' : 'Oficial' })));
+    const descriptions = new DescriptionStore();
+    const client = new DataClient({ manifest, inFlight: { itemsCore: Promise.resolve({}) } }, descriptions, fetcher as unknown as typeof fetch);
+
+    await client.loadDescriptions('en');
+    await client.loadDescriptions('pt-BR');
+    expect(descriptions.get(1)).toBe('Oficial');
+    await client.loadDescriptions('en');
+    // Back to English: the file is already cached, but the store still has to be
+    // repopulated — the second visit must not leave Portuguese prose on screen.
+    expect(descriptions.get(1)).toBe('Official');
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves the language on screen alone when a switch is superseded mid-flight', async () => {
+    const manifest = { base: 'assets/data/', files: { itemsDescEs: 'es.json', itemsDescEn: 'en.json' } } as unknown as DataManifest;
+    const release: Array<() => void> = [];
+    const fetcher = vi.fn((url: string) => new Promise<Response>(resolve => {
+      release.push(() => resolve(new Response(JSON.stringify({ '1': url.includes('en') ? 'Official' : 'Oficial' }))));
+    }));
+    const descriptions = new DescriptionStore();
+    const client = new DataClient({ manifest, inFlight: { itemsCore: Promise.resolve({}) } }, descriptions, fetcher as unknown as typeof fetch);
+
+    const spanish = client.loadDescriptions('es');
+    const english = client.loadDescriptions('en');
+    // Both wait on itemsCore first, so neither request is out yet on this tick.
+    await vi.waitFor(() => expect(release).toHaveLength(2));
+    // English answers first on purpose: the stale Spanish reply lands over it.
+    release.reverse().forEach(resolve => resolve());
+    await Promise.all([spanish, english]);
+    expect(descriptions.get(1)).toBe('Official');
+  });
+
+  it('asks for no name overlay at all in Portuguese', async () => {
+    const fetcher = vi.fn();
+    const client = new DataClient({}, undefined, fetcher as unknown as typeof fetch);
+    await expect(client.loadItemNames('pt-BR')).resolves.toEqual({});
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('serves the name overlay for a translated language', async () => {
+    const manifest = { base: 'assets/data/', files: { itemNamesEs: 'names-es.json' } } as unknown as DataManifest;
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ '1101': 'Espada' })));
+    const client = new DataClient({ manifest }, undefined, fetcher as unknown as typeof fetch);
+    await expect(client.loadItemNames('es')).resolves.toEqual({ '1101': 'Espada' });
+    expect(fetcher).toHaveBeenCalledWith('assets/data/names-es.json');
+  });
+
   it('rejects an HTTP error instead of presenting it as a dataset', async () => {
     const client = new DataClient({}, undefined, async () => new Response('failure', { status: 503 }));
     await expect(client.load('itemsCore')).rejects.toThrow('HTTP 503');

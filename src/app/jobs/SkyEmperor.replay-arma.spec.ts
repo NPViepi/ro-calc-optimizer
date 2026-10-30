@@ -73,6 +73,8 @@ function faixaDe(skillValue: string, opts: { comArma?: boolean; space?: number }
   model.jobSpl = bonus.spl; model.jobCon = bonus.con; model.jobCrt = bonus.crt;
   if (comArma) { model.weapon = LIVRO_METALICO; model.weaponRefine = REFINO; }
   model.selectedAtkSkill = skillValue;
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  model.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(model);
 
   new CalculatorController().runChain(calc, {

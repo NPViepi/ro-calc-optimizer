@@ -17,6 +17,11 @@ import {
   pickHitsPerSec,
 } from './battle-hud.logic';
 import { DamageFormulaNode } from '../../../../models/damage-summary.model';
+import { DEFAULT_CATALOG, TextKey } from 'src/app/i18n';
+import { TextParams, translate } from 'src/app/core/i18n';
+
+/** buildOptimizeInfo names the cast components through a translator; pt-BR is the source catalog. */
+const text = (key: TextKey, params?: TextParams) => translate(DEFAULT_CATALOG, key, params);
 
 describe('buildGraphClusters', () => {
   /** The engine-emitted chips only — drops the "%"/"Adicional" chips buildGraphClusters
@@ -345,7 +350,7 @@ describe('buildOptimizeInfo', () => {
       dps: 17480,
       sumDex2Int1: 985,
       aspdHitsPerSec: 99,
-    });
+    }, text);
     expect(info.bottleneck).toBe('pos');
     expect(info.components.map((c) => c.key)).toEqual(['fixa', 'variavel', 'pos', 'recarga', 'aspd']);
     expect(info.whatIf).not.toBeNull();
@@ -369,7 +374,7 @@ describe('buildOptimizeInfo', () => {
       dps: 1000,
       sumDex2Int1: 0,
       aspdHitsPerSec: 99,
-    });
+    }, text);
     expect(info.isOptimized).toBe(true);
     expect(info.headline).toBe('Conjuração já otimizada — nada relevante a melhorar.');
     expect(info.whatIf).toBeNull();
@@ -391,7 +396,7 @@ describe('buildOptimizeInfo', () => {
       dps: 1000,
       sumDex2Int1: 530,
       aspdHitsPerSec: 99,
-    });
+    }, text);
     const variavel = info.components.find((c) => c.key === 'variavel')!;
     expect(variavel.doneText).toBe('stats já zeram a conjuração variável ✓');
     expect(variavel.hint).toContain('530 / 530');
@@ -410,7 +415,7 @@ describe('buildOptimizeInfo', () => {
       dps: 1000,
       sumDex2Int1: 0,
       aspdHitsPerSec: 99,
-    });
+    }, text);
     expect(info.whatIf).toBeNull();
   });
 
@@ -427,7 +432,7 @@ describe('buildOptimizeInfo', () => {
       dps: 17480,
       sumDex2Int1: 985,
       aspdHitsPerSec: 0.2,
-    });
+    }, text);
     expect(info.bottleneck).toBe('aspd');
     expect(info.headline).toBe('A Vel.Atq limita a conjuração — aumente a Vel.Atq para ganhar DPS.');
     expect(info.isOptimized).toBe(false);
@@ -452,7 +457,7 @@ describe('buildOptimizeInfo', () => {
       dps: 17480,
       sumDex2Int1: 985,
       aspdHitsPerSec: 2, // castRate ≈ 0.31/s, well within a 2/s ASPD ceiling
-    });
+    }, text);
     expect(info.bottleneck).toBe('pos');
     const aspd = info.components.find((c) => c.key === 'aspd')!;
     expect(aspd.doneText).toContain('suporta a conjuração ✓');
@@ -478,9 +483,9 @@ describe('buildOptimizeInfo', () => {
       sumDex2Int1: 985,
     };
 
-    expect(buildOptimizeInfo({ ...build, aspdHitsPerSec: 1 }).bottleneck).toBe('aspd');
+    expect(buildOptimizeInfo({ ...build, aspdHitsPerSec: 1 }, text).bottleneck).toBe('aspd');
 
-    const fixed = buildOptimizeInfo({ ...build, aspdHitsPerSec: 1.92 });
+    const fixed = buildOptimizeInfo({ ...build, aspdHitsPerSec: 1.92 }, text);
     expect(fixed.bottleneck).not.toBe('aspd');
     expect(fixed.components.find((c) => c.key === 'aspd')!.doneText).toContain('suporta a conjuração ✓');
   });
@@ -498,7 +503,7 @@ describe('buildOptimizeInfo', () => {
       dps: 17480,
       sumDex2Int1: 985,
       aspdHitsPerSec: 0.4,
-    });
+    }, text);
     const castRate = 1 / 3.22;
     expect(info.whatIf).not.toBeNull();
     expect(info.whatIf!.gainPercent).toBeCloseTo((0.4 / castRate - 1) * 100, 5);
@@ -616,7 +621,7 @@ describe('buildRotationPickerOptions', () => {
   const MAGNUM_BREAK = { label: 'Magnum Break', value: 'Magnum Break==10', icon: 7, levelList: [] };
 
   it('offers ataque básico first, ahead of the class skills', () => {
-    const options = buildRotationPickerOptions(BASIC, [BOWLING_BASH, MAGNUM_BREAK]);
+    const options = buildRotationPickerOptions(BASIC, [BOWLING_BASH, MAGNUM_BREAK], text);
 
     expect(options[0]).toEqual({ label: 'Ataque básico', value: BASIC, isBasic: true });
     expect(options.map((o) => o.value)).toEqual([BASIC, BOWLING_BASH.value, MAGNUM_BREAK.value]);
@@ -625,7 +630,7 @@ describe('buildRotationPickerOptions', () => {
   it('offers it to a class with no offensive skills at all', () => {
     // The floor of the guarantee: whatever the class, the picker is never empty.
     for (const atkSkills of [[], null, undefined]) {
-      const options = buildRotationPickerOptions(BASIC, atkSkills);
+      const options = buildRotationPickerOptions(BASIC, atkSkills, text);
 
       expect(options).toHaveLength(1);
       expect(options[0].value).toBe(BASIC);
@@ -635,7 +640,7 @@ describe('buildRotationPickerOptions', () => {
   it('flags only ataque básico as basic', () => {
     // `isBasic` is what makes the row render the sword icon and read its damage off
     // `dmg.basic*` instead of a skill solve.
-    const options = buildRotationPickerOptions(BASIC, [BOWLING_BASH]);
+    const options = buildRotationPickerOptions(BASIC, [BOWLING_BASH], text);
 
     expect(options.filter((o) => o.isBasic)).toHaveLength(1);
     expect(options[1].isBasic).toBeUndefined();

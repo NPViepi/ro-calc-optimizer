@@ -7,6 +7,11 @@ import {
   sanitizeSlotColors,
   slotColorLabel,
 } from './slot-colors';
+import { DEFAULT_CATALOG } from '../i18n';
+import { translate } from './i18n';
+
+/** The pt-BR catalog, as the translator the palette takes. */
+const text = (key: string) => translate(DEFAULT_CATALOG, key);
 
 /**
  * The slot-highlight palette and the two values that ride on it: the per-slot colour,
@@ -31,7 +36,7 @@ describe('the palette', () => {
 
   it('gives every colour a name and a hex', () => {
     for (const color of SLOT_COLORS) {
-      expect(color.label).not.toBe('');
+      expect(DEFAULT_CATALOG[color.labelKey]).toBeTruthy();
       expect(color.hex).toMatch(/^#[0-9a-f]{6}$/);
     }
   });
@@ -117,11 +122,11 @@ describe('slotColorLabel', () => {
   const azul = SLOT_COLOR_BY_ID.get('azul')!;
 
   it('prefers the name this browser gave the colour', () => {
-    expect(slotColorLabel(azul, { azul: 'Essencial' })).toBe('Essencial');
+    expect(slotColorLabel(azul, { azul: 'Essencial' }, text)).toBe('Essencial');
   });
 
   it('falls back to the palette name when there is none', () => {
-    expect(slotColorLabel(azul, {})).toBe(azul.label);
-    expect(slotColorLabel(azul, null)).toBe(azul.label);
+    expect(slotColorLabel(azul, {}, text)).toBe('Azul');
+    expect(slotColorLabel(azul, null, text)).toBe('Azul');
   });
 });

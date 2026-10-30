@@ -74,6 +74,8 @@ function simular(skillName: string, arma: Arma, opts: { pet?: number } = {}) {
     .getSkillBonusAndName();
 
   const calc = new Calculator().setMasterItems(items).setHpSpTable(hpSpTable).setClass(cls);
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  m.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(m);
   new CalculatorController().runChain(calc, {
     monster: monsters[DUMMY_MORTO_VIVO], equipAtks, masteryAtks, buffEquips: {}, buffMasterys: {},

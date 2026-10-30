@@ -12,11 +12,16 @@
   cursor: pointer;
   transition: border-color 0.15s, background-color 0.15s;
 }
-.replay-dropzone:hover,
 .replay-dropzone:focus-visible,
-.replay-dropzone.dragover {
+.replay-dropzone.dragover{
   border-color: var(--primary-color);
 }
+@media (hover: hover){.replay-dropzone:hover{
+  border-color: var(--primary-color);
+}}
+@media (hover: none){.replay-dropzone:active{
+  border-color: var(--primary-color);
+}}
 .replay-dropzone.dragover {
   background-color: var(--surface-100);
 }

@@ -195,7 +195,7 @@ export class Inquisitor extends Sura {
       acd: 0,
       fct: 0,
       vct: 0,
-      cd: 0.5,
+      cd: 0.3,
       isMelee: true,
       formula: (input: AtkSkillFormulaInput): number => {
         const { model, skillLevel, status } = input;
@@ -214,7 +214,7 @@ export class Inquisitor extends Sura {
       acd: 0,
       fct: 0,
       vct: 0,
-      cd: 1,
+      cd: 0.7,
       isMelee: true,
       hit: 2,
       formula: (input: AtkSkillFormulaInput): number => {
@@ -234,7 +234,7 @@ export class Inquisitor extends Sura {
       acd: 0,
       fct: 0,
       vct: 0,
-      cd: 2,
+      cd: 1,
       isMelee: true,
       canCri: true,
       baseCriPercentage: 1,
@@ -257,7 +257,7 @@ export class Inquisitor extends Sura {
       acd: 0,
       fct: 0,
       vct: 0,
-      cd: 1,
+      cd: 0.7,
       isMelee: true,
       hit: 3,
       formula: (input: AtkSkillFormulaInput): number => {
@@ -281,7 +281,7 @@ export class Inquisitor extends Sura {
       acd: 0,
       fct: 0,
       vct: 0,
-      cd: 2,
+      cd: 1,
       isMelee: true,
       totalHit: 5,
       formula: (input: AtkSkillFormulaInput): number => {
@@ -301,7 +301,7 @@ export class Inquisitor extends Sura {
       acd: 0,
       fct: 0,
       vct: 0,
-      cd: 1,
+      cd: 0.7,
       isMelee: true,
       formula: (input: AtkSkillFormulaInput): number => {
         const { model, skillLevel, status } = input;
@@ -320,7 +320,7 @@ export class Inquisitor extends Sura {
       acd: 0,
       fct: 0,
       vct: 0,
-      cd: 2,
+      cd: 1,
       // Each hit applies the full ratio: 0–5 spheres = 1, 6–10 = 2, 11–15 = 3.
       totalHit: input => Math.max(1, Math.min(3, Math.ceil(input.skills.activeLevel('Total Spirit') / 5))),
       isMelee: true,
@@ -340,7 +340,7 @@ export class Inquisitor extends Sura {
       acd: 0,
       fct: 0,
       vct: 0,
-      cd: 1,
+      cd: 0.7,
       canCri: true,
       baseCriPercentage: 1,
       criDmgPercentage: 0.5,
@@ -361,10 +361,10 @@ export class Inquisitor extends Sura {
       label: '[V2] Massive Flame Blaster Lv10',
       value: 'Massive Flame Blaster==10',
       levelList: levelList('Massive Flame Blaster', 10),
-      acd: 1,
+      acd: 0,
       fct: 0,
       vct: 0,
-      cd: 60,
+      cd: 5,
       canCri: true,
       baseCriPercentage: 1,
       criDmgPercentage: 0.5,

@@ -10,16 +10,30 @@ import {
   comparableKeysOf,
 } from 'src/app/app-config/equipment-slots';
 import { ItemTypeEnum, MainItemWithRelations } from 'src/app/constants/item-type.enum';
-import { itemSlotLabelPtBr } from 'src/app/constants/item-slot-i18n';
+import { itemSlotLabelKey } from 'src/app/constants/item-slot-i18n';
+import { TextKey, Translate } from 'src/app/i18n';
 import { Chip, slotOwnFields } from 'src/app/core/equipment-chips';
 import { SlotDerivation, cardsToClear, deriveSlot, reconcileEnchants } from 'src/app/core/equipment-slot-derivation';
 import { ensureCustomAttachment } from 'src/app/core/custom-attachments';
 import { costumeSlotDescriptor } from 'src/app/core/costume-slot-descriptor';
+import { OFF_HAND_RIVAL, OffHandSlot } from 'src/app/core/off-hand-slots';
 import { SLOT_COLOR_BY_ID, SlotColor } from 'src/app/core/slot-colors';
 import { ItemModel } from 'src/app/models/item.model';
 import { CalculatorLayout, SlotColorPreferences } from '../services/calculator-services';
 import { ChipPick } from './equipment-slot-card';
 import { SlotListBag } from '../../app/layout/pages/ro-calculator/equipment-grid/slot-list-bag.model';
+
+/** The first term of both off-hand questions: there is no off hand to speak of yet. */
+const NO_WEAPON_NOTE: Record<OffHandSlot, TextKey> = {
+  [ItemTypeEnum.shield]: 'eq.needWeaponForShield',
+  [ItemTypeEnum.leftWeapon]: 'eq.needWeaponForLeftWeapon',
+};
+
+/** How to name the rival holding the hand when the catalogue has no name for it. */
+const RIVAL_FALLBACK: Record<OffHandSlot, TextKey> = {
+  [ItemTypeEnum.shield]: 'eq.shieldFallback',
+  [ItemTypeEnum.leftWeapon]: 'eq.leftWeaponFallback',
+};
 
 /** What the host needs to run onSelectItem — the same three arguments it always took. */
 export interface SelectItemEvent {
@@ -35,7 +49,7 @@ export interface SelectGradeEvent {
 }
 
 interface RenderedGroup {
-  label: string;
+  labelKey: TextKey;
   slots: EquipmentSlotDescriptor[];
 }
 
@@ -65,7 +79,11 @@ export class EquipmentGridComponent extends ViewState {
    showCompareItemMap: Record<string, boolean> = {};
    headSlotOccupiedBy: Partial<Record<ItemTypeEnum, string>> = {};
    hiddenMap: { ammu: boolean; shield: boolean } = { ammu: true, shield: true };
+  /** The four halves of the two off-hand rows' question, all settled by the host. */
    isLeftWeaponShown = false;
+   isCompareLeftWeaponShown = false;
+   isShieldShown = false;
+   isCompareShieldShown = false;
   /**
    * Bumped by the host at the end of each debounced pass. The models are mutated in place,
    * so nothing else tells the cards that a preset, a replay import or a share link landed.
@@ -112,6 +130,7 @@ export class EquipmentGridComponent extends ViewState {
 
   constructor(
 private readonly colorPicker: SlotColorPreferences,
+    private readonly text: Translate,
     private readonly layoutService?: CalculatorLayout,
   ) { super();}
 
@@ -140,16 +159,47 @@ private readonly colorPicker: SlotColorPreferences,
   }
 
   get ribbonText(): string {
-    return this.compareCount === 1 ? '1 slot em comparação' : `${this.compareCount} slots em comparação`;
+    return this.compareCount === 1
+      ? this.text('eq.slotsComparingOne')
+      : this.text('eq.slotsComparingMany', { count: this.compareCount });
   }
 
   /** One compared slot per line — the ribbon only renders when there is at least one. */
   get ribbonTitle(): string {
-    return [...this.comparing].map((key) => itemSlotLabelPtBr(key)).join('\n');
+    return [...this.comparing].map((key) => this.text(itemSlotLabelKey(key))).join('\n');
   }
 
   occupiedBy(slot: EquipmentSlotDescriptor): string | null {
     return slot.headSlot ? (this.headSlotOccupiedBy?.[slot.key] ?? null) : null;
+  }
+
+  /**
+   * Why the main build is not offered this off-hand slot while the row is on screen for
+   * the comparison's sake. The row is there so the compared build can be given a shield or
+   * a second weapon; this half of it has to say what is holding the hand, or it would hand
+   * out a picker whose item the engine then ignores.
+   */
+  mainBlockedNote(slot: EquipmentSlotDescriptor): string | null {
+    if (slot.visibility === 'shield') return this.isShieldShown ? null : this.offHandBlockedNote(ItemTypeEnum.shield);
+    if (slot.visibility === 'leftWeapon') return this.isLeftWeaponShown ? null : this.offHandBlockedNote(ItemTypeEnum.leftWeapon);
+
+    return null;
+  }
+
+  /** The three reasons are the three terms of the row's question, in the same order. */
+  private offHandBlockedNote(slot: OffHandSlot): string {
+    if (!this.model?.['weapon']) return this.text(NO_WEAPON_NOTE[slot]);
+
+    const rival = OFF_HAND_RIVAL[slot];
+    if (this.model?.[rival]) {
+      return this.text('eq.occupiesOtherHand', { item: this.itemName(this.model[rival]) ?? this.text(RIVAL_FALLBACK[rival]) });
+    }
+
+    return this.text('eq.occupiesBothHands', { item: this.itemName(this.model['weapon']) ?? this.text('eq.weaponFallback') });
+  }
+
+  private itemName(itemId: number): string | undefined {
+    return this.items?.[itemId]?.name;
   }
 
   // ── highlight colours ────────────────────────────────────────────────────────
@@ -214,7 +264,7 @@ private readonly colorPicker: SlotColorPreferences,
    */
   trackSlot = (_: number, slot: EquipmentSlotDescriptor) => slot.key;
   trackIndex = (index: number) => index;
-  trackGroup = (_: number, group: RenderedGroup) => group.label;
+  trackGroup = (_: number, group: RenderedGroup) => group.labelKey;
 
   // ── compare ──────────────────────────────────────────────────────────────────
 
@@ -505,12 +555,12 @@ private readonly colorPicker: SlotColorPreferences,
     // own ✕ goes through, so the host hears about each one exactly as it would have. The
     // sub slots need naming individually: a costume's enchants are slots of their own, and
     // the visual they ride on has no `MainItemWithRelations` entry to cascade into them.
-    this.clearField('item', slot.key, slot.label);
+    this.clearField('item', slot.key);
     if (this.model['customAttachments']) delete this.model['customAttachments'][slot.key];
-    for (const sub of slot.subItemSlots ?? []) this.clearField('subItem', sub.key, sub.label);
+    for (const sub of slot.subItemSlots ?? []) this.clearField('subItem', sub.key);
     // onClearItem covers the weapon's converter and ammo, but nothing covers the pet's
     // loyalty tier — it is a model field, not a related item.
-    if (slot.loyalty) this.clearField('loyalty', 'petLoyalty', 'Lealdade');
+    if (slot.loyalty) this.clearField('loyalty', 'petLoyalty');
     // One rebuild for the click, not one per field: a costume card clears four of them.
     this.refresh(slot.key);
 
@@ -518,7 +568,10 @@ private readonly colorPicker: SlotColorPreferences,
     else this.compareItemChange.emit();
   }
 
-  private clearField(kind: Chip['kind'], key: string, placeholder: string): void {
+  // The placeholder never reaches the screen from here — `applyPick` only writes — but
+  // every chip carries one, so it names the field being emptied.
+  private clearField(kind: Chip['kind'], key: string): void {
+    const placeholder = { key: itemSlotLabelKey(key) };
     const chip = { kind, slotKey: key as ItemTypeEnum, field: key, index: 0, placeholder } as Chip;
     this.applyPick({ chip, value: null, compare: false });
   }
@@ -564,8 +617,8 @@ private readonly colorPicker: SlotColorPreferences,
     if (this.layoutService && this.model && this.model2 && this.lists && this.items) {
       const targets = visible.filter(slot => !this.occupiedBy(slot));
       this.layoutService.itemSearchTargets.set([
-        ...equipmentSearchTargets(targets, this.model, derivations, this.lists, this.items, false, this.comparing, !this.hiddenMap.ammu),
-        ...equipmentSearchTargets(targets, this.model2, compareDerivations, this.lists, this.items, true, this.comparing, !this.hiddenMap.ammu),
+        ...equipmentSearchTargets(targets, this.model, derivations, this.lists, this.items, this.text, false, this.comparing, !this.hiddenMap.ammu),
+        ...equipmentSearchTargets(targets, this.model2, compareDerivations, this.lists, this.items, this.text, true, this.comparing, !this.hiddenMap.ammu),
       ]);
     }
     this.cardRevision += 1;
@@ -642,9 +695,9 @@ private readonly colorPicker: SlotColorPreferences,
     return EQUIPMENT_SLOTS.filter((slot) => {
       switch (slot.visibility) {
         case 'leftWeapon':
-          return this.isLeftWeaponShown;
+          return this.isLeftWeaponShown || this.isCompareLeftWeaponShown;
         case 'shield':
-          return !!this.model?.['weapon'] && !this.hiddenMap?.shield && !this.model?.['leftWeapon'];
+          return this.isShieldShown || this.isCompareShieldShown;
         default:
           return true;
       }
@@ -659,7 +712,7 @@ private readonly colorPicker: SlotColorPreferences,
 function buildColumns(slots: EquipmentSlotDescriptor[]): RenderedGroup[][] {
   return Array.from({ length: SLOT_COLUMN_COUNT }, (_, column) =>
     SLOT_GROUPS.filter((group) => group.column === column)
-      .map((group) => ({ label: group.label, slots: slots.filter((slot) => slot.group === group.key) }))
+      .map((group) => ({ labelKey: group.labelKey, slots: slots.filter((slot) => slot.group === group.key) }))
       .filter((group) => group.slots.length > 0),
   );
 }

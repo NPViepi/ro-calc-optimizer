@@ -5,7 +5,7 @@ import { EquipmentSummaryModel } from '../models/equipment-summary.model';
 import { AdditionalBonusInput } from '../models/info-for-class.model';
 import { addBonus } from '../utils';
 import { Minstrel } from './Minstrel';
-import { SOUND_BLEND } from '../skills/shared-skills';
+import { METALLIC_FURY, SOUND_BLEND } from '../skills/shared-skills';
 import { ActiveSkillModel, AtkSkillFormulaInput, AtkSkillModel, PassiveSkillModel } from './_character-base.abstract';
 import { ClassName } from './_class-name';
 
@@ -166,14 +166,15 @@ export class Troubadour extends Minstrel {
   private readonly classNames4th = [ClassName.Only_4th, ClassName.Troubadour];
   private readonly atkSkillList4th: AtkSkillModel[] = [
     SOUND_BLEND,
+    METALLIC_FURY,
     {
       name: 'Rhythm Shooting',
       label: '[V2] Rhythm Shooting Lv5',
       value: 'Rhythm Shooting==5',
-      acd: 0.15,
+      acd: 0,
       fct: 0,
       vct: 2,
-      cd: 0,
+      cd: 0.15,
       totalHit: 3,
       verifyItemFn: ({ weapon }) => {
         const requires: WeaponTypeName[] = ['bow', 'instrument', 'whip'];
@@ -200,8 +201,8 @@ export class Troubadour extends Minstrel {
       value: 'Rose Blossom==5',
       acd: 0.15,
       fct: 0.5,
-      vct: 2,
-      cd: 0.5,
+      vct: 1,
+      cd: 0.7,
       totalHit: 1,
       verifyItemFn: ({ weapon }) => {
         const requires: WeaponTypeName[] = ['bow', 'instrument', 'whip'];

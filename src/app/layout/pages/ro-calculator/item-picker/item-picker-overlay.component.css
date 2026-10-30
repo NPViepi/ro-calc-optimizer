@@ -103,10 +103,15 @@
   color: var(--picker-muted);
 }
 
-.picker__row--active,
-.picker__row:hover {
+.picker__row--active{
   background: var(--picker-hover);
 }
+@media (hover: hover){.picker__row:hover{
+  background: var(--picker-hover);
+}}
+@media (hover: none){.picker__row:active{
+  background: var(--picker-hover);
+}}
 
 .picker__row--selected .picker__label {
   font-weight: 700;

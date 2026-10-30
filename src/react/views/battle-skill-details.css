@@ -31,11 +31,6 @@
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-card-col--skill{
   flex: 60 1 0;
 }
-@media (max-width: 991px){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-cards{
-    flex-direction: column;
-  }
-
-}
  app-battle-hud .hud-card.ui-card,
  .ui-scope-app-battle-hud .hud-card.ui-card{
   height: 100%;
@@ -507,10 +502,14 @@
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero .clickable{
   cursor: pointer;
 }
-:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero .clickable:hover{
+@media (hover: hover){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero .clickable:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero .clickable:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero .pcol.sim .pnum{
   color: var(--yellow-200);
 }
@@ -869,19 +868,6 @@
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-card-col--monster .monster_id_link{
   order: 5;
 }
-@container (max-width: 420px){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-card-col--monster  .ui-card-content{
-    display: block;
-  }
-:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-card-col--monster .hud-monster-info{
-    width: auto;
-  }
-:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-band-right{
-    border-left: none;
-    padding-left: 0;
-    margin-top: 8px;
-  }
-
-}
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-rot-layout{
   display: flex;
   flex-direction: column;
@@ -967,9 +953,12 @@
   color: var(--primary-color);
   cursor: pointer;
 }
-:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-help:hover{
+@media (hover: hover){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-help:hover{
   background: var(--highlight-bg);
-}
+}}
+@media (hover: none){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-help:active{
+  background: var(--highlight-bg);
+}}
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-warn-chip.ui-button,
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-invalid-chip{
 
@@ -988,11 +977,16 @@
   border: 1px solid var(--surface-border);
   color: var(--yellow-300, #ffe082);
 }
-:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-warn-chip.ui-button:enabled:hover{
+@media (hover: hover){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-warn-chip.ui-button:enabled:hover{
   background: rgba(255, 224, 130, 0.08);
   border-color: var(--surface-border);
   color: var(--yellow-300, #ffe082);
-}
+}}
+@media (hover: none){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-warn-chip.ui-button:enabled:active{
+  background: rgba(255, 224, 130, 0.08);
+  border-color: var(--surface-border);
+  color: var(--yellow-300, #ffe082);
+}}
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-invalid-chip{
   border: 1px solid var(--red-300, #ff8980);
   color: var(--red-300, #ff8980);
@@ -1111,10 +1105,14 @@
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero-strip .clickable{
   cursor: pointer;
 }
-:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero-strip .clickable:hover{
+@media (hover: hover){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero-strip .clickable:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero-strip .clickable:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .hud-hero-strip .pdelta{
   font-size: 14px;
   font-weight: 700;
@@ -1206,9 +1204,12 @@
   cursor: pointer;
   user-select: none;
 }
-:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-desc-toggle:hover{
+@media (hover: hover){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-desc-toggle:hover{
   color: var(--text-color);
-}
+}}
+@media (hover: none){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-desc-toggle:active{
+  color: var(--text-color);
+}}
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-desc-toggle .ui-icon{
   font-size: 10px;
 }
@@ -1239,10 +1240,14 @@
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val{
   cursor: pointer;
 }
-:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val:hover{
+@media (hover: hover){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
@@ -1317,10 +1322,14 @@
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val{
   cursor: pointer;
 }
-:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val:hover{
+@media (hover: hover){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val:hover{
   text-decoration: underline;
   text-decoration-style: dotted;
-}
+}}
+@media (hover: none){:is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val:active{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}}
 :is(app-battle-skill-details, .ui-scope-app-battle-skill-details) .pd-dmg-val:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;

@@ -3,6 +3,7 @@ import {
   BASIC_ATTACK_VALUE,
   MAX_ROTATION_LENGTH,
   compactRotationForShare,
+  defaultAtkSkill,
   firstRealSkill,
   isBasicAttack,
   normalizeRotation,
@@ -116,5 +117,27 @@ describe('compactRotationForShare', () => {
     const shared = compactRotationForShare(preset) as Record<string, any>;
 
     expect(normalizeRotation(shared['rotation'], shared['selectedAtkSkill'])).toEqual(preset.rotation);
+  });
+});
+
+/**
+ * A habilidade padrão — cards bLnU1DLpGeA2vxQ794I4 e FPpmOoKCq7KzPxV4NUZ3.
+ *
+ * Esconderijo entrou na cabeça do catálogo do Gatuno, e `atkSkills[0]` deixou de ser uma
+ * habilidade que bate. Quem resolve "o jogador não escolheu nada" — a sessão do app e o
+ * `resolveAtkSkill` do servidor MCP — passa por aqui para não cair numa utilitária.
+ */
+describe('defaultAtkSkill', () => {
+  it('pula a utilitária no topo do catálogo', () => {
+    expect(defaultAtkSkill([{ value: 'Hiding==1', isUtility: true }, { value: 'Fatal Manace==10' }]))
+      .toBe('Fatal Manace==10');
+  });
+
+  it('devolve a primeira quando a classe só tem utilitárias, em vez de nada', () => {
+    expect(defaultAtkSkill([{ value: 'Hiding==1', isUtility: true }])).toBe('Hiding==1');
+  });
+
+  it('aguenta uma lista vazia', () => {
+    expect(defaultAtkSkill([])).toBeUndefined();
   });
 });

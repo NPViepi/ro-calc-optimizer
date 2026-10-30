@@ -186,22 +186,23 @@ describe.each(twins)('%s atk-skill ratios @ base 250, POW/SPL 100, sibling skill
     // These were first written from the "2nd version" blog tables, which disagreed with
     // the client for the whole cannon tree and for Shadow Dance / Shadow Flash. They now
     // carry the client's own numbers; the authority is skills/skill-delay.spec.ts.
-    // Shadow Dance and Shadow Flash cast faster at higher levels, so their vct is a
-    // curve rather than a constant; these cases pin the pair at their own Lv10.
+    // The client table of 28/10/2026 dropped Shadow Dance's and Shadow Flash's variable
+    // cast to zero, so the descending curve they used to carry is gone; these cases pin
+    // every skill at its own Lv10.
     const cases: { name: string; vct: number; fct: number; cd: number }[] = [
       { name: 'Shadow Hunting', vct: 0, fct: 0, cd: 0.3 },
-      { name: 'Shadow Dance', vct: 1, fct: 0, cd: 1 },
-      { name: 'Shadow Flash', vct: 1, fct: 0.5, cd: 1 },
+      { name: 'Shadow Dance', vct: 0, fct: 0, cd: 0.5 },
+      { name: 'Shadow Flash', vct: 0, fct: 0, cd: 0.5 },
       { name: 'Huuma Shuriken - Grasp', vct: 1.2, fct: 1, cd: 1 },
       { name: 'Huuma Shuriken - Construct', vct: 1.2, fct: 1, cd: 1 },
       { name: 'Kunai - Distortion', vct: 0.2, fct: 0, cd: 0.35 },
       { name: 'Kunai - Rotation', vct: 0, fct: 0, cd: 2 },
       { name: 'Kunai - Refraction', vct: 1.5, fct: 0.5, cd: 2 },
-      { name: 'Red Flame Cannon', vct: 2, fct: 1.5, cd: 1 },
-      { name: 'Cold Blooded Cannon', vct: 3, fct: 1.5, cd: 0.5 },
-      { name: 'Thundering Cannon', vct: 2, fct: 1.5, cd: 1 },
-      { name: 'Golden Dragon Cannon', vct: 3, fct: 1.5, cd: 0.3 },
-      { name: 'Darkening Cannon', vct: 3, fct: 1.5, cd: 0.5 },
+      { name: 'Red Flame Cannon', vct: 2, fct: 1, cd: 0.7 },
+      { name: 'Cold Blooded Cannon', vct: 3, fct: 1, cd: 0.5 },
+      { name: 'Thundering Cannon', vct: 2, fct: 1, cd: 0.7 },
+      { name: 'Golden Dragon Cannon', vct: 3, fct: 1, cd: 0.3 },
+      { name: 'Darkening Cannon', vct: 3, fct: 1, cd: 0.5 },
     ];
 
     it.each(cases)('$name has vct $vct, fct $fct, cd $cd', ({ name, vct, fct, cd }) => {

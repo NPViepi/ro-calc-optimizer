@@ -53,6 +53,37 @@
   content: '';
 }
 :is(app-item-search, .ui-scope-app-item-search) .calc-section-heading > span { flex: 0 0 auto; }
+/* A phone's filters fold away after a search (item-search.tsx): their heading becomes the
+   button that reopens them, in the heading's own look, a finger tall. */
+:is(app-item-search, .ui-scope-app-item-search) .item-search-filters-toggle {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-color-secondary);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+:is(app-item-search, .ui-scope-app-item-search) .item-search-filters-toggle::after {
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--surface-border);
+  content: '';
+}
+:is(app-item-search, .ui-scope-app-item-search) .item-search-filters-toggle:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+:is(app-item-search, .ui-scope-app-item-search) .item-search-filters [hidden] { display: none; }
 :is(app-item-search, .ui-scope-app-item-search) .calc-field-label {
   display: block;
   margin-bottom: 0.3rem;
@@ -155,6 +186,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+:is(app-item-search, .ui-scope-app-item-search) .where-above { display: none; }
 :is(app-item-search, .ui-scope-app-item-search) .item-search-empty-list { color: var(--text-color-secondary); padding: 1rem 0.4rem; }
 :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-description-card {
   flex: 1;
@@ -189,7 +221,8 @@
 :is(app-item-search, .ui-scope-app-item-search) .item-description-links { display: grid; gap: 0.35rem; min-width: 0; overflow-wrap: anywhere; }
 :is(app-item-search, .ui-scope-app-item-search) .item-description-links > div { display: flex; flex-wrap: wrap; gap: 0.35rem 0.875rem; }
 :is(app-item-search, .ui-scope-app-item-search) .item-description-links a { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--primary-color); font-size: 11px; text-decoration: none; }
-:is(app-item-search, .ui-scope-app-item-search) .item-description-links a:hover { text-decoration: underline; }
+@media (hover: hover){:is(app-item-search, .ui-scope-app-item-search) .item-description-links a:hover{ text-decoration: underline; }}
+@media (hover: none){:is(app-item-search, .ui-scope-app-item-search) .item-description-links a:active{ text-decoration: underline; }}
 :is(app-item-search, .ui-scope-app-item-search) .item-description-body { padding-top: 0.75rem; }
 :is(app-item-search, .ui-scope-app-item-search) .item-description-text {
   display: flex;
@@ -211,7 +244,32 @@
   :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog { width: calc(100vw - 1rem); max-width: calc(100vw - 1rem); }
   :is(app-item-search, .ui-scope-app-item-search) .item-search-bonus-pickers,
   :is(app-item-search, .ui-scope-app-item-search) .item-search-results { grid-template-columns: minmax(0, 1fr); }
-  :is(app-item-search, .ui-scope-app-item-search) .item-search-results { grid-template-rows: repeat(2, minmax(0, 1fr)); }
+  /* Stacked, the list gets more of the height than the description, and the filters
+     show their fields and the first bonus (on a phone the level checkbox follows it) and scroll
+     in their own box for the rest, a shadow saying there is more below; any taller and
+     the list would keep a single row. The touch rows are taller (responsive.css sets the
+     height). */
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-results { grid-template-rows: minmax(0, 3fr) minmax(0, 2fr); }
+  /* Until an item is picked the description is one sentence: it takes that height and
+     the list the rest. */
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-results:has(.item-description-empty) { grid-template-rows: minmax(0, 1fr) auto; }
+  /* The empty description points up at the list, not beside it. */
+  :is(app-item-search, .ui-scope-app-item-search) .where-beside { display: none; }
+  :is(app-item-search, .ui-scope-app-item-search) .where-above { display: inline; }
+  /* The short stacked card fits the sentence alone: no arrow (it points beside), and the
+     block takes its content's height (the calculator's 240px minimum included). */
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-dialog .item-description-empty { height: auto; min-height: 0; }
+  :is(app-item-search, .ui-scope-app-item-search) .item-description-empty .ui-icon { display: none; }
+  :is(app-item-search, .ui-scope-app-item-search) .item-description-empty p { margin: 0; }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-filters { max-height: none; }
+  :is(app-item-search, .ui-scope-app-item-search) .item-search-filter-controls {
+    max-height: var(--item-search-filter-rows, 14rem);
+    background:
+      linear-gradient(var(--surface-overlay) 30%, transparent) top / 100% 2.5rem no-repeat local,
+      linear-gradient(transparent, var(--surface-overlay) 70%) bottom / 100% 2.5rem no-repeat local,
+      radial-gradient(farthest-side at 50% 0, rgb(0 0 0 / 60%), transparent) top / 100% 0.75rem no-repeat scroll,
+      radial-gradient(farthest-side at 50% 100%, rgb(0 0 0 / 60%), transparent) bottom / 100% 0.75rem no-repeat scroll;
+  }
   :is(app-item-search, .ui-scope-app-item-search) .item-search-actions { align-items: stretch; flex-direction: column; }
   :is(app-item-search, .ui-scope-app-item-search) .item-search-mode { justify-content: space-between; }
   :is(app-item-search, .ui-scope-app-item-search) .item-search-class { display: block; margin: 0.25rem 0 0; }

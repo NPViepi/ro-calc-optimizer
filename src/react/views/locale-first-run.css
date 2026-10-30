@@ -1,0 +1,56 @@
+/* The first-run language dialog: three questions stacked, then the select and OK. */
+.locale-first-run .ui-dialog-header {
+  padding-bottom: 0.5rem;
+}
+
+.locale-first-run-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  line-height: 1.3;
+}
+
+/* The reader's own language is whichever of the three they recognise, so none of them
+   is the title: the first is merely the first, at the same weight as the others. */
+.locale-first-run-prompts span {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.locale-first-run-prompts span + span {
+  color: var(--text-color-secondary);
+  font-weight: 400;
+}
+
+.locale-first-run .ui-dialog-content {
+  padding-top: 0.25rem;
+}
+
+/* The dropdown is nested in its own element, so the width has to reach the control
+   itself; on a phone the dialog is a bottom sheet and a third-width select reads as an
+   afterthought next to the question above it. */
+.locale-first-run app-ui-dropdown {
+  display: block;
+}
+
+/* Row, not block: the chevron is a sibling of the label button, so letting the label
+   take the whole width on its own wraps the chevron onto a second line. */
+.locale-first-run .ui-dropdown {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.locale-first-run .ui-dropdown-label {
+  flex: 1;
+  text-align: left;
+}
+
+.locale-first-run .ui-dialog-footer {
+  text-align: right;
+}
+
+.locale-first-run-ok {
+  min-width: 6rem;
+  justify-content: center;
+}

@@ -1,3 +1,4 @@
+import { Translate } from 'src/app/i18n';
 // Turns the engine's per-skill solves into everything the rotation panel draws.
 // Pure (no Angular imports), like battle-hud.logic.ts, so it is unit-testable with
 // plain Vitest. It only reshapes numbers the engine already produced — it never
@@ -22,6 +23,8 @@ export interface RotationSkillMeta {
   /** `boolean` when the skill always (or never) crits; a function when it depends on
    *  the character's state — which is what makes the row's crit reading conditional. */
   canCri?: boolean | ((input: any) => boolean);
+  /** Declared on skills whose whole point is not to hit — see {@link RotationEntryView.isUtility}. */
+  isUtility?: boolean;
 }
 
 export interface RotationEntryView {
@@ -48,6 +51,17 @@ export interface RotationEntryView {
   propertyMultiplier: number;
   /** Set when the build cannot cast this skill (weapon gating). Damage is then 0. */
   requireTxt: string;
+  /**
+   * Whether the row has any damage to report. False for a utility skill that never hits
+   * (Esconderijo, Infiltrar — cards bLnU1DLpGeA2vxQ794I4 e FPpmOoKCq7KzPxV4NUZ3) and for
+   * a skill this build cannot cast at all.
+   *
+   * The row then leaves out every damage reading instead of printing a zero next to a
+   * neutral element and "Sem crít." — figures that describe a hit that never happens. What
+   * it still carries is what the skill is in the rotation for: its place and its time.
+   * Which of the two it is, {@link requireTxt} says.
+   */
+  showsDamage: boolean;
   /**
    * Crit state, which every row states explicitly — silence would read as missing data.
    * `canCrit` false renders "Sem crít."; true renders the rate.
@@ -188,7 +202,7 @@ function effectedDpsInputs(dmg: any, hasSelectedChances: boolean): any {
  * why this panel was already correct while the one-decimal `totalHitPerSec` had the old
  * tab reporting 60s-cooldown skills 122x too high. See docs/combo.md.
  */
-function skillDamagePerUse(dmg: any): DamageReadings {
+function skillDamagePerUse(dmg: any, text: Translate): DamageReadings {
   const steps = buildDpsSteps(dmg);
   if (!steps) return NO_DAMAGE;
 
@@ -197,12 +211,12 @@ function skillDamagePerUse(dmg: any): DamageReadings {
   const rate = dmg?.skillCriRateToMonster ?? 0;
   // skillMin/MaxDamage are already per-use totals — the card divides them by the hit count
   // to get its "cada" line — so these sit on the same scale as the mean.
-  const cri: DamageRange = { kind: 'cri', label: 'crít.', min: dmg?.skillMinDamage ?? 0, max: dmg?.skillMaxDamage ?? 0 };
+  const cri: DamageRange = { kind: 'cri', label: text('rv.rangeCrit'), min: dmg?.skillMinDamage ?? 0, max: dmg?.skillMaxDamage ?? 0 };
 
   if (isCritWeighted(canCrit, rate)) {
     const noCri: DamageRange = {
       kind: 'nocri',
-      label: 'sem crít.',
+      label: text('rv.rangeNoCrit'),
       min: dmg?.skillMinDamageNoCri ?? 0,
       max: dmg?.skillMaxDamageNoCri ?? 0,
     };
@@ -213,12 +227,12 @@ function skillDamagePerUse(dmg: any): DamageReadings {
   // rolls this build never actually takes, and naming them would be a lie.
   if (canCrit && rate >= 100) return { damage, ranges: [cri] };
 
-  return { damage, ranges: [{ ...cri, kind: 'flat', label: 'dano' }] };
+  return { damage, ranges: [{ ...cri, kind: 'flat', label: text('rv.rangeFlat') }] };
 }
 
 /** Per-use damage for ataque básico. `basicDps` is already damage x rate, so dividing by
  *  the rate recovers the damage exactly rather than re-deriving it from min/max/crit. */
-function basicDamagePerUse(summary: any, hasSelectedChances: boolean): DamageReadings {
+function basicDamagePerUse(summary: any, hasSelectedChances: boolean, text: Translate): DamageReadings {
   const dmg = summary?.dmg;
   const rate = summary?.calc?.hitPerSecs || 0;
   if (!dmg || rate <= 0) return NO_DAMAGE;
@@ -227,13 +241,13 @@ function basicDamagePerUse(summary: any, hasSelectedChances: boolean): DamageRea
   const damage = dps / rate;
   // The same two rolls damage-calculator.ts hands calcDmgDps for basicDps, so the pair the
   // row prints is the pair the mean was actually built from.
-  const plain: DamageRange = { kind: 'nocri', label: 'sem crít.', min: dmg.basicMinDamage || 0, max: dmg.basicMaxDamage || 0 };
+  const plain: DamageRange = { kind: 'nocri', label: text('rv.rangeNoCrit'), min: dmg.basicMinDamage || 0, max: dmg.basicMaxDamage || 0 };
 
   if (isCritWeighted((dmg.criRateToMonster ?? 0) > 0, dmg.criRateToMonster)) {
-    return { damage, ranges: [plain, { kind: 'cri', label: 'crít.', min: dmg.criMinDamage || 0, max: dmg.criMaxDamage || 0 }] };
+    return { damage, ranges: [plain, { kind: 'cri', label: text('rv.rangeCrit'), min: dmg.criMinDamage || 0, max: dmg.criMaxDamage || 0 }] };
   }
 
-  return { damage, ranges: [{ ...plain, kind: 'flat', label: 'dano' }] };
+  return { damage, ranges: [{ ...plain, kind: 'flat', label: text('rv.rangeFlat') }] };
 }
 
 /**
@@ -262,6 +276,7 @@ export function toScheduleStep(input: { value: string; summary: any; damage: num
     acd: channelled ? 0 : calcSkill.reducedAcd || 0,
     cd: channelled ? 0 : calcSkill.reducedCd || 0,
     damage,
+    ignoreAspdFloor: calcSkill.ignoreAspdFloor,
   };
 }
 
@@ -301,6 +316,8 @@ export function computeRotationTimeToKill(hp: number, cycle: RotationCycle): Tim
 }
 
 export function buildRotationView(input: {
+  /** The chosen language's lookup — the only label this builder names itself. */
+  text: Translate;
   rotation: string[];
   /** One solved `getTotalSummary()` per distinct rotation value. */
   summaryByValue: Map<string, any>;
@@ -312,7 +329,7 @@ export function buildRotationView(input: {
   rotationStacks?: number[];
   summaryByIndex?: Map<number, any>;
 }): RotationView {
-  const { rotation, summaryByValue, summaryByIndex, baseSummary, hasSelectedChances, atkSkills, skillStacks, rotationStacks } = input;
+  const { text, rotation, summaryByValue, summaryByIndex, baseSummary, hasSelectedChances, atkSkills, skillStacks, rotationStacks } = input;
 
   const metaFor = (value: string): RotationSkillMeta | undefined =>
     atkSkills?.find((s) => s.value === value || s.values?.includes(value) || s.levelList?.some((l) => l.value === value));
@@ -337,7 +354,10 @@ export function buildRotationView(input: {
     // the crit its damage was computed with.
     const edmg = basic ? dmg : effectedDpsInputs(dmg, hasSelectedChances);
     const requireTxt = basic ? '' : dmg?.requireTxt || '';
-    const readings = requireTxt ? NO_DAMAGE : basic ? basicDamagePerUse(summary, hasSelectedChances) : skillDamagePerUse(edmg);
+    // A utility skill reads 0 from the chain already (see utility-skill-no-damage.spec.ts);
+    // saying so here is what lets the row drop the readings rather than print the zeros.
+    const noDamage = !basic && (!!requireTxt || !!meta?.isUtility);
+    const readings = noDamage ? NO_DAMAGE : basic ? basicDamagePerUse(summary, hasSelectedChances, text) : skillDamagePerUse(edmg, text);
 
     const occurrence = seen.get(value) ?? 0;
     seen.set(value, occurrence + 1);
@@ -346,8 +366,8 @@ export function buildRotationView(input: {
       index,
       value,
       isBasic: basic,
-      name: basic ? 'Ataque básico' : meta?.label?.replace(/\s*Nv\d+.*$/, '') || name,
-      levelLabel: basic || !level ? '' : `Nv${level}`,
+      name: basic ? text('skd.basicAttack') : meta?.label?.replace(/\s*Nv\d+.*$/, '') || name,
+      levelLabel: basic || !level ? '' : text('rv.levelChip', { level }),
       icon: meta?.icon,
       levelList: meta?.levelList ?? [],
       stackOptions: stackMax > 0 ? Array.from({ length: stackMax - stackMin + 1 }, (_, n) => ({ label: String(n + stackMin), value: n + stackMin })) : [],
@@ -356,10 +376,11 @@ export function buildRotationView(input: {
       damageRanges: readings.ranges,
       hasDamageSpread: isSpread(readings.ranges),
       contributionPercent: 0,
-      dmgTypeLabel: basic ? dmgTypeLabel('Melee') : dmgTypeLabel(summary?.calcSkill?.dmgType ?? ''),
+      dmgTypeLabel: dmgTypeLabel(basic ? 'Melee' : summary?.calcSkill?.dmgType ?? '', text),
       element: basic ? summary?.propertyAtk ?? '' : summary?.calcSkill?.propertySkill ?? '',
       propertyMultiplier: basic ? 1 : dmg?.skillPropertyMultiplier ?? 1,
       requireTxt,
+      showsDamage: !noDamage,
       // Ataque básico always rolls crit; a skill only where the engine says so.
       isMagic: !basic && summary?.calcSkill?.dmgType === SkillType.MAGICAL,
       canCrit: basic ? (dmg?.criRateToMonster ?? 0) > 0 : !!dmg?.skillCanCri,

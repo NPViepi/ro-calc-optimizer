@@ -100,10 +100,10 @@ describe('items-desc-mcp answers everything the raw lookup used to', () => {
 describe('the index the Worker builds matches the one the box built', () => {
   const dataset = loadDatasetFromDisk();
 
-  it('indexes the same number of items — 11619 distinct ids plus 5810 LATAM-only', () => {
+  it('indexes the same number of items — 11652 distinct ids plus 5996 LATAM-only', () => {
     expect(dataset.itemIndex.size).toBe(calcIds.size + Object.keys(latamExtra).length);
     // Includes the latest client items and the 14 new calculator records.
-    expect(dataset.itemIndex.size).toBe(17429);
+    expect(dataset.itemIndex.size).toBe(17648);
   });
 
   it('indexes the same monsters, including the ones with no stat block', () => {

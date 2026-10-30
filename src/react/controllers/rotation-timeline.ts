@@ -3,6 +3,7 @@ import { Events } from '../services/events';
 import { RotationCycle } from '../../app/core/rotation-schedule';
 import { BASIC_ATTACK_ICON } from './rotation-list';
 import { RotationEntryView } from '../../app/layout/pages/ro-calculator/battle-hud/rotation-view';
+import { Translate } from 'src/app/i18n';
 import { buildTimelineCharts, TimelineChart } from '../../app/layout/pages/ro-calculator/battle-hud/rotation-timeline/rotation-timeline.logic';
 
 /**
@@ -30,6 +31,8 @@ export class RotationTimelineComponent extends ViewState {
 
   readonly basicAttackIcon = BASIC_ATTACK_ICON;
 
+  constructor(private readonly text: Translate) { super(); }
+
   get charts(): TimelineChart[] {
     if (!this.cycle) return [];
 
@@ -46,6 +49,7 @@ export class RotationTimelineComponent extends ViewState {
     });
 
     return buildTimelineCharts({
+      text: this.text,
       current: shape(this.cycle, this.entries),
       compare: this.cycle2 ? shape(this.cycle2, this.entries2 ?? []) : null,
     });

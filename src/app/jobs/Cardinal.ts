@@ -221,7 +221,7 @@ export class Cardinal extends ArchBishop {
       acd: 0.5,
       fct: 1.5,
       vct: 4,
-      cd: 2,
+      cd: 1.5,
       isMatk: true,
       element: ElementType.Holy,
       formula: (input: AtkSkillFormulaInput): number => {
@@ -243,7 +243,7 @@ export class Cardinal extends ArchBishop {
       acd: 0.5,
       fct: 0,
       vct: 0,
-      cd: 1,
+      cd: 0.5,
       canCri: true,
       criDmgPercentage: 0.5,
       isMelee: (weaponType) => {

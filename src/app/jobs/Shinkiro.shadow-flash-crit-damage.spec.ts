@@ -86,6 +86,8 @@ function critOf(ClassCtor: typeof Shinkiro | typeof Shiranui, classId: number, c
   if (criDmg > 0) model.accLeft = CRIT_DMG_ACC;
   model.selectedAtkSkill = SKILL;
 
+  // Recorded before the 28/10/2026 client, so these packets measure the pre-rebalance formulas.
+  model.skillFormulaVersion = 'pre-rebalance';
   calc.loadItemFromModel(model);
 
   new CalculatorController().runChain(calc, {

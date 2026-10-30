@@ -47,11 +47,18 @@ app-equipment-chip .eq-chip__custom {
 
 app-equipment-chip .eq-chip__custom--primary { font-size: 14px; }
 
-app-equipment-chip .eq-chip:hover,
-app-equipment-chip .eq-chip:focus-visible {
+app-equipment-chip .eq-chip:focus-visible{
   border-color: var(--green-400, #81c784);
   outline: none;
 }
+@media (hover: hover){app-equipment-chip .eq-chip:hover{
+  border-color: var(--green-400, #81c784);
+  outline: none;
+}}
+@media (hover: none){app-equipment-chip .eq-chip:active{
+  border-color: var(--green-400, #81c784);
+  outline: none;
+}}
 
 app-equipment-chip .eq-chip--filled {
   border-style: solid;
@@ -72,10 +79,15 @@ app-equipment-chip .eq-chip--compare.eq-chip--filled {
   color: #fdd87d;
 }
 
-app-equipment-chip .eq-chip--compare:hover,
-app-equipment-chip .eq-chip--compare:focus-visible {
+app-equipment-chip .eq-chip--compare:focus-visible{
   border-color: #fdd87d;
 }
+@media (hover: hover){app-equipment-chip .eq-chip--compare:hover{
+  border-color: #fdd87d;
+}}
+@media (hover: none){app-equipment-chip .eq-chip--compare:active{
+  border-color: #fdd87d;
+}}
 
 /* An element chip carries the property_* palette, which paints its own background —
    leave the fill alone and only keep the shape. */
@@ -122,8 +134,13 @@ app-equipment-chip .eq-chip__clear {
   line-height: 1;
 }
 
-app-equipment-chip .eq-chip__picker:hover .eq-chip__clear,
 app-equipment-chip .eq-chip:focus-visible + .eq-chip__clear,
-app-equipment-chip .eq-chip__clear:focus-visible {
+app-equipment-chip .eq-chip__clear:focus-visible{
   display: inline-flex;
 }
+@media (hover: hover){app-equipment-chip .eq-chip__picker:hover .eq-chip__clear{
+  display: inline-flex;
+}}
+@media (hover: none){app-equipment-chip .eq-chip__picker:active .eq-chip__clear{
+  display: inline-flex;
+}}

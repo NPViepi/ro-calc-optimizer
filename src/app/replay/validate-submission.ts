@@ -3,6 +3,7 @@ import { ClassIdBySpriteJob, getClassDropdownList } from '../jobs';
 import { BUFF_EFST } from './replay-buffs';
 import { ReplayTraits } from './replay-traits';
 import { replayToModel } from './replay-to-model';
+import { TextRef } from '../i18n';
 
 /**
  * Decides whether a community `.rrf` recording is worth sending us, before it
@@ -77,12 +78,17 @@ export type SubmissionWarningCode = 'many-unknown-items' | 'no-equip-change' | '
  * Deliberately one flat shape rather than a discriminated union: this project
  * compiles with `strict: false`, where TypeScript does not narrow a union by its
  * discriminant, so a union would only force casts at every use.
- * `blocker`/`message` carry the rejection; the rest is only meaningful when `ok`.
+ * `blocker`/`text` carry the rejection; the rest is only meaningful when `ok`.
  */
 export interface SubmissionCheck {
   ok: boolean;
   blocker: SubmissionBlockerCode | null;
-  message: string;
+  /**
+   * Why it was refused, as a catalog key: the validator runs in the browser and in the
+   * MCP tools, long before a locale is chosen, so whoever shows the rejection resolves
+   * it. Null when the recording was accepted.
+   */
+  text: TextRef | null;
   summary: ReplaySubmissionSummary | null;
   /**
    * The six traits read straight out of the recording, or null when it did not
@@ -98,16 +104,16 @@ export interface SubmissionCheck {
   warnings: SubmissionWarningCode[];
 }
 
-function reject(blocker: SubmissionBlockerCode, message: string): SubmissionCheck {
-  return { ok: false, blocker, message, summary: null, traits: null, needsTraits: false, warnings: [] };
+function reject(blocker: SubmissionBlockerCode, text: TextRef): SubmissionCheck {
+  return { ok: false, blocker, text, summary: null, traits: null, needsTraits: false, warnings: [] };
 }
 
 export function validateReplaySubmission(buf: ArrayBuffer, itemMap: Record<number, any>): SubmissionCheck {
   if (buf.byteLength > MAX_REPLAY_BYTES) {
-    return reject(
-      'too-big',
-      `A gravação tem ${formatKb(buf.byteLength)}, e o limite é ${formatKb(MAX_REPLAY_BYTES)}. Grave uma sessão mais curta.`,
-    );
+    return reject('too-big', {
+      key: 'hi.rejectTooBig',
+      params: { size: formatKb(buf.byteLength), limit: formatKb(MAX_REPLAY_BYTES) },
+    });
   }
 
   let replay: Replay;
@@ -116,7 +122,7 @@ export function validateReplaySubmission(buf: ArrayBuffer, itemMap: Record<numbe
   } catch (e) {
     // Unlike the build importer, show the parser's own message — an unsupported version
     // and a truncated file call for different fixes.
-    return reject('unreadable', `Não foi possível ler o arquivo .rrf (${(e as Error).message}).`);
+    return reject('unreadable', { key: 'hi.rejectUnreadable', params: { reason: (e as Error).message } });
   }
 
   return checkReplay(replay, itemMap);
@@ -129,19 +135,16 @@ export function checkReplay(replay: Replay, itemMap: Record<number, any>): Submi
   const classId = ClassIdBySpriteJob[session.job] ?? session.job;
   const klass = getClassDropdownList().find((c) => c.value === classId);
   if (!klass) {
-    return reject(
-      'unknown-class',
-      `A classe deste replay (${session.player || 'personagem'}, job ${session.job}) não existe na calculadora. ` +
-        `Se a gravação não for do RO LATAM, ela não serve para a conferência.`,
-    );
+    // A separate entry rather than a placeholder word: a `{player}` filled with
+    // "personagem" would have to be translated inside a parameter, which the catalog
+    // cannot reach.
+    return reject('unknown-class', session.player
+      ? { key: 'hi.rejectUnknownClass', params: { player: session.player, job: session.job } }
+      : { key: 'hi.rejectUnknownClassUnnamed', params: { job: session.job } });
   }
 
   if (replay.learnedSkills.size === 0) {
-    return reject(
-      'no-skill-tree',
-      'A gravação não tem a árvore de habilidades, e sem ela não dá para conferir as fórmulas. ' +
-        'Isso acontece quando a caixa "Skill" fica desmarcada nas Opções do gravador — é preciso gravar de novo.',
-    );
+    return reject('no-skill-tree', { key: 'hi.rejectNoSkillTree' });
   }
 
   // The two rules that make this pass worth running at all. A recording taken anywhere
@@ -149,21 +152,14 @@ export function checkReplay(replay: Replay, itemMap: Record<number, any>): Submi
   // formula: the target's own DEF/RES and the damage it deals back are unknowns we would
   // be solving for at the same time as the thing being measured.
   if (normalizeMap(session.map) !== TRAINING_MAP) {
-    return reject(
-      'wrong-map',
-      `Esta gravação é no mapa "${session.map || 'desconhecido'}", e nesta etapa só servem gravações no ` +
-        `campo de treinamento (${TRAINING_MAP}), batendo nos dummies. Fora dali o alvo tem DEF e RES próprias ` +
-        `e revida, e aí não dá para saber se a diferença veio de um item errado ou de uma fórmula errada.`,
-    );
+    return reject('wrong-map', session.map
+      ? { key: 'hi.rejectWrongMap', params: { map: session.map, training: TRAINING_MAP } }
+      : { key: 'hi.rejectWrongMapUnknown', params: { training: TRAINING_MAP } });
   }
 
   const dummyHits = countDummyHits(replay);
   if (dummyHits === 0) {
-    return reject(
-      'no-dummy-damage',
-      'Não há nenhum golpe seu em um dummy de treino nesta gravação. É o dano nos dummies que a conferência ' +
-        'compara pacote a pacote — sem ele não há o que medir. Vá até os dummies e use cada habilidade umas 10 vezes.',
-    );
+    return reject('no-dummy-damage', { key: 'hi.rejectNoDummyDamage' });
   }
 
   const { summary: importSummary } = replayToModel(replay, itemMap);
@@ -180,7 +176,7 @@ export function checkReplay(replay: Replay, itemMap: Record<number, any>): Submi
   return {
     ok: true,
     blocker: null,
-    message: '',
+    text: null,
     // A class with no trait table has nothing to report either way: the server
     // does send it six zeros, but recording them would read in triage as an
     // allocation rather than as "this class has no traits".

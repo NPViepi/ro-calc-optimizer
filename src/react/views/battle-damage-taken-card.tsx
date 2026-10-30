@@ -7,6 +7,7 @@ import { formatNumber } from '../../app/utils/format-number';
 import { Card, Icon } from '../ui/primitives';
 import { Popover } from '../ui/popover';
 import { Select } from '../ui/select';
+import { useText } from '../state/use-text';
 import './battle-damage-taken-card.css';
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function BattleDamageTakenCard({ profile, disabled = false, onReductionClick }: Props) {
+  const t = useText();
   const id = useId();
   const skills = getMonsterOffensiveSkills(profile.attacker.id);
   const [open, setOpen] = useState(false);
@@ -31,63 +33,67 @@ export function BattleDamageTakenCard({ profile, disabled = false, onReductionCl
   if (!result) return null;
   const basicAttack = result.skill.formula === 'basic-attack';
   const range = (min: number, max: number) => min === max ? formatNumber(min) : `${formatNumber(min)} – ${formatNumber(max)}`;
-  const skillOptions = skills.map(skill => ({ label: skill.formula === 'basic-attack' ? skill.name : `${skill.name} · Nv. ${skill.level}`, value: skill.id }));
-  const numbers = (max: number, suffix = '') => Array.from({ length: max }, (_, index) => ({ label: `${index + 1}${suffix}`, value: index + 1 }));
-  const armorOptions = [{ label: `Equipamento (${ELE_PT[profile.defender.armorElement.toLowerCase()]})`, value: 'auto' },
-    ...Object.values(ElementType).map(value => ({ label: `${ELE_PT[value.toLowerCase()]} 1`, value }))];
+  const skillOptions = skills.map(skill => ({ label: skill.formula === 'basic-attack' ? skill.name
+    : t('taken.skillOption', { name: skill.name, level: skill.level }), value: skill.id }));
+  const numbers = (max: number, cells = false) => Array.from({ length: max }, (_, index) =>
+    ({ label: cells ? t('taken.cells', { count: index + 1 }) : String(index + 1), value: index + 1 }));
+  const armorOptions = [{ label: t('taken.armorEquipped', { element: ELE_PT[profile.defender.armorElement.toLowerCase()] }), value: 'auto' },
+    ...Object.values(ElementType).map(value => ({ label: t('taken.elementLevel', { element: ELE_PT[value.toLowerCase()] }), value }))];
   return <Card className="damage-taken-card">
     <button type="button" className="damage-taken-toggle" aria-expanded={open} aria-controls={`${id}-content`} onClick={() => { setOpen(!open); setInfoAnchor(null); }}>
-      <Icon name="shield" /><span>Dano recebido</span><Icon name={open ? 'chevron-down' : 'chevron-right'} />
+      <Icon name="shield" /><span>{t('taken.title')}</span><Icon name={open ? 'chevron-down' : 'chevron-right'} />
     </button>
-    <div id={`${id}-content`} hidden={!open} role="region" aria-label="Dano recebido" className="damage-taken-content">
-      <label className="damage-taken-field"><span>Ataque do monstro</span>
-        <Select ariaLabel="Ataque do monstro" options={skillOptions} optionLabel="label" optionValue="value" value={skillId} disabled={disabled} onChange={value => { setSkillId(value); setInfoAnchor(null); }} />
+    <div id={`${id}-content`} hidden={!open} role="region" aria-label={t('taken.title')} className="damage-taken-content">
+      <label className="damage-taken-field"><span>{t('taken.attack')}</span>
+        <Select ariaLabel={t('taken.attack')} options={skillOptions} optionLabel="label" optionValue="value" value={skillId} disabled={disabled} onChange={value => { setSkillId(value); setInfoAnchor(null); }} />
       </label>
-      <div className="damage-taken-badges"><span>{result.skill.damageType === 'physical' ? 'Físico' : result.skill.damageType === 'fixed' ? 'Fixo' : 'Mágico'}</span>
-        <span>{basicAttack ? 'Sem propriedade' : ELE_PT[result.skill.element.toLowerCase()]}</span>
-        <span>{basicAttack ? profile.attacker.attackRange > 3 ? 'À distância' : 'Corpo a corpo' : `Nv. ${result.skill.level}`}</span></div>
-      {!basicAttack && result.skill.formula !== 'killing-aura' && <label className="damage-taken-field"><span>Elemento da armadura</span>
-        <Select ariaLabel="Elemento da armadura" options={armorOptions} optionLabel="label" optionValue="value" value={armor} disabled={disabled} onChange={setArmor} />
+      <div className="damage-taken-badges"><span>{t(result.skill.damageType === 'physical' ? 'misc.physical' : result.skill.damageType === 'fixed' ? 'taken.fixed' : 'misc.magical')}</span>
+        <span>{basicAttack ? t('taken.noElement') : ELE_PT[result.skill.element.toLowerCase()]}</span>
+        <span>{basicAttack ? t(profile.attacker.attackRange > 3 ? 'taken.ranged' : 'taken.melee') : t('taken.skillLevel', { level: result.skill.level })}</span></div>
+      {!basicAttack && result.skill.formula !== 'killing-aura' && <label className="damage-taken-field"><span>{t('taken.armorElement')}</span>
+        <Select ariaLabel={t('taken.armorElement')} options={armorOptions} optionLabel="label" optionValue="value" value={armor} disabled={disabled} onChange={setArmor} />
       </label>}
-      {result.skill.formula === 'npc-comet' && <label className="damage-taken-field"><span>Distância ao centro do Cometa</span>
-        <Select ariaLabel="Distância ao centro do Cometa" options={Array.from({ length: 10 }, (_, value) => ({ label: `${value} células`, value }))}
+      {result.skill.formula === 'npc-comet' && <label className="damage-taken-field"><span>{t('taken.cometDistance')}</span>
+        <Select ariaLabel={t('taken.cometDistance')} options={Array.from({ length: 10 }, (_, value) => ({ label: t('taken.cells', { count: value }), value }))}
           optionLabel="label" optionValue="value" value={cometDistance} disabled={disabled} onChange={setCometDistance} />
       </label>}
-      {result.skill.formula === 'earthquake' && <label className="damage-taken-field"><span>Alvos vivos na área</span>
-        <Select ariaLabel="Alvos vivos na área" options={numbers(30)} optionLabel="label" optionValue="value" value={earthquakeTargets} disabled={disabled} onChange={setEarthquakeTargets} />
+      {result.skill.formula === 'earthquake' && <label className="damage-taken-field"><span>{t('taken.earthquakeTargets')}</span>
+        <Select ariaLabel={t('taken.earthquakeTargets')} options={numbers(30)} optionLabel="label" optionValue="value" value={earthquakeTargets} disabled={disabled} onChange={setEarthquakeTargets} />
       </label>}
-      {result.skill.formula === 'meteor-storm' && <label className="damage-taken-field"><span>Meteoros que acertam</span>
-        <Select ariaLabel="Meteoros que acertam" options={numbers(7)} optionLabel="label" optionValue="value" value={meteors} disabled={disabled} onChange={setMeteors} />
+      {result.skill.formula === 'meteor-storm' && <label className="damage-taken-field"><span>{t('taken.meteors')}</span>
+        <Select ariaLabel={t('taken.meteors')} options={numbers(7)} optionLabel="label" optionValue="value" value={meteors} disabled={disabled} onChange={setMeteors} />
       </label>}
-      {result.skill.formula === 'hell-judgement' && <label className="damage-taken-field"><span>Distância ao monstro</span>
-        <Select ariaLabel="Distância ao monstro" options={numbers(14, ' células')} optionLabel="label" optionValue="value" value={attackerDistance} disabled={disabled} onChange={setAttackerDistance} />
+      {result.skill.formula === 'hell-judgement' && <label className="damage-taken-field"><span>{t('taken.monsterDistance')}</span>
+        <Select ariaLabel={t('taken.monsterDistance')} options={numbers(14, true)} optionLabel="label" optionValue="value" value={attackerDistance} disabled={disabled} onChange={setAttackerDistance} />
       </label>}
       <div className="damage-taken-result" aria-live="polite">
         <div className="damage-taken-result-heading">
-          <span>{result.skill.damageType === 'fixed' ? 'Dano por segundo' : basicAttack ? 'Dano por ataque básico' : 'Dano total recebido'}</span>
-          <button type="button" className="damage-taken-info" aria-label="Informações sobre o cálculo" title="Informações sobre o cálculo"
+          <span>{t(result.skill.damageType === 'fixed' ? 'taken.perSecond' : basicAttack ? 'taken.perBasic' : 'taken.total')}</span>
+          <button type="button" className="damage-taken-info" aria-label={t('taken.info')} title={t('taken.info')}
             aria-expanded={!!infoAnchor} aria-controls={`${id}-info`} onClick={event => setInfoAnchor(infoAnchor ? null : event.currentTarget)}>
             <Icon name="info-circle" />
           </button>
         </div>
         <strong>{range(result.min, result.max)}</strong>
-        {result.hpPercent && <span>{range(Math.round(result.hpPercent.min * 10) / 10, Math.round(result.hpPercent.max * 10) / 10)}% do HP máximo</span>}
-        {result.hits > 1 && <span>{range(result.perHit.min, result.perHit.max)} por {result.skill.formula === 'earthquake' ? 'onda' : 'golpe'} · {result.hits} {result.skill.formula === 'earthquake' ? 'ondas' : 'golpes'}</span>}
+        {result.hpPercent && <span>{t('taken.hpPercent', { percent: range(Math.round(result.hpPercent.min * 10) / 10, Math.round(result.hpPercent.max * 10) / 10) })}</span>}
+        {result.hits > 1 && <span>{t('taken.perHit', { damage: range(result.perHit.min, result.perHit.max), hits: result.hits,
+          unit: t(result.skill.formula === 'earthquake' ? 'taken.wave' : 'taken.hit'),
+          units: t(result.skill.formula === 'earthquake' ? 'taken.waves' : 'taken.hits') })}</span>}
       </div>
-      <Popover anchor={infoAnchor} onClose={() => setInfoAnchor(null)} ariaLabel="Informações sobre o cálculo" className="damage-taken-info-panel">
+      <Popover anchor={infoAnchor} onClose={() => setInfoAnchor(null)} ariaLabel={t('taken.info')} className="damage-taken-info-panel">
         <div id={`${id}-info`}>
           <p className="damage-taken-note">{result.skill.note}</p>
-          <p className="damage-taken-note">Estimativa com todos os golpes acertando a build atual. Bloqueios, esquiva, efeitos negativos e habilidades defensivas não são simulados. ATQ e ATQM usam os valores de referência; aumentos de ataque por dificuldade ainda não são incluídos.</p>
+          <p className="damage-taken-note">{t('taken.estimateNote')}</p>
         </div>
       </Popover>
-      <details className="damage-taken-formula"><summary>Fórmula e reduções</summary>
+      <details className="damage-taken-formula"><summary>{t('taken.formulaDetails')}</summary>
         <dl>{result.steps.map((step, index) => <div key={index}>
           <dt>{step.keys.length && onReductionClick ? <button type="button" onClick={() => onReductionClick(step)}>{step.label}</button> : step.label}
             {step.factor != null && <small> ×{formatNumber(Math.round(step.factor * 10000) / 10000)}</small>}</dt>
           <dd>{range(step.min, step.max)}</dd>
         </div>)}</dl>
       </details>
-      <a className="damage-taken-source" href={basicAttack ? `https://www.divine-pride.net/database/monster/${profile.attacker.id}` : `https://www.divine-pride.net/database/skill/${result.skill.id}`} target="_blank" rel="noopener noreferrer">Ver {basicAttack ? 'monstro' : 'habilidade'} no Divine Pride <Icon name="external-link" /></a>
+      <a className="damage-taken-source" href={basicAttack ? `https://www.divine-pride.net/database/monster/${profile.attacker.id}` : `https://www.divine-pride.net/database/skill/${result.skill.id}`} target="_blank" rel="noopener noreferrer">{t(basicAttack ? 'taken.sourceMonster' : 'taken.sourceSkill')} <Icon name="external-link" /></a>
     </div>
   </Card>;
 }

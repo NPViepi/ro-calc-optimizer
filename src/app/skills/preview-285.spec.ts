@@ -1,3 +1,5 @@
+import { translate } from '../core/i18n';
+import { DEFAULT_CATALOG } from '../i18n';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import * as Jobs from '../jobs';
@@ -39,7 +41,7 @@ describe('285/65 preview coverage', () => {
     for (const name of new Set(PREVIEW_285_ATTACKS.flatMap(d => d.classes).concat([ClassName.ShadowCross, ClassName.NightWatch, ClassName.SpiritHandler]))) {
       const cls = job(name);
       for (const skill of [...cls.getAtkSkills(), ...cls.activeSkills]) supported.add(skill.name);
-      for (const control of preview285BuffsForClass(name)) expect(control.dropdown[0].value).toBe(0);
+      for (const control of preview285BuffsForClass(name)) expect(control.dropdown.find(o => !o.isUse)?.value).toBe(0);
     }
     for (const ref of PREVIEW_285_REFERENCE) {
       expect(SKILL_ID_BY_NAME[ref.name]).toBe(ref.id);
@@ -50,7 +52,7 @@ describe('285/65 preview coverage', () => {
     }
     for (const { classes, skill } of PREVIEW_285_ATTACKS) for (const name of classes) {
       const cls = job(name);
-      for (const version of ['current', 'rebalance-2022-06', 'rebalance-2026-02'] as const) {
+      for (const version of ['current', 'pre-rebalance', 'rebalance-2026-02'] as const) {
         expect(cls.getAtkSkills(version).find(s => s.value === skill.value)?.preview).toBe(true);
       }
       expect(cls.atkSkills.some(s => s.name === skill.name)).toBe(false);
@@ -175,7 +177,7 @@ describe('285 previews in the damage engine', () => {
     expect(result.dmg.skillMinDamage).toBeGreaterThan(0);
     expect(result.calcSkill.timingUnknown).toBe(true);
     expect(result.dmg.skillDps).toBe(0);
-    const view = buildRotationView({ rotation: ['Wraith Dash==3', '__basic'], summaryByValue: new Map([['Wraith Dash==3', result]]), baseSummary: result, atkSkills: job(ClassName.ArchMage).getAtkSkills(), hasSelectedChances: false });
+    const view = buildRotationView({ text: (key, params) => translate(DEFAULT_CATALOG, key, params), rotation: ['Wraith Dash==3', '__basic'], summaryByValue: new Map([['Wraith Dash==3', result]]), baseSummary: result, atkSkills: job(ClassName.ArchMage).getAtkSkills(), hasSelectedChances: false });
     expect(view.timingUnknown).toBe(true);
     expect(view.cycle.sustainedDps).toBe(0);
     expect(view.ttk).toBeNull();

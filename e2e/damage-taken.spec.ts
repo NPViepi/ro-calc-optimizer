@@ -3,6 +3,8 @@ import { expect, Page, test } from '@playwright/test';
 async function boot(page: Page) {
   await page.goto('/');
   await expect(page.locator('#ro-splash')).toHaveCount(0, { timeout: 40000 });
+  // Below 1120px the sections sit behind the "Resultado" pane.
+  if ((page.viewportSize()?.width ?? 1920) < 1120) await page.getByRole('button', { name: 'Resultado', exact: true }).click();
   await page.getByRole('button', { name: 'Batalha', exact: true }).click();
 }
 
@@ -31,8 +33,10 @@ test('Betelgeuse damage card is collapsible, lists seven unique skills plus basi
   await expect(region.getByRole('combobox', { name: 'Elemento da armadura' })).toContainText('Equipamento (Sombrio)');
   const picker = region.getByRole('combobox', { name: 'Ataque do monstro' });
   await picker.click();
-  await expect(page.getByRole('option')).toHaveCount(8);
-  await expect(page.getByRole('option', { name: 'Ataque básico', exact: true })).toHaveCount(1);
+  // Scoped to the picker's list: the skill formula selector is a native select whose
+  // options are in the page too.
+  await expect(page.getByRole('listbox').getByRole('option')).toHaveCount(8);
+  await expect(page.getByRole('listbox').getByRole('option', { name: 'Ataque básico', exact: true })).toHaveCount(1);
   await page.getByRole('option', { name: 'Ataque Sombrio · Nv. 10', exact: true }).click();
   await expect(region.locator('.damage-taken-result strong')).toHaveText('0');
   await toggle.click();
@@ -85,10 +89,14 @@ test('Earthquake target count changes damage and Aura remains fixed; reductions 
   await expect(region.getByRole('combobox', { name: 'Alvos vivos na área' })).toHaveCount(0);
 });
 
-test('unsupported monsters have no damage card', async ({ page }) => {
+test('a monster without a skill catalog offers only its basic attack', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('monster', '21361'));
   await boot(page);
-  await expect(page.getByRole('button', { name: 'Dano recebido', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Dano recebido', exact: true }).click();
+  const region = page.getByRole('region', { name: 'Dano recebido', exact: true });
+  await region.getByRole('combobox', { name: 'Ataque do monstro' }).click();
+  await expect(page.getByRole('listbox').getByRole('option')).toHaveCount(1);
+  await expect(page.getByRole('listbox').getByRole('option', { name: 'Ataque básico', exact: true })).toBeVisible();
 });
 
 test('the shared auto-cast monster card uses the current build for incoming reduction breakdowns', async ({ page }) => {
@@ -108,7 +116,6 @@ test('damage inputs and formula remain inside the card on a narrow screen', asyn
   const region = page.getByRole('region', { name: 'Dano recebido', exact: true });
   await expect(region.getByRole('combobox', { name: 'Ataque do monstro' })).toBeVisible();
   const bounds = await region.boundingBox();
-  // The existing calculator retains a 595px column at phone viewport sizes.
   const cardBounds = await region.locator('xpath=ancestor::app-ui-card').boundingBox();
   expect(bounds!.width).toBeLessThanOrEqual(cardBounds!.width);
   expect(await region.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);

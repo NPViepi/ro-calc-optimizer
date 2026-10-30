@@ -31,6 +31,27 @@ export const MAX_ROTATION_LENGTH = 20;
 export const isBasicAttack = (value: string): boolean => value === BASIC_ATTACK_VALUE;
 
 /**
+ * A shape with just the two fields the default-skill rule reads, declared structurally
+ * for the same reason {@link RotationSkillOption} is.
+ */
+export interface OffensiveSkillOption {
+  value?: string;
+  isUtility?: boolean;
+}
+
+/** Utilitárias (Esconderijo, Infiltrar) ocupam uma ação do ciclo e não batem em nada. */
+export const isOffensiveSkill = (skill: OffensiveSkillOption): boolean => !skill?.isUtility;
+
+/**
+ * A habilidade que vale quando o jogador não escolheu nenhuma: a primeira que causa dano.
+ * O seletor antigo pergunta quanto a habilidade bate, então uma utilitária no topo do
+ * catálogo — Esconderijo é a primeira de toda a linha do Gatuno — não serve de padrão.
+ * O `??` é para a classe que só tem utilitárias: melhor alguma coisa do que `undefined`.
+ */
+export const defaultAtkSkill = (atkSkills: OffensiveSkillOption[]): string | undefined =>
+  ((atkSkills ?? []).find(isOffensiveSkill) ?? (atkSkills ?? [])[0])?.value;
+
+/**
  * The skill `selectedAtkSkill` mirrors: the first entry that is an actual skill.
  * An all-basic rotation has none, and callers keep the previous value — the engine
  * always needs some valid skill string to solve against.

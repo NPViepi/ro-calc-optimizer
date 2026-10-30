@@ -1,9 +1,13 @@
-import { Fragment, KeyboardEvent, ReactNode, Ref, SyntheticEvent, createElement, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, KeyboardEvent, ReactNode, Ref, SyntheticEvent, createContext, createElement, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { fill } from '../../app/core/i18n';
+import { useText } from '../state/use-text';
 import { Portal } from './portal';
 import { Icon } from './primitives';
 import { optionLabel, optionValue, chooseSelection, filteredRows, toggleAllSelection } from './selection';
 import { VirtualList, VirtualListHandle } from './virtual-list';
 
+/** True inside a rendered option (or a select's shown value), where a tap picks or opens rather than reaching the content. */
+export const InsideOption = createContext(false);
 export interface SelectHandle { setPanelWidth(width: number, constrain?: boolean): void; }
 export interface SelectProps {
   ref?: Ref<SelectHandle>;
@@ -27,11 +31,12 @@ export interface SelectProps {
 interface Row { option: any; group?: boolean; }
 export function Select({ options, value, onChange, kind = 'dropdown', optionLabel: labelKey = '', optionValue: valueKey = '',
   group = false, disabled = false, inputId, ariaLabel, ariaLabelledBy, filter = false, filterBy = 'label', filterPlaceholder = '',
-  placeholder = '', defaultLabel = '', selectedItemsLabel = '{0} selecionados', showClear = false, showToggleAll = true,
+  placeholder = '', defaultLabel = '', selectedItemsLabel, showClear = false, showToggleAll = true,
   resetFilterOnHide = false, autoDisplayFirst = true, autofocus = false, scrollHeight = '200px', className = '', panelClassName = '',
-  emptyFilterMessage = 'Nenhum resultado encontrado', virtualScroll = false, virtualScrollItemSize = 38,
+  emptyFilterMessage, virtualScroll = false, virtualScrollItemSize = 38,
   optionGroupLabel = 'label', optionGroupChildren = ['items'], renderItem, renderSelected, renderGroup, renderFilterIcon,
   onOpened, onClosed, onCleared, onBlur, optionFilter, ref }: SelectProps) {
+  const t = useText();
   const id = `ui-select-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const multi = kind === 'multiselect';
   const cascade = kind === 'cascadeselect';
@@ -62,7 +67,7 @@ export function Select({ options, value, onChange, kind = 'dropdown', optionLabe
     setActive(rows.findIndex(row => !row.group && !row.option?.disabled));
   }, [query, rows]);
   const selectedLeaves = multi ? leaves.filter(selected) : [];
-  const label = multi ? selectedLeaves.length > 3 ? selectedItemsLabel.replace('{0}', String(selectedLeaves.length)) : selectedLeaves.length ? selectedLeaves.map(labelOf).join(', ') : placeholder || defaultLabel || '\u00a0'
+  const label = multi ? selectedLeaves.length > 3 ? fill(selectedItemsLabel ?? t('ui.select.selectedCount'), { 0: selectedLeaves.length }) : selectedLeaves.length ? selectedLeaves.map(labelOf).join(', ') : placeholder || defaultLabel || '\u00a0'
     : selectedOption != null ? labelOf(selectedOption) : placeholder || '\u00a0';
   const hasValue = multi ? !!value?.length : value != null;
   const hide = (restore = false) => {
@@ -152,7 +157,10 @@ export function Select({ options, value, onChange, kind = 'dropdown', optionLabe
     event.stopPropagation();
   };
   const tree = (entries: any[], depth = 0): ReactNode => <ul className={`ui-cascadeselect-items ${depth > 0 ? 'ui-cascadeselect-sublist' : ''}`} role="listbox" id={depth === 0 ? `${id}-list` : undefined}>
-    {entries.map((option, index) => <li key={index} className={`ui-cascadeselect-item ${path[depth] === option ? 'ui-highlight' : ''}`} role="option" aria-selected={selected(option)} onMouseEnter={() => expand(option, depth)}>
+    {entries.map((option, index) => <li key={index} className={`ui-cascadeselect-item ${path[depth] === option ? 'ui-highlight' : ''}`} role="option" aria-selected={selected(option)}
+      // Hover previews a branch for a mouse only. By touch (or pen) the button's click below
+      // is what opens it, so a tap never depends on a compatibility mouseenter.
+      onPointerEnter={event => { if (event.pointerType === 'mouse') expand(option, depth); }}>
       <button type="button" className="ui-cascadeselect-item-content ui-link" disabled={option.disabled}
         aria-expanded={childrenOf(option, depth).length ? path[depth] === option : undefined}
         onClick={event => childrenOf(option, depth).length ? expand(option, depth) : choose(option, event)} onKeyDown={event => treeKey(option, depth, event)}>
@@ -167,7 +175,7 @@ export function Select({ options, value, onChange, kind = 'dropdown', optionLabe
       aria-selected={selected(row.option)} aria-disabled={!!row.option?.disabled} onClick={event => choose(row.option, event)}
       onKeyDown={event => { if (event.key === 'Enter') choose(row.option, event); }}>
       {multi && <span className={`ui-checkbox-box ${selected(row.option) ? 'ui-highlight' : ''}`}>{selected(row.option) && <Icon name="check" />}</span>}
-      {renderItem ? renderItem(row.option) : labelOf(row.option)}
+      {renderItem ? <InsideOption.Provider value>{renderItem(row.option)}</InsideOption.Provider> : labelOf(row.option)}
     </li>;
   const control = <>
     <div className={`ui-component ui-${kind} ${className} ${disabled ? 'ui-disabled' : ''} ${open ? 'ui-focus' : ''}`}
@@ -177,36 +185,36 @@ export function Select({ options, value, onChange, kind = 'dropdown', optionLabe
         aria-labelledby={ariaLabelledBy} aria-expanded={open} aria-controls={open ? `${id}-list` : undefined}
         aria-activedescendant={open && active >= 0 ? `${id}-option-${active}` : undefined} aria-haspopup="listbox"
         onClick={() => open ? hide() : show()} onKeyDown={onKey} onBlur={onBlur}>
-        {!multi && renderSelected && selectedOption != null ? renderSelected(selectedOption) : label}
+        {!multi && renderSelected && selectedOption != null ? <InsideOption.Provider value>{renderSelected(selectedOption)}</InsideOption.Provider> : label}
       </button>
-      {showClear && hasValue && <button type="button" className={`ui-select-clear ui-link ui-${kind}-clear-icon`} aria-label="Limpar seleção" disabled={disabled}
+      {showClear && hasValue && <button type="button" className={`ui-select-clear ui-link ui-${kind}-clear-icon`} aria-label={t('ui.select.clearSelection')} disabled={disabled}
         onClick={event => { event.stopPropagation(); onChange(multi ? [] : null, event); onCleared?.(); }}><Icon name="times" /></button>}
-      <button type="button" className={`ui-select-chevron ui-link ui-${kind}-trigger`} tabIndex={-1} disabled={disabled} aria-label="Abrir opções" onClick={() => open ? hide() : show()}><Icon name="chevron-down" /></button>
+      <button type="button" className={`ui-select-chevron ui-link ui-${kind}-trigger`} tabIndex={-1} disabled={disabled} aria-label={t('ui.select.openOptions')} onClick={() => open ? hide() : show()}><Icon name="chevron-down" /></button>
     </div>
     {open && <Portal anchor={trigger.current?.parentElement} origin={trigger.current?.parentElement} width={panelWidth} panelClass={`ui-select-pane ${panelClassName}`}
       minWidth={trigger.current?.parentElement?.getBoundingClientRect().width} onDismiss={() => hide(true)} onOutside={() => hide()}>
       <div ref={panel} className={`ui-component ui-${kind}-panel ${panelClassName}`} tabIndex={-1} onKeyDown={onKey}>
         {(filter || multi && showToggleAll) && <div className={`ui-select-header ui-${kind}-header`}>
-          {multi && showToggleAll && <button type="button" className="ui-link ui-select-all" aria-label="Selecionar todos" onClick={event => {
+          {multi && showToggleAll && <button type="button" className="ui-link ui-select-all" aria-label={t('ui.select.selectAll')} onClick={event => {
             onChange(toggleAllSelection(value, rows, valueKey, labelKey), event);
           }}><Icon name="check" /></button>}
           {filter && <div className="ui-dropdown-filter-container"><input type="search" className="ui-inputtext ui-dropdown-filter"
-            value={query} placeholder={filterPlaceholder} aria-label="Filtrar opções" aria-controls={`${id}-list`}
+            value={query} placeholder={filterPlaceholder} aria-label={t('ui.select.filterOptions')} aria-controls={`${id}-list`}
             aria-activedescendant={active >= 0 ? `${id}-option-${active}` : undefined} name="ui-option-search" autoComplete="off"
             data-lpignore="true" data-1p-ignore data-bwignore="true" data-form-type="other" onChange={event => {
               setQuery(event.target.value); setKeyboardActive(false); setActive(-1);
-            }} onKeyDown={event => { if (event.key === 'Tab' && query && !event.shiftKey) event.stopPropagation(); }} />{query ? <button type="button" className="ui-link ui-dropdown-filter-icon" aria-label="Limpar busca"
+            }} onKeyDown={event => { if (event.key === 'Tab' && query && !event.shiftKey) event.stopPropagation(); }} />{query ? <button type="button" className="ui-link ui-dropdown-filter-icon" aria-label={t('ui.select.clearSearch')}
               onKeyDown={event => { if (['Enter', ' ', 'Tab'].includes(event.key)) event.stopPropagation(); }}
               onClick={() => { setQuery(''); panel.current?.querySelector('input')?.focus(); }}><Icon name="times" /></button>
               : renderFilterIcon ? renderFilterIcon() : <Icon className="ui-dropdown-filter-icon" name="search" />}</div>}
-          {multi && <button type="button" className="ui-link" aria-label="Fechar opções" onClick={() => hide(true)}><Icon name="times" /></button>}
+          {multi && <button type="button" className="ui-link" aria-label={t('ui.select.closeOptions')} onClick={() => hide(true)}><Icon name="times" /></button>}
         </div>}
         {cascade ? tree(options) : virtualScroll && rows.length > 0
           ? <VirtualList ref={viewport} items={rows} itemSize={virtualScrollItemSize} height={Math.min(parseFloat(scrollHeight) || 200, rows.length * virtualScrollItemSize)}
             className="ui-select-viewport" role="listbox" id={`${id}-list`} multiselectable={multi} renderItem={rowView} />
           : <div className={`ui-select-items-wrapper ui-${kind}-items-wrapper`} style={{ maxHeight: scrollHeight }}><ul className={`ui-select-items ui-${kind}-items`} role="listbox" id={`${id}-list`} aria-multiselectable={multi}>
             {rows.map((row, index) => <Fragment key={index}>{rowView(row, index)}</Fragment>)}
-            {!rows.length && <li className="ui-dropdown-empty-message">{emptyFilterMessage}</li>}
+            {!rows.length && <li className="ui-dropdown-empty-message">{emptyFilterMessage ?? t('ui.select.emptyFilter')}</li>}
           </ul></div>}
       </div>
     </Portal>}

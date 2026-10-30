@@ -54,16 +54,26 @@
  .ui-scope-app-rotation-list .rot-clear.ui-button .ui-button-icon-left{
   margin-right: 0.3rem;
 }
-:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-optimize.ui-button:enabled:hover{
+@media (hover: hover){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-optimize.ui-button:enabled:hover{
   background: rgba(255, 224, 130, 0.08);
   border-color: var(--surface-border);
   color: #ffe082;
-}
-:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-clear.ui-button:enabled:hover{
+}}
+@media (hover: none){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-optimize.ui-button:enabled:active{
+  background: rgba(255, 224, 130, 0.08);
+  border-color: var(--surface-border);
+  color: #ffe082;
+}}
+@media (hover: hover){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-clear.ui-button:enabled:hover{
   background: rgba(255, 137, 128, 0.08);
   border-color: var(--surface-border);
   color: var(--red-300, #ff8980);
-}
+}}
+@media (hover: none){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-clear.ui-button:enabled:active{
+  background: rgba(255, 137, 128, 0.08);
+  border-color: var(--surface-border);
+  color: var(--red-300, #ff8980);
+}}
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-add.ui-button{
   background: transparent;
   border: 1px dashed var(--surface-border);
@@ -85,11 +95,16 @@
  .ui-scope-app-rotation-list .rot-add.ui-button .ui-button-icon-left{
   margin-right: 0.4rem;
 }
-:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-add.ui-button:enabled:hover{
+@media (hover: hover){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-add.ui-button:enabled:hover{
   background: var(--highlight-bg);
   border-color: var(--surface-border);
   color: var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-add.ui-button:enabled:active{
+  background: var(--highlight-bg);
+  border-color: var(--surface-border);
+  color: var(--primary-color);
+}}
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-rows{
   display: flex;
   flex-direction: column;
@@ -150,9 +165,12 @@
   cursor: pointer;
   border-radius: 3px;
 }
-:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-icon--btn:hover{
+@media (hover: hover){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-icon--btn:hover{
   outline: 1px solid var(--primary-color);
-}
+}}
+@media (hover: none){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-icon--btn:active{
+  outline: 1px solid var(--primary-color);
+}}
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-icon--btn:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 1px;
@@ -262,9 +280,12 @@
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-branch{
   cursor: pointer;
 }
-:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-branch:hover{
+@media (hover: hover){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-branch:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-branch:active{
+  text-decoration: underline;
+}}
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-branch:focus-visible{
   outline: 2px solid var(--primary-color);
   outline-offset: 1px;
@@ -275,10 +296,14 @@
   color: var(--teal-300, #61beb5);
   cursor: pointer;
 }
-:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-val:hover,
+@media (hover: hover){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-val:hover,
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-crit-val.bonus_clickable:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-val:active,
+:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-crit-val.bonus_clickable:active{
+  text-decoration: underline;
+}}
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-val:focus-visible,
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-crit-val:focus-visible{
   outline: 2px solid var(--primary-color);
@@ -290,9 +315,12 @@
   color: var(--yellow-200, #fde4a5);
   cursor: pointer;
 }
-:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-sim:hover{
+@media (hover: hover){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-sim:hover{
   text-decoration: underline;
-}
+}}
+@media (hover: none){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-sim:active{
+  text-decoration: underline;
+}}
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-dmg-sim:focus-visible,
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-crit-sim:focus-visible{
   outline: 2px solid var(--primary-color);
@@ -397,9 +425,12 @@
   cursor: pointer;
   flex-shrink: 0;
 }
-:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-remove:hover{
+@media (hover: hover){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-remove:hover{
   color: var(--red-300, #ff8980);
-}
+}}
+@media (hover: none){:is(app-rotation-list, .ui-scope-app-rotation-list) .rot-remove:active{
+  color: var(--red-300, #ff8980);
+}}
 :is(app-rotation-list, .ui-scope-app-rotation-list) .rot-handle{
   height: 22px;
   display: flex;

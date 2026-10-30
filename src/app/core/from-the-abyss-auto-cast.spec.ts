@@ -66,8 +66,22 @@ describe('Invocação do Abismo autocast', () => {
   it('keeps orb damage and Fenda do Abismo as independent sources', () => {
     const result = prepare(5, 3).simulate();
     expect(result.sources.map(entry => [entry.source.skillId, entry.source.skillLevel, entry.source.chance]))
-      .toEqual([[5317, 5, 15], [5321, 3, 20]]);
+      .toEqual([[5317, 5, 15], [5321, 3, 3]]);
     expect(result.autoCastDps).toBeCloseTo(result.sources.reduce((sum, entry) => sum + entry.dps, 0));
+  });
+
+  // Card 5qw6V9dyPakGZ6jwMiD8. The chance used to be a flat 20% taken from rAthena's
+  // battle.cpp, whose own source marks it unconfirmed; https://browiki.org/wiki/Fenda_do_Abismo
+  // gives the LATAM figure, 1% per level of Fenda do Abismo.
+  it.each([1, 2, 3, 4, 5])('rolls Fenda do Abismo at 1%% per learned level (Nv %i)', squareLevel => {
+    const result = prepare(5, squareLevel).simulate();
+    const square = result.sources.find(entry => entry.source.skillId === 5321)!;
+    expect(square.source.chance).toBe(squareLevel);
+    expect(square.source.skillLevel).toBe(squareLevel);
+    expect(square.source.chanceBreakdown).toEqual([
+      { label: 'Invocação do Abismo', value: `${squareLevel}% por ataque básico` },
+    ]);
+    expect(square.activationsPerSecond).toBeCloseTo(4 * squareLevel / 100);
   });
 
   it.each([[1, 3], [2, 2.5], [3, 2], [4, 1.5], [5, 1]])(
@@ -91,7 +105,7 @@ describe('Invocação do Abismo autocast', () => {
     expect(miss.dps).toBe(hit.dps);
   });
 
-  it.each<SkillFormulaVersion>(['current', 'rebalance-2022-06', 'rebalance-2026-02'])(
+  it.each<SkillFormulaVersion>(['current', 'pre-rebalance', 'rebalance-2026-02'])(
     'reuses the native magical damage and hit count for %s', version => {
       const { calc, simulate } = prepare(5, 0, version);
       const native = calc.solveAutoCast('From the Abyss==5');
