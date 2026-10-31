@@ -30,6 +30,7 @@ import { CharacterBase } from 'src/app/jobs';
 import { ItemModel } from 'src/app/models/item.model';
 import { MainModel } from 'src/app/models/main.model';
 import { canGradeItem } from 'src/app/utils/can-grade';
+import { damageProfileOf } from '../damage-profile';
 import { attachmentsFor, buildCardCatalog, buildEnchantMap, CardCatalog } from '../attachments';
 import {
   buildCatalog, CatalogOptions, clearSlot, COSTUME_ENCHANT_SLOT_KEYS, EQUIPMENT_SLOT_KEYS, Grade, OptimizableSlot,
@@ -117,7 +118,7 @@ export class RoBuildProblem implements SearchProblem<RoState, RoChoice, Score> {
     this.locked = options.lockedSlots ?? [];
     const locked = new Set(this.locked);
     this.free = (options.slots ?? [...EQUIPMENT_SLOT_KEYS, ...COSTUME_ENCHANT_SLOT_KEYS]).filter((slot) => !locked.has(slot));
-    this.catalog = buildCatalog(items, character, { maxRequiredLevel: original.level, ...options.catalog });
+    this.catalog = buildCatalog(items, character, { maxRequiredLevel: original.level, damageProfile: damageProfileOf(character, original), ...options.catalog });
     this.cardCatalog = options.optimizeCards === false ? {} : buildCardCatalog(items, options.catalog);
     this.enchantMap = buildEnchantMap(items);
     this.probe = new WeaponRulesProbe(items, character);
@@ -235,10 +236,21 @@ export class RoBuildProblem implements SearchProblem<RoState, RoChoice, Score> {
     return [choices[index], ...choices.slice(0, index), ...choices.slice(index + 1)];
   }
 
+  /**
+   * Opções de uma posição de carta ou encantamento. Cartas incluem o "vazio". Encantamentos não:
+   * um item encantável só entra encantado, o que corta uma opção por posição (com 3 posições e
+   * 10 encantamentos, 1.331 → 1.000 combinações por item). O vazio só volta quando as regras de
+   * limite não deixam pôr nenhum encantamento naquela posição. O item original continua
+   * disponível como está, sem encantamento, pela escolha `original`.
+   */
   private fieldChoices(state: RoState, pending: PendingField): FieldChoice[] {
     const rank = pending.enchant ? undefined : this.cardRank.get(pending.slot);
     const ordered = rank ? this.orderBy(pending.ids, (id) => rank.get(id) ?? Infinity) : pending.ids;
-    const choices: FieldChoice[] = [{ kind: 'field', id: undefined }, ...ordered.map((id) => ({ kind: 'field' as const, id }))];
+    const placeable = pending.enchant ? ordered.filter((id) => !this.enchantPruned(state, pending, id)) : ordered;
+    const empty: FieldChoice = { kind: 'field', id: undefined };
+    const choices: FieldChoice[] = pending.enchant
+      ? (placeable.length ? placeable.map((id) => ({ kind: 'field' as const, id })) : [empty])
+      : [empty, ...ordered.map((id) => ({ kind: 'field' as const, id }))];
     const seedValue = get(this.seed, pending.field) as number | undefined;
     if (seedValue && get(this.seed, pending.slot) === get(state.model, pending.slot)) {
       const index = choices.findIndex((choice) => choice.id === seedValue);
@@ -331,15 +343,16 @@ export class RoBuildProblem implements SearchProblem<RoState, RoChoice, Score> {
     };
   }
 
+  /** O encantamento quebra um limite cadastrado (ou repete, com `unknownEnchantRepeats: 'forbid'`)? */
+  private enchantPruned(state: RoState, pending: PendingField, id: number): boolean {
+    if (!canPlaceEnchant(state.model, pending.slot, pending.field, id)) return true;
+    return this.options.unknownEnchantRepeats === 'forbid' && !enchantRulesFor(get(state.model, pending.slot)).length
+      && [...enchantsOf(state.model, pending.slot)].some(([other, value]) => other !== pending.field && value === id);
+  }
+
   private applyField(state: RoState, choice: FieldChoice): { state: RoState } | { pruned: string } {
     const [pending, ...rest] = state.pending;
-    if (choice.id !== undefined && pending.enchant) {
-      if (!canPlaceEnchant(state.model, pending.slot, pending.field, choice.id)) return { pruned: 'enchantLimit' };
-      if (this.options.unknownEnchantRepeats === 'forbid' && !enchantRulesFor(get(state.model, pending.slot)).length
-        && [...enchantsOf(state.model, pending.slot)].some(([other, value]) => other !== pending.field && value === choice.id)) {
-        return { pruned: 'enchantLimit' };
-      }
-    }
+    if (choice.id !== undefined && pending.enchant && this.enchantPruned(state, pending, choice.id)) return { pruned: 'enchantLimit' };
     const model = choice.id === undefined ? state.model : ({ ...state.model, [pending.field]: choice.id } as MainModel);
     return { state: { ...state, model, pending: rest } };
   }
@@ -359,7 +372,7 @@ export class RoBuildProblem implements SearchProblem<RoState, RoChoice, Score> {
 
   /**
    * Tamanho aproximado do espaço (log10), sem as podas: produto, por slot livre, de
-   * Σ_item (variantes de refino/grau × Π (opções de cada carta/encantamento + vazio)).
+   * Σ_item (variantes de refino/grau × Π (opções de cada carta + vazio) × Π (opções de cada encantamento)).
    * Escudo e munição usam a arma original.
    */
   estimateSpaceLog10(): number {
@@ -372,7 +385,8 @@ export class RoBuildProblem implements SearchProblem<RoState, RoChoice, Score> {
         const { cardFields, enchants } = attachmentsFor(model, slot, this.context.items, this.enchantMap, this.options.catalog);
         let combos = 1;
         if (this.options.optimizeCards !== false) for (const _ of cardFields) combos *= (this.cardCatalog[slot]?.length ?? 0) + 1;
-        if (this.options.optimizeEnchants !== false) for (const { ids } of enchants) combos *= ids.length + 1;
+        // Encantamento não tem a opção "vazio" (ver `fieldChoices`).
+        if (this.options.optimizeEnchants !== false) for (const { ids } of enchants) combos *= ids.length;
         count += combos;
       }
       total += Math.log10(Math.max(1, count));

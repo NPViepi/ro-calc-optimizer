@@ -1,0 +1,21 @@
+{
+  "type": "patch",
+  "logs": [
+    "Otimizador: itens que não fazem diferença saem da busca — aluguel, Apoio, Paraíso, Éden, equipamentos de novato e de WoE TE, itens sem nenhum efeito e versões com menos slots de um mesmo item.",
+    "Otimizador: itens que só aumentam o dano do outro tipo (mágico numa skill física e vice-versa) ou da outra distância (corpo a corpo numa skill à distância e vice-versa) saem da busca, inclusive sombrios e encantamentos de visual. Continuam os que completam um conjunto com bônus útil para a skill.",
+    "Otimizador (modo exato): itens que aceitam encantamento só são testados encantados, o que reduz o número de combinações.",
+    "Otimizador: efeitos de ativação dos itens, como os da Carta Jitterbug e do Instinto, passam a contar no dano — sempre ativos no objetivo dano máximo e ponderados pela chance de ativação e pela duração no DPS e nos danos médio e mínimo. Só entram os efeitos cuja descrição informa o gatilho."
+  ],
+  "logs_es": [
+    "Optimizador: los objetos que no marcan diferencia salen de la búsqueda — alquiler, Apoyo, Paraíso, Edén, equipos de principiante y de WoE TE, objetos sin ningún efecto y versiones con menos ranuras de un mismo objeto.",
+    "Optimizador: los objetos que solo aumentan el daño del otro tipo (mágico en una habilidad física y viceversa) o de la otra distancia (cuerpo a cuerpo en una habilidad a distancia y viceversa) salen de la búsqueda, incluidos los sombríos y los encantamientos de apariencia. Se mantienen los que completan un conjunto con bonificación útil para la habilidad.",
+    "Optimizador (modo exacto): los objetos que aceptan encantamiento solo se prueban encantados, lo que reduce el número de combinaciones.",
+    "Optimizador: los efectos de activación de los objetos, como los de la Carta Jitterbug y del Instinto, pasan a contar en el daño — siempre activos en el objetivo daño máximo y ponderados por la probabilidad de activación y la duración en el DPS y en los daños medio y mínimo. Solo entran los efectos cuya descripción informa el disparador."
+  ],
+  "logs_en": [
+    "Optimizer: items that make no difference are left out of the search — rental, Booster, Paradise and Eden gear, novice and WoE TE equipment, items with no effect at all, and versions of the same item with fewer slots.",
+    "Optimizer: items that only raise damage of the other type (magical on a physical skill and vice versa) or the other range (melee on a ranged skill and vice versa) are left out of the search, shadow gear and costume enchants included. Items that complete a set with a bonus useful to the skill are kept.",
+    "Optimizer (exact mode): items that accept enchantments are only tried enchanted, which reduces the number of combinations.",
+    "Optimizer: item activation effects, such as those of the Jitterbug Card and Hawkeye, now count toward damage — always active with the maximum damage objective, and weighted by activation chance and duration for DPS and for average and minimum damage. Only effects whose description states the trigger are included."
+  ]
+}

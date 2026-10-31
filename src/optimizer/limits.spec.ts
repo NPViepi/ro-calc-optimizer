@@ -103,7 +103,7 @@ describe('refino e grau máximos', () => {
       preset, monsterId: 1832, objective: 'dps', slots: [], optimizeStats: false,
       defaultRefine: { equip: 15 }, applyLimitsToCurrent: true,
     });
-    const realBefore = new BuildEvaluator({ ...context, items: data.items, monster: data.monsters[1832], hpSpTable: data.hpSpTable })
+    const realBefore = new BuildEvaluator({ ...context, items: data.items, monster: data.monsters[1832], hpSpTable: data.hpSpTable, chanceEffects: 'expected' })
       .evaluate({ ...windhawkModel(130), weapon: 700045, weaponRefine: 7 } as any);
     expect(response.before.damageAvg).toBe(realBefore.damageAvg);
     expect(response.changes).toContainEqual(expect.objectContaining({ from: '+7', to: '+15' }));
