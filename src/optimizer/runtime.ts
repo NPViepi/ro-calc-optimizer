@@ -32,6 +32,7 @@ import { BuildEvaluator, BuildMetrics, EvaluationContext } from './evaluate';
 import { BuildOptions, BuildProgress, BuildResult, optimizeBuild } from './items';
 import { checkConstraints, ConstraintCheck, DamageObjective, scoreOf, TimingConstraints } from './objective';
 import { StatKey } from './stats';
+import { ChanceEffectMode } from './chance-effects';
 import { SearchStats, SearchStatus } from './exact/engine';
 import { ExactCheckpoint, ExactProgress, optimizeExact } from './exact/optimize';
 
@@ -66,6 +67,11 @@ export interface OptimizeRequest {
   /** `"Nome==nível"`; padrão: a skill selecionada na build. */
   skillValue?: string;
   objective?: DamageObjective;
+  /**
+   * Efeitos de ativação dos itens. Padrão: `always` com objetivo dano máximo, `expected`
+   * (ponderado pelo tempo ativo) nos outros. `off` ignora.
+   */
+  chanceEffects?: ChanceEffectMode;
   constraints?: TimingConstraints;
   slots?: OptimizableSlot[];
   lockedSlots?: OptimizableSlot[];
@@ -322,7 +328,9 @@ function prepareRun(data: OptimizerData, request: OptimizeRequest, onProgress?: 
     catalog: { allowedItemIds: allowed, excludedItemIds: excluded, allowGodlyItems: request.allowGodlyItems },
     onProgress,
   };
-  const evaluator = new BuildEvaluator(context);
+  // Dano máximo: efeitos de ativação sempre ligados; nos outros objetivos, pelo tempo ativo.
+  const chanceEffects = request.chanceEffects ?? ((request.objective ?? 'dps') === 'max' ? 'always' : 'expected');
+  const evaluator = new BuildEvaluator({ ...context, chanceEffects });
   const placement = options.placement!;
   const locked = new Set(request.lockedSlots ?? []);
   const start = request.applyLimitsToCurrent ? raiseToLimits(model, items, ALL_OPTIMIZABLE_SLOTS.filter((slot) => !locked.has(slot)), placement) : model;

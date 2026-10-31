@@ -10,7 +10,7 @@ import { MainModel } from 'src/app/models/main.model';
 import { canGradeItem } from 'src/app/utils/can-grade';
 import { attachmentsFor, buildCardCatalog, buildEnchantMap } from '../attachments';
 import { buildCatalog, clearSlot, Grade, OptimizableSlot, placeItem, PlacementOptions, WeaponRulesProbe } from '../candidates';
-import { limitViolations } from '../enchant-limits';
+import { canPlaceEnchant, enchantRulesFor, enchantsOf, limitViolations } from '../enchant-limits';
 import { BuildEvaluator, stableKey } from '../evaluate';
 import { isBetter, Score, scoreOf } from '../objective';
 import { prepareSession } from '../runtime';
@@ -61,7 +61,21 @@ function bruteForce(base: MainModel, slots: OptimizableSlot[], options: RoProble
         ];
         let combos: Record<string, number | undefined>[] = [{}];
         for (const [field, values] of fieldDomains) combos = combos.flatMap((combo) => values.map((value) => ({ ...combo, [field]: value })));
-        for (const fields of combos) list.push({ id, ...level, fields });
+        // Encantamento só fica vazio quando nenhum cabe naquela posição (na ordem das posições,
+        // com as anteriores já postas) — a mesma regra de `fieldChoices`.
+        const placeable = (model: MainModel, field: string, value: number) => canPlaceEnchant(model, slot, field, value)
+          && !(options.unknownEnchantRepeats === 'forbid' && !enchantRulesFor(id).length
+            && [...enchantsOf(model, slot)].some(([other, used]) => other !== field && used === value));
+        const enchantedOnly = (fields: Record<string, number | undefined>) => {
+          let model = placed;
+          for (const { field, ids } of enchants) {
+            const value = fields[field];
+            if (value === undefined && ids.some((other) => placeable(model, field, other))) return false;
+            model = { ...model, [field]: value } as MainModel;
+          }
+          return true;
+        };
+        for (const fields of combos) if (enchantedOnly(fields)) list.push({ id, ...level, fields });
       }
     }
     return list;

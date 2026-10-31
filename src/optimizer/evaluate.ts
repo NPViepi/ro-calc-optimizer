@@ -27,6 +27,7 @@ import { MainModel } from 'src/app/models/main.model';
 import { MonsterModel } from 'src/app/models/monster.model';
 import { SKILL_ID_BY_NAME } from 'src/app/skills';
 import { toRawOptionTxtList } from 'src/app/utils/to-raw-option-txt-list';
+import { ChanceEffectMode, combineEffects, DamageFigures, effectsOf, triggeredBy, uptimeOf } from './chance-effects';
 
 /** Tudo o que não muda enquanto o otimizador explora builds. */
 export interface EvaluationContext {
@@ -43,6 +44,11 @@ export interface EvaluationContext {
   buffDefs?: BuffDef[];
   /** Efeitos ("chances") marcados pelo usuário. */
   selectedChances?: string[];
+  /**
+   * Efeitos de ativação dos itens: `always` liga todos os que a skill ativa (dano máximo),
+   * `expected` pondera pelo tempo ativo (DPS/médio/mínimo). Padrão `off`. Ver chance-effects.ts.
+   */
+  chanceEffects?: ChanceEffectMode;
 }
 
 /** O que o otimizador lê de uma build avaliada. Tempos em segundos. */
@@ -92,6 +98,8 @@ export interface BuildMetrics {
   dex2Int1: number;
   /** O motor não conhece os tempos desta skill; dps/tempos não são confiáveis. */
   timingUnknown: boolean;
+  /** Efeitos de ativação considerados no dano (com `chanceEffects`), com o tempo ativo (0–1). */
+  effects?: { name: string; uptime: number }[];
 }
 
 export interface EvaluatorStats {
@@ -229,7 +237,9 @@ export class BuildEvaluator {
     const { model: working, input } = buildChainInput(this.context, model, skillValue);
     this.calc.setClass(this.context.character).loadItemFromModel(working);
     this.controller.runChain(this.calc, input);
-    const metrics = readMetrics(this.calc, skillValue);
+    let metrics = readMetrics(this.calc, skillValue);
+    const mode = this.context.chanceEffects ?? 'off';
+    if (mode !== 'off') metrics = this.withEffects(mode, working, skillValue, metrics);
     this.stats.engineMs += performance.now() - started;
 
     this.cache.set(key, metrics);
@@ -240,5 +250,35 @@ export class BuildEvaluator {
 
   clearCache() {
     this.cache.clear();
+  }
+
+  private readonly magicalBySkill = new Map<string, boolean>();
+
+  private isMagical(skillName: string, model: MainModel): boolean {
+    let magical = this.magicalBySkill.get(skillName);
+    if (magical === undefined) {
+      const skill = (this.context.character.getAtkSkills(model.skillFormulaVersion) as any[]).find((entry) => entry.name === skillName);
+      this.magicalBySkill.set(skillName, (magical = !!skill?.isMatk));
+    }
+    return magical;
+  }
+
+  /** Aplica os efeitos de ativação às figuras de dano (o motor já está com a build carregada). */
+  private withEffects(mode: Exclude<ChanceEffectMode, 'off'>, model: MainModel, skillValue: string, base: BuildMetrics): BuildMetrics {
+    const skillName = skillValue.split('==')[0];
+    const magical = this.isMagical(skillName, model);
+    const seen = new Set<string>();
+    const effects = effectsOf(this.calc, model, this.context.items)
+      .filter((effect) => triggeredBy(effect, skillName, magical) && !seen.has(effect.name) && seen.add(effect.name))
+      .map((effect) => ({ name: effect.name, uptime: mode === 'always' ? 1 : uptimeOf(effect, base.hitsPerSec, base.castPeriod) }));
+    if (!effects.length) return base;
+    const pick = (metrics: BuildMetrics): DamageFigures => ({
+      damageMin: metrics.damageMin, damageMax: metrics.damageMax, damageAvg: metrics.damageAvg, dps: metrics.dps,
+    });
+    const figures = combineEffects(mode, effects, pick(base), (names) => {
+      this.calc.setSelectedChances(names).recalcExtraBonus(skillValue);
+      return pick(readMetrics(this.calc, skillValue));
+    });
+    return { ...base, ...figures, effects };
   }
 }

@@ -13,7 +13,7 @@ const probe = new WeaponRulesProbe(items, character);
 const SHARPBOLT_BOW = 700016; // 0 encaixes
 const ROYAL_BOW = 700045; // 2 encaixes
 const STONE_BUCKLER = 2114;
-const ODIUM_MASK = 436002; // Meio + Baixo
+const ODIUM_MASK = 436003; // Meio + Baixo (a [0], idêntica, sai como cópia com menos slots)
 const ELVEN_ARROW = 1773;
 const SOME_CARD = 4001;
 

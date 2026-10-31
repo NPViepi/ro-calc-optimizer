@@ -18,6 +18,7 @@
 import { MainItemWithRelations, ItemTypeEnum } from 'src/app/constants/item-type.enum';
 import { CharacterBase } from 'src/app/jobs';
 import { MainModel } from 'src/app/models/main.model';
+import { damageProfileOf } from './damage-profile';
 import { attachmentsFor, buildCardCatalog, buildEnchantMap, CardCatalog } from './attachments';
 import {
   ALL_OPTIMIZABLE_SLOTS, buildCatalog, CatalogOptions, compatibleAmmo, COSTUME_ENCHANT_SLOT_KEYS, EQUIPMENT_SLOT_KEYS,
@@ -409,7 +410,7 @@ export function optimizeBuild(
   const objective = options.objective ?? 'avg';
   const locked = new Set(options.lockedSlots ?? []);
   const slots = (options.slots ?? defaultSlots(options)).filter((slot) => !locked.has(slot));
-  const catalog = buildCatalog(context.items, character, { maxRequiredLevel: model.level, ...options.catalog });
+  const catalog = buildCatalog(context.items, character, { maxRequiredLevel: model.level, damageProfile: damageProfileOf(character, model), ...options.catalog });
   const search = new BuildSearch(evaluator, context, character, catalog, options, model);
 
   const before = evaluator.evaluate(model);

@@ -21,6 +21,8 @@ import { canGradeItem } from 'src/app/utils/can-grade';
 import { canUsedByClass } from 'src/app/utils/can-used-by-class';
 import { getHeadGearSlots, resolveHeadSlotOccupancy } from 'src/app/utils/head-gear-slots';
 import { GODLY_ITEM_IDS, GODLY_ITEM_NAMES } from './data/godly-items';
+import { collectProfilePartners, DamageProfile, isOffProfileItem, ProfilePartners } from './damage-profile';
+import { collectSetPartners, dropFewerSlotVariants, isInertItem, isIrrelevantByName, SetPartners } from './irrelevant-items';
 
 /** Slots de equipamento que o otimizador sabe trocar, na ordem em que são visitados. */
 export const EQUIPMENT_SLOT_KEYS = [
@@ -140,6 +142,8 @@ export interface CatalogOptions {
   excludedItemIds?: ReadonlySet<number>;
   /** Permitir itens divinos (Megingjard, Brisingamen, Sleipnir, Mjolnir…). Padrão: false. */
   allowGodlyItems?: boolean;
+  /** Tipo de dano da skill: tira itens que só ajudam o outro tipo/distância (ver damage-profile.ts). */
+  damageProfile?: DamageProfile;
 }
 
 const GODLY_IDS = new Set(GODLY_ITEM_IDS);
@@ -149,6 +153,22 @@ export const isGodlyItem = (item: Pick<ItemModel, 'id' | 'name' | 'enName'>) =>
   GODLY_IDS.has(item.id) || GODLY_NAME.test(item.enName ?? '') || GODLY_NAME.test(item.name ?? '');
 
 export type SlotCatalog = Partial<Record<OptimizableSlot, number[]>>;
+
+const setPartnersCache = new WeakMap<object, SetPartners>();
+const setPartnersOf = (items: Record<number, ItemModel>) => {
+  let partners = setPartnersCache.get(items);
+  if (!partners) setPartnersCache.set(items, (partners = collectSetPartners(items)));
+  return partners;
+};
+const profilePartnersCache = new WeakMap<object, Map<string, ProfilePartners>>();
+const profilePartnersOf = (items: Record<number, ItemModel>, profile: DamageProfile) => {
+  let byProfile = profilePartnersCache.get(items);
+  if (!byProfile) profilePartnersCache.set(items, (byProfile = new Map()));
+  const key = JSON.stringify(profile);
+  let partners = byProfile.get(key);
+  if (!partners) byProfile.set(key, (partners = collectProfilePartners(items, profile)));
+  return partners;
+};
 
 /** Itens disponíveis por slot para a classe, com os mesmos filtros dos dropdowns. */
 export function buildCatalog(items: Record<number, ItemModel>, character: CharacterBase, options: CatalogOptions = {}): SlotCatalog {
@@ -160,6 +180,9 @@ export function buildCatalog(items: Record<number, ItemModel>, character: Charac
     gear: canUsedByClass<ItemModel>(character),
   };
   const catalog: SlotCatalog = {};
+  const partners = setPartnersOf(items);
+  const profile = options.damageProfile;
+  const profilePartners = profile && profilePartnersOf(items, profile);
 
   for (const item of Object.values(items)) {
     if (!item || typeof item.id !== 'number') continue;
@@ -169,6 +192,9 @@ export function buildCatalog(items: Record<number, ItemModel>, character: Charac
     if (options.allowedItemIds && !options.allowedItemIds.has(item.id)) continue;
     if (options.excludedItemIds?.has(item.id)) continue;
     if (!options.allowGodlyItems && isGodlyItem(item)) continue;
+    // Aluguel, Apoio, Paraíso, Éden, novato, TE e itens sem efeito: ver irrelevant-items.ts.
+    if (isIrrelevantByName(item) || isInertItem(item, partners)) continue;
+    if (profile && isOffProfileItem(item, profile, profilePartners!)) continue;
 
     for (const slot of slotsForItem(item)) {
       // Visual sem bônus nenhum não muda o cálculo: fica de fora (são ~1.270 de ~1.290).
@@ -181,6 +207,7 @@ export function buildCatalog(items: Record<number, ItemModel>, character: Charac
       (catalog[slot] ??= []).push(item.id);
     }
   }
+  for (const slot of Object.keys(catalog) as OptimizableSlot[]) catalog[slot] = dropFewerSlotVariants(catalog[slot]!, items, partners);
   return catalog;
 }
 
