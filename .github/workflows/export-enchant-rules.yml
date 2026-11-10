@@ -1,0 +1,56 @@
+# Regenera enchant-rules/ (encantos válidos por equipamento) sempre que a tabela de
+# encantamentos ou o item.json mudam na branch desktop, e faz commit do resultado.
+# Os arquivos são lidos pela skill rocalc-otimizar-build via raw.githubusercontent.com.
+name: Export enchant rules
+
+on:
+  push:
+    branches: [desktop]
+    paths:
+      - 'src/app/constants/enchant_item/**'
+      - 'src/assets/demo/data/item.json'
+      - 'tools/export-enchant-rules.mjs'
+      - '.github/workflows/export-enchant-rules.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: export-enchant-rules
+  cancel-in-progress: false
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: desktop
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Export enchant rules
+        run: node tools/export-enchant-rules.mjs
+
+      - name: Commit changes
+        run: |
+          git add enchant-rules
+          if git diff --cached --quiet; then
+            echo "enchant-rules/ já está atualizado."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: atualiza enchant-rules"
+          git push origin HEAD:desktop
